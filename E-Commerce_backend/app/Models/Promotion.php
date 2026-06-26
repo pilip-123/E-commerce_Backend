@@ -29,10 +29,14 @@ class Promotion extends Model
         return $this->belongsToMany(Product::class);
     }
 
+    public function getIsActiveAttribute(): bool
+    {
+        return $this->start_date <= now() && $this->end_date >= now();
+    }
+
     public function scopeActive($query)
     {
-        return $query->where('status', true)
-            ->where('start_date', '<=', now())
+        return $query->where('start_date', '<=', now())
             ->where('end_date', '>=', now());
     }
 }

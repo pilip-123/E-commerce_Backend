@@ -35,7 +35,7 @@
                         <tr>
                             <th class="text-muted small fw-bold">Status</th>
                             <td>
-                                @if ($promotion->status)
+                                @if ($promotion->start_date <= now() && $promotion->end_date >= now())
                                     <span class="badge bg-success-subtle text-success-emphasis">Active</span>
                                 @else
                                     <span class="badge bg-danger-subtle text-danger-emphasis">Inactive</span>

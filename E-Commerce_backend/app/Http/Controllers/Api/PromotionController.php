@@ -23,8 +23,6 @@ class PromotionController extends Controller
 
     public function active(): JsonResponse
     {
-        Promotion::where('end_date', '<', now())->delete();
-
         $promotions = Promotion::active()
             ->with(['products' => fn ($q) => $q->with('category')])
             ->latest()
@@ -156,7 +154,7 @@ class PromotionController extends Controller
             'discount_value' => (float) $promotion->discount_value,
             'start_date' => $promotion->start_date,
             'end_date' => $promotion->end_date,
-            'status' => (bool) $promotion->status,
+            'status' => $promotion->is_active,
             'products_count' => $products ? $products->count() : (int) $promotion->products_count,
             'products' => $products,
             'created_at' => $promotion->created_at,

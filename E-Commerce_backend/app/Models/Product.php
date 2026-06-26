@@ -49,7 +49,6 @@ class Product extends Model
     {
         return $this->belongsToMany(Promotion::class)
             ->wherePivot('promotion_id', '!=', null)
-            ->where('status', true)
             ->where('start_date', '<=', now())
             ->where('end_date', '>=', now());
     }

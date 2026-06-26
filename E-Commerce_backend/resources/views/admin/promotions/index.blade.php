@@ -48,7 +48,7 @@
                                     <span class="badge bg-secondary-subtle text-secondary-emphasis px-3 py-2">{{ $promotion->products_count }} product(s)</span>
                                 </td>
                                 <td class="px-4 py-3">
-                                    @if ($promotion->status)
+                                    @if ($promotion->start_date <= now() && $promotion->end_date >= now())
                                         <span class="badge bg-success-subtle text-success-emphasis px-3 py-2">Active</span>
                                     @else
                                         <span class="badge bg-danger-subtle text-danger-emphasis px-3 py-2">Inactive</span>
