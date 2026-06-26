@@ -15,6 +15,14 @@
   margin: 0 auto;
 }
 
+[data-theme="dark"] .profile-page {
+  --accent: #34d399;
+  --accent-soft: rgba(52, 211, 153, 0.12);
+  --accent-light: rgba(52, 211, 153, 0.06);
+  --bg: #0f172a;
+  --shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
 .cover-banner {
   position: relative;
   height: 200px;
@@ -28,7 +36,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fff;
+  background: var(--admin-surface);
   padding: 0 32px 20px;
   border-radius: 0 0 var(--radius) var(--radius);
   box-shadow: var(--shadow);
@@ -46,7 +54,7 @@
   width: 90px;
   height: 90px;
   border-radius: 50%;
-  border: 4px solid #fff;
+  border: 4px solid var(--admin-surface);
   overflow: hidden;
   position: relative;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -75,13 +83,13 @@
   margin: 8px 0 2px;
   font-size: 1.1rem;
   font-weight: 700;
-  color: #111;
+  color: var(--admin-text);
 }
 
 .profile-role {
   margin: 0;
   font-size: 0.85rem;
-  color: #9ca3af;
+  color: var(--admin-text-muted);
 }
 
 .profile-bar__actions {
@@ -204,7 +212,7 @@
   padding: 12px 18px;
   border: 0;
   background: transparent;
-  color: #6b7280;
+  color: var(--admin-text-muted);
   font-size: 0.88rem;
   font-weight: 500;
   cursor: pointer;
@@ -241,7 +249,7 @@
 }
 
 .card-custom {
-  background: #fff;
+  background: var(--admin-surface);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 24px;
@@ -256,7 +264,7 @@
   margin: 0 0 12px;
   font-size: 1rem;
   font-weight: 700;
-  color: #111;
+  color: var(--admin-text);
 }
 
 .card-title svg {
@@ -266,7 +274,7 @@
 
 .card-text {
   margin: 0 0 16px;
-  color: #6b7280;
+  color: var(--admin-text-muted);
   font-size: 0.9rem;
   line-height: 1.6;
 }
@@ -281,7 +289,7 @@
   align-items: center;
   gap: 10px;
   font-size: 0.88rem;
-  color: #6b7280;
+  color: var(--admin-text-muted);
 }
 
 .info-row svg {
@@ -306,13 +314,13 @@
 .stat-card .stat-value {
   font-size: 1.8rem;
   font-weight: 800;
-  color: #111;
+  color: var(--admin-text);
   margin: 0;
 }
 
 .stat-card .stat-label {
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--admin-text-muted);
   margin: 4px 0 0;
 }
 

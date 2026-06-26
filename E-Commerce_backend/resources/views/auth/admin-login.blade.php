@@ -8,11 +8,10 @@
             class="w-full max-w-md rounded-[28px] border border-slate-200 bg-white px-11 py-12 shadow-[0_20px_40px_-8px_rgba(0,0,0,0.08)]">
 
             {{-- Brand icon --}}
-            <div
-                class="mx-auto mb-6 flex h-11 w-11 items-center justify-center rounded-[14px] bg-gradient-to-br from-slate-700 to-slate-500 shadow-[0_4px_12px_rgba(0,0,0,0.25)]">
-                <svg class="h-5 w-5 fill-white" viewBox="0 0 24 24">
-                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
-                </svg>
+            <div class="mx-auto mb-6 flex items-center justify-center"
+                style="width: 68px; height: 68px; border-radius: 50%; overflow: hidden; background: #fff; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 3px;">
+                <img src="{{ asset('images/logo.png') }}" alt="E-Commerce"
+                    style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
             </div>
 
             {{-- Heading --}}

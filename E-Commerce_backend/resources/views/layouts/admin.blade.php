@@ -21,13 +21,30 @@
             --admin-primary-light: #ecfdf5;
             --admin-primary-dark: #047857;
             --admin-bg: #f0fdf4;
+            --admin-surface: #ffffff;
+            --admin-text: #1e293b;
+            --admin-text-muted: #64748b;
+            --admin-border: #e5e7eb;
             --sidebar-width: 250px;
             --navbar-height: 76px;
         }
 
+        [data-theme="dark"] {
+            --admin-primary: #34d399;
+            --admin-primary-light: #064e3b;
+            --admin-primary-dark: #6ee7b7;
+            --admin-bg: #0f172a;
+            --admin-surface: #1e293b;
+            --admin-text: #f1f5f9;
+            --admin-text-muted: #94a3b8;
+            --admin-border: #334155;
+        }
+
         body {
             background-color: var(--admin-bg);
+            color: var(--admin-text);
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            transition: background-color .2s ease, color .2s ease;
         }
 
         .app-navbar {
@@ -36,6 +53,7 @@
             left: 0;
             right: 0;
             z-index: 1030;
+            transition: background-color .2s ease;
         }
 
         .app-wrapper {
@@ -51,6 +69,9 @@
             width: var(--sidebar-width);
             z-index: 1020;
             overflow-y: auto;
+            background-color: var(--admin-surface);
+            border-color: var(--admin-border) !important;
+            transition: background-color .2s ease, border-color .2s ease;
         }
 
         .main-content {
@@ -59,7 +80,7 @@
         }
 
         .sidebar .nav-link {
-            color: #334155;
+            color: var(--admin-text-muted);
             border-radius: 0.5rem;
             padding: 0.5rem 0.75rem;
             font-size: 0.875rem;
@@ -74,7 +95,7 @@
 
         .sidebar .nav-link.active {
             background-color: var(--admin-primary-light);
-            color: #000;
+            color: var(--admin-primary-dark);
         }
 
         .sidebar .nav-section {
@@ -86,39 +107,220 @@
             padding: 0.75rem 0.75rem 0.25rem;
         }
 
+        .admin-brand-title {
+            color: var(--admin-text);
+            line-height: 1.2;
+            font-size: 0.95rem;
+        }
+
+        .admin-brand-sub {
+            color: var(--admin-primary);
+            line-height: 1.2;
+            font-size: 0.6rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
         .rounded-4 {
             border-radius: 1rem !important;
         }
 
         .main-content {
             width: calc(100% - var(--sidebar-width));
+            background-color: var(--admin-bg) !important;
+            transition: background-color .2s ease;
+        }
+
+        .card,
+        .modal-content,
+        .dropdown-menu {
+            background-color: var(--admin-surface);
+            border-color: var(--admin-border) !important;
+            transition: background-color .2s ease, border-color .2s ease;
+        }
+
+        .card-header {
+            background-color: var(--admin-surface) !important;
+            border-bottom-color: var(--admin-border) !important;
+        }
+
+        .table {
+            --bs-table-bg: transparent;
+            --bs-table-hover-bg: var(--admin-primary-light);
+            color: var(--admin-text);
+        }
+
+        .table-light {
+            --bs-table-bg: var(--admin-primary-light);
+            --bs-table-color: var(--admin-text);
+        }
+
+        .table>thead {
+            border-bottom-color: var(--admin-border);
+        }
+
+        .table> :not(caption)>*>* {
+            border-bottom-color: var(--admin-border);
+        }
+
+        .text-muted {
+            color: var(--admin-text-muted) !important;
+        }
+
+        .text-dark {
+            color: var(--admin-text) !important;
+        }
+
+        .border,
+        .border-top,
+        .border-bottom,
+        .border-start,
+        .border-end {
+            border-color: var(--admin-border) !important;
+        }
+
+        .bg-white {
+            background-color: var(--admin-surface) !important;
+        }
+
+        .bg-light {
+            background-color: var(--admin-bg) !important;
+        }
+
+        .shadow-sm {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .08) !important;
+        }
+
+        [data-theme="dark"] .shadow-sm {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .3) !important;
+        }
+
+        .navbar.bg-white {
+            background-color: var(--admin-surface) !important;
+            border-bottom-color: var(--admin-border) !important;
+        }
+
+        .navbar-nav .nav-link {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--admin-text);
+            transition: all 0.15s ease;
+            border-radius: 0.375rem;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: var(--admin-primary);
+            background-color: var(--admin-primary-light);
+        }
+
+        .navbar-nav .nav-link.active {
+            background-color: var(--admin-primary-light);
+            color: var(--admin-primary-dark);
         }
 
         .drop-zone {
-            border: 2px dashed #d1d5db;
+            border: 2px dashed var(--admin-border);
             border-radius: 0.75rem;
             padding: 1.5rem;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s;
-            background: #f9fafb;
+            background: var(--admin-bg);
         }
 
         .drop-zone:hover,
         .drop-zone.drag-over {
-            border-color: #059669;
-            background: #ecfdf5;
+            border-color: var(--admin-primary);
+            background: var(--admin-primary-light);
         }
 
         .drop-zone.has-image {
-            border-color: #059669;
-            background: #f0fdf4;
+            border-color: var(--admin-primary);
+            background: var(--admin-primary-light);
         }
 
         .drop-zone img {
             max-height: 120px;
             max-width: 100%;
             object-fit: contain;
+        }
+
+        .btn-outline-secondary {
+            --bs-btn-color: var(--admin-text);
+            --bs-btn-border-color: var(--admin-border);
+        }
+
+        .btn-light {
+            --bs-btn-bg: var(--admin-bg);
+            --bs-btn-border-color: var(--admin-border);
+            --bs-btn-color: var(--admin-text);
+        }
+
+        .form-control,
+        .input-group-text {
+            background-color: var(--admin-bg);
+            border-color: var(--admin-border);
+            color: var(--admin-text);
+        }
+
+        .form-control:focus {
+            background-color: var(--admin-surface);
+            border-color: var(--admin-primary);
+            color: var(--admin-text);
+        }
+
+        .form-select {
+            background-color: var(--admin-bg);
+            border-color: var(--admin-border);
+            color: var(--admin-text);
+        }
+
+        .modal-header {
+            border-bottom-color: var(--admin-border);
+        }
+
+        .modal-footer {
+            border-top-color: var(--admin-border);
+        }
+
+        .list-group-item {
+            background-color: var(--admin-surface);
+            border-color: var(--admin-border);
+            color: var(--admin-text);
+        }
+
+        .page-link {
+            background-color: var(--admin-surface);
+            border-color: var(--admin-border);
+            color: var(--admin-text);
+        }
+
+        .page-item.disabled .page-link {
+            background-color: var(--admin-bg);
+            border-color: var(--admin-border);
+        }
+
+        .btn-close {
+            filter: var(--bs-btn-close-filter, none);
+        }
+
+        [data-theme="dark"] .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+
+        .toast {
+            background-color: var(--admin-surface);
+            border-color: var(--admin-border);
+        }
+
+        .badge.bg-success-subtle {
+            background-color: var(--admin-primary-light) !important;
+            color: var(--admin-primary) !important;
+        }
+
+        [data-theme="dark"] .table-hover tbody tr:hover {
+            --bs-table-hover-bg: var(--admin-primary-light);
         }
 
         @media (max-width: 991.98px) {
@@ -153,27 +355,9 @@
 
             .navbar-collapse>div:last-child {
                 padding: 1rem 0.5rem;
-                border-top: 1px solid #e5e7eb;
+                border-top: 1px solid var(--admin-border);
                 margin-top: 0.5rem;
             }
-        }
-
-        .navbar-nav .nav-link {
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: #000;
-            transition: all 0.15s ease;
-            border-radius: 0.375rem;
-        }
-
-        .navbar-nav .nav-link:hover {
-            color: var(--admin-primary);
-            background-color: var(--admin-primary-light);
-        }
-
-        .navbar-nav .nav-link.active {
-            background-color: var(--admin-primary-light);
-            color: var(--admin-primary-dark);
         }
     </style>
 </head>
@@ -191,25 +375,25 @@
                     <a href="{{ route('admin.dashboard') }}"
                         class="d-flex align-items-center gap-2 text-decoration-none">
                         <span
-                            class="d-inline-flex align-items-center justify-content-center rounded-3 text-white flex-shrink-0"
-                            style="width: 36px; height: 36px; background: linear-gradient(135deg, #059669, #047857); box-shadow: 0 3px 10px rgba(5,150,105,0.35);">
-                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                            </svg>
+                            class="d-inline-flex align-items-center justify-content-center flex-shrink-0"
+                            style="width: 54px; height: 54px; border-radius: 50%; overflow: hidden; background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding: 3px;">
+                            <img src="{{ asset('images/logo.png') }}" alt="E-Commerce"
+                                style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
                         </span>
                         <div>
-                            <div class="fw-bold" style="color: #1e293b; line-height: 1.2; font-size: 0.95rem;">
-                                E-Commerce</div>
-                            <div
-                                style="color: #059669; line-height: 1.2; font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700;">
-                                Admin Panel</div>
+                            <div class="fw-bold admin-brand-title">E-Commerce</div>
+                            <div class="admin-brand-sub">Admin Panel</div>
                         </div>
                     </a>
                 </div>
 
                 <div class="collapse navbar-collapse" id="adminNavbar">
                     <div class="d-flex align-items-center gap-3 flex-shrink-0 ms-auto">
+                        <button type="button" id="themeToggle" class="btn btn-sm border-0 d-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
+                            style="width: 36px; height: 36px; background: var(--admin-bg); color: var(--admin-text);"
+                            title="Toggle theme">
+                            <i class="bi bi-moon-fill" id="themeIcon"></i>
+                        </button>
                         <div class="d-flex align-items-center gap-2">
                             @if (auth()->user()->image_url)
                                 <img src="{{ asset('storage/' . auth()->user()->image_url) }}" alt="Avatar"
@@ -389,7 +573,38 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     @stack('scripts')
     <script>
+        (function() {
+            var theme = localStorage.getItem('admin_theme');
+            if (!theme) {
+                theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            document.documentElement.setAttribute('data-theme', theme);
+
+            var icon = document.getElementById('themeIcon');
+            if (icon) {
+                icon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+            }
+        })();
+    </script>
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
+            var themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    var html = document.documentElement;
+                    var current = html.getAttribute('data-theme');
+                    var next = current === 'dark' ? 'light' : 'dark';
+                    html.setAttribute('data-bs-theme', next);
+                    html.setAttribute('data-theme', next);
+                    localStorage.setItem('admin_theme', next);
+                    var icon = document.getElementById('themeIcon');
+                    if (icon) {
+                        icon.className = next === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+                    }
+                });
+            }
+
             var deleteModal = document.getElementById('deleteModal');
             if (deleteModal) {
                 deleteModal.addEventListener('show.bs.modal', function(event) {
