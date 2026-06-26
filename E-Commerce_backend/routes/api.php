@@ -28,9 +28,9 @@ Route::post('/auth/login',    [AuthController::class, 'login']);
 
 // ─── Catalog (browsable without login) ──────────────────────────────────
 Route::get('/categories',            [CategoryController::class, 'index']);
-Route::get('/categories/{category:slug}', [CategoryController::class, 'show']);
-Route::get('/products',                  [ProductController::class, 'index']);
-Route::get('/products/{product:slug}',   [ProductController::class, 'show']);
+Route::get('/categories/{category}', [CategoryController::class, 'show']);
+Route::get('/products',               [ProductController::class, 'index']);
+Route::get('/products/{product}',     [ProductController::class, 'show']);
 Route::get('/promotions/active',         [ApiPromotionController::class, 'active']);
 
 /*
@@ -109,13 +109,13 @@ Route::prefix('admin')
 
         // ─── Categories CRUD ────────────────────────────────────────────
         Route::post('/categories',                     [CategoryController::class, 'store']);
-        Route::patch('/categories/{category:slug}',    [CategoryController::class, 'update']);
-        Route::delete('/categories/{category:slug}',   [CategoryController::class, 'destroy']);
+        Route::patch('/categories/{category}',    [CategoryController::class, 'update']);
+        Route::delete('/categories/{category}',   [CategoryController::class, 'destroy']);
 
         // ─── Products CRUD ──────────────────────────────────────────────
         Route::post('/products',                       [ProductController::class, 'store']);
-        Route::put('/products/{product:slug}',         [ProductController::class, 'update']);
-        Route::delete('/products/{product:slug}',      [ProductController::class, 'destroy']);
+        Route::put('/products/{product}',         [ProductController::class, 'update']);
+        Route::delete('/products/{product}',      [ProductController::class, 'destroy']);
 
         // ─── Promotions CRUD ────────────────────────────────────────────
         Route::get('/promotions',                    [ApiPromotionController::class, 'index']);
