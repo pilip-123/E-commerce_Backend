@@ -1,0 +1,126 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\PromotionController as ApiPromotionController;
+use App\Http\Controllers\Api\WishlistController;
+use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Api\CheckoutController;
+use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\ReviewController;
+use App\Http\Controllers\Api\NotificationController as ApiNotificationController;
+use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\ApiTokenMiddleware;
+
+/*
+|--------------------------------------------------------------------------
+| Public Routes (no authentication required)
+|--------------------------------------------------------------------------
+*/
+
+// ─── Auth ───────────────────────────────────────────────────────────────
+Route::post('/auth/register', [AuthController::class, 'register']);
+Route::post('/auth/login',    [AuthController::class, 'login']);
+
+// ─── Catalog (browsable without login) ──────────────────────────────────
+Route::get('/categories',            [CategoryController::class, 'index']);
+Route::get('/categories/{category:slug}', [CategoryController::class, 'show']);
+Route::get('/products',                  [ProductController::class, 'index']);
+Route::get('/products/{product:slug}',   [ProductController::class, 'show']);
+Route::get('/promotions/active',         [ApiPromotionController::class, 'active']);
+
+/*
+|--------------------------------------------------------------------------
+| Authenticated Routes (Bearer token required)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(ApiTokenMiddleware::class)->group(function () {
+
+    // ─── Auth ───────────────────────────────────────────────────────────
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::get('/auth/me',      [AuthController::class, 'me']);
+
+    // ─── Profile ────────────────────────────────────────────────────────
+    Route::get('/profile',            [ProfileController::class, 'show']);
+    Route::patch('/profile',          [ProfileController::class, 'update']);
+    
+    // Use POST with _method=PATCH for image uploads via FormData:
+    // POST /api/profile _method=PATCH + image file
+
+    // ─── Wishlist ───────────────────────────────────────────────────────
+    Route::get('/wishlist',             [WishlistController::class, 'index']);
+    Route::post('/wishlist',            [WishlistController::class, 'store']);
+    Route::delete('/wishlist/{wishlist}', [WishlistController::class, 'destroy']);
+
+    // ─── Cart ───────────────────────────────────────────────────────────
+    Route::get('/cart',          [CartController::class, 'index']);
+    Route::post('/cart',         [CartController::class, 'store']);
+    Route::patch('/cart/{cart}', [CartController::class, 'update']);
+    Route::delete('/cart/{cart}', [CartController::class, 'destroy']);
+    Route::delete('/cart',       [CartController::class, 'clear']);
+
+    // ─── Checkout ───────────────────────────────────────────────────────
+    Route::get('/checkout',     [CheckoutController::class, 'checkout']);
+    Route::post('/checkout',    [CheckoutController::class, 'store']);
+
+    // ─── Orders ─────────────────────────────────────────────────────────
+    Route::get('/orders',         [OrderController::class, 'index']);
+    Route::get('/orders/{order}', [OrderController::class, 'show']);
+
+    // ─── Reviews ────────────────────────────────────────────────────────
+    Route::get('/reviews',     [ReviewController::class, 'index']);
+    Route::post('/reviews',    [ReviewController::class, 'store']);
+
+    // ─── Notifications ───────────────────────────────────────────────────
+    Route::get('/notifications',                [ApiNotificationController::class, 'index']);
+    Route::post('/notifications/{id}/read',     [ApiNotificationController::class, 'markAsRead']);
+    Route::post('/notifications/read-all',      [ApiNotificationController::class, 'markAllAsRead']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Admin Routes (Bearer token + admin role required)
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('admin')
+    ->middleware([ApiTokenMiddleware::class, AdminMiddleware::class])
+    ->group(function () {
+
+        // ─── Dashboard ──────────────────────────────────────────────────
+        Route::get('/dashboard', function () {
+            return response()->json([
+                'stats' => [
+                    'orders'        => 0,
+                    'revenue'       => 0,
+                    'products'      => 0,
+                    'customers'     => 0,
+                    'pendingOrders' => 0,
+                ],
+                'recentOrders'  => [],
+                'recentProducts' => [],
+            ]);
+        });
+
+        // ─── Categories CRUD ────────────────────────────────────────────
+        Route::post('/categories',                     [CategoryController::class, 'store']);
+        Route::patch('/categories/{category:slug}',    [CategoryController::class, 'update']);
+        Route::delete('/categories/{category:slug}',   [CategoryController::class, 'destroy']);
+
+        // ─── Products CRUD ──────────────────────────────────────────────
+        Route::post('/products',                       [ProductController::class, 'store']);
+        Route::put('/products/{product:slug}',         [ProductController::class, 'update']);
+        Route::delete('/products/{product:slug}',      [ProductController::class, 'destroy']);
+
+        // ─── Promotions CRUD ────────────────────────────────────────────
+        Route::get('/promotions',                    [ApiPromotionController::class, 'index']);
+        Route::post('/promotions',                   [ApiPromotionController::class, 'store']);
+        Route::get('/promotions/{promotion}',        [ApiPromotionController::class, 'show']);
+        Route::put('/promotions/{promotion}',        [ApiPromotionController::class, 'update']);
+        Route::delete('/promotions/{promotion}',     [ApiPromotionController::class, 'destroy']);
+    });
