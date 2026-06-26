@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\AdminPageController;
@@ -36,6 +37,12 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
 
 Route::get('/admin/login', [AuthController::class, 'showAdminLogin'])->name('admin.login');
+
+// Social Auth (web / session-based)
+Route::prefix('auth')->name('auth.social.')->group(function () {
+    Route::get('/{provider}/redirect', [SocialAuthController::class, 'redirect'])->name('redirect');
+    Route::get('/{provider}/callback', [SocialAuthController::class, 'callback'])->name('callback');
+});
 
 Route::prefix('admin')
     ->name('admin.')

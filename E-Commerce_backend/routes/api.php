@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\SocialAuthController as ApiSocialAuthController;
+use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\PromotionController as ApiPromotionController;
 use App\Http\Controllers\Api\WishlistController;
@@ -25,6 +27,12 @@ use App\Http\Middleware\ApiTokenMiddleware;
 // ─── Auth ───────────────────────────────────────────────────────────────
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login',    [AuthController::class, 'login']);
+
+// Social Auth (API / stateless)
+Route::prefix('auth')->group(function () {
+    Route::get('/{provider}/redirect', [ApiSocialAuthController::class, 'redirect']);
+    Route::get('/{provider}/callback', [SocialAuthController::class, 'callback']);
+});
 
 // ─── Catalog (browsable without login) ──────────────────────────────────
 Route::get('/categories',            [CategoryController::class, 'index']);

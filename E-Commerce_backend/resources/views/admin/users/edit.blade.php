@@ -67,7 +67,16 @@
 
                     <div class="col-sm-6">
                         <label class="form-label fw-semibold small mb-1">Password <span class="text-muted fw-normal">(leave blank to keep)</span></label>
-                        <input type="password" name="password" class="form-control form-control-sm @error('password') is-invalid @enderror" placeholder="New password">
+                        <div class="position-relative">
+                            <input type="password" name="password" id="edit-user-password" class="form-control form-control-sm @error('password') is-invalid @enderror" placeholder="New password" style="padding-right: 36px;">
+                            <button type="button" onclick="togglePwd('edit-user-password', this)" tabindex="-1"
+                                class="position-absolute top-50 end-0 translate-middle-y btn border-0 d-flex align-items-center text-muted" style="padding: 4px 10px;">
+                                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </button>
+                        </div>
                         @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 

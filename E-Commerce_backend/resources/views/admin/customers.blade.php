@@ -84,15 +84,12 @@
                                                 <i class="bi bi-eye"></i>
                                             </a>
                                             @if (auth()->id() !== $user->id)
-                                                <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST"
-                                                    onsubmit="return confirm('Are you sure you want to delete {{ $user->name }}? This action cannot be undone.')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger"
-                                                        title="Delete">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </form>
+                                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                                    data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                                    data-url="{{ route('admin.users.destroy', $user->id) }}"
+                                                    title="Delete">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
                                             @endif
                                         </div>
                                     </td>

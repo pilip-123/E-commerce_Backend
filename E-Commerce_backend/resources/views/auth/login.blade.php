@@ -78,8 +78,16 @@
                                 <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                             </svg>
                         </span>
-                        <input type="password" name="password" required placeholder="••••••••"
-                            class="w-full rounded-[14px] border border-green-100 bg-green-50/40 py-3 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-[3px] focus:ring-emerald-500/10 @error('password') border-rose-300 bg-rose-50/40 @enderror">
+                        <input type="password" name="password" id="customer-password" required placeholder="••••••••"
+                            class="w-full rounded-[14px] border border-green-100 bg-green-50/40 py-3 pl-10 pr-11 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-[3px] focus:ring-emerald-500/10 @error('password') border-rose-300 bg-rose-50/40 @enderror">
+                        <button type="button" onclick="togglePwd('customer-password', this)" tabindex="-1"
+                            class="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-emerald-600 transition">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                        </button>
                     </div>
                     @error('password')
                         <p class="mt-1.5 text-xs font-medium text-rose-600">{{ $message }}</p>
@@ -105,10 +113,12 @@
 
             </form>
 
+            {{--             @include('auth.social-buttons')
+
             <p class="mt-5 text-center text-[13.5px] text-slate-500">
                 Need an account?
                 <a href="{{ route('register') }}" class="font-bold text-emerald-600 hover:text-emerald-700">Create one</a>
-            </p>
+            </p> --}}
 
         </div>
     </div>

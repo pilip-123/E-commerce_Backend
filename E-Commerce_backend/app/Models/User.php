@@ -20,6 +20,9 @@ class User extends Authenticatable
         'address',
         'image_url',
         'api_token_hash',
+        'social_id',
+        'social_provider',
+        'social_avatar',
     ];
 
     protected $hidden = [

@@ -545,12 +545,30 @@
               </div>
               <div>
                 <label class="field-label">New Password <span class="text-muted fw-normal">(leave blank to keep current)</span></label>
-                <input type="password" name="password" class="field-input @error('password') is-invalid @enderror" placeholder="New password">
+                <div class="position-relative">
+                  <input type="password" name="password" id="admin-new-password" class="field-input @error('password') is-invalid @enderror" placeholder="New password" style="padding-right: 40px;">
+                  <button type="button" onclick="togglePwd('admin-new-password', this)" tabindex="-1"
+                    class="position-absolute top-50 end-0 translate-middle-y btn border-0 d-flex align-items-center text-muted" style="padding: 8px 12px;">
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </button>
+                </div>
                 @error('password') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
               </div>
               <div>
                 <label class="field-label">Confirm Password</label>
-                <input type="password" name="password_confirmation" class="field-input" placeholder="Confirm password">
+                <div class="position-relative">
+                  <input type="password" name="password_confirmation" id="admin-confirm-password" class="field-input" placeholder="Confirm password" style="padding-right: 40px;">
+                  <button type="button" onclick="togglePwd('admin-confirm-password', this)" tabindex="-1"
+                    class="position-absolute top-50 end-0 translate-middle-y btn border-0 d-flex align-items-center text-muted" style="padding: 8px 12px;">
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
 

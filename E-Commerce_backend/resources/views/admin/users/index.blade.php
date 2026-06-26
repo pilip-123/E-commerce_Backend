@@ -55,6 +55,12 @@
                                        class="btn btn-sm btn-outline-success">
                                         <i class="bi bi-pencil"></i>
                                     </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                        data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                        data-url="{{ route('admin.users.destroy', $user->id) }}"
+                                        title="Delete user">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
                                 </td>
                             </tr>
                         @empty
