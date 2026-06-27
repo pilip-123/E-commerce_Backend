@@ -56,6 +56,9 @@ Route::prefix('admin')
         Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
         Route::post('/notifications/announcement', [NotificationController::class, 'sendAnnouncement'])->name('notifications.announcement');
 
+        Route::get('promotions/vip-codes', [AdminPageController::class, 'vipCodes'])->name('promotions.vip-codes');
+        Route::post('promotions/vip-codes/generate', [AdminPageController::class, 'generateVipCode'])->name('promotions.vip-codes.generate');
+        Route::delete('promotions/vip-codes/{id}', [AdminPageController::class, 'deleteVipCode'])->name('promotions.vip-codes.delete');
         Route::resource('categories', CategoryController::class)->except(['show']);
         Route::resource('products', ProductController::class);
         Route::resource('promotions', PromotionController::class);

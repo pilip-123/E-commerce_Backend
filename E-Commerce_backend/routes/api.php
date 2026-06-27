@@ -73,6 +73,39 @@ Route::middleware(ApiTokenMiddleware::class)->group(function () {
     Route::delete('/cart/{cart}', [CartController::class, 'destroy']);
     Route::delete('/cart',       [CartController::class, 'clear']);
 
+    // ─── Discount ───────────────────────────────────────────────────────
+    Route::post('/check-discount', function (\Illuminate\Http\Request $request) {
+        $request->validate(['code' => 'required|string']);
+
+        $code = strtoupper(trim($request->code));
+
+        $discount = \App\Models\DiscountCode::where('code', $code)->first();
+
+        if (!$discount) {
+            // Check if user has a notification with this code (legacy)
+            $hasNotification = $request->user()->notifications()
+                ->where('data', 'like', '%' . $code . '%')
+                ->exists();
+
+            if (!$hasNotification) {
+                return response()->json(['message' => 'Invalid or expired code.'], 422);
+            }
+
+            // Fallback legacy: 10% off
+            return response()->json([
+                'type' => 'percentage',
+                'value' => 10,
+                'code' => $code,
+            ]);
+        }
+
+        return response()->json([
+            'type' => $discount->discount_type,
+            'value' => (float) $discount->discount_value,
+            'code' => $discount->code,
+        ]);
+    });
+
     // ─── Checkout ───────────────────────────────────────────────────────
     Route::get('/checkout',     [CheckoutController::class, 'checkout']);
     Route::post('/checkout',    [CheckoutController::class, 'store']);

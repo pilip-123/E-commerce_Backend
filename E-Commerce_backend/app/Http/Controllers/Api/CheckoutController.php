@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
+use App\Models\DiscountCode;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\User;
@@ -36,6 +37,7 @@ class CheckoutController extends Controller
         $validated = $request->validate([
             'phone' => ['required', 'string', 'max:30'],
             'shipping_address' => ['required', 'string', 'max:1000'],
+            'discount_code' => ['nullable', 'string'],
         ]);
 
         $cartItems = Cart::with('product')
@@ -46,8 +48,22 @@ class CheckoutController extends Controller
             return response()->json(['message' => 'Your cart is empty.'], 422);
         }
 
-        $order = DB::transaction(function () use ($request, $validated, $cartItems) {
+        // Apply discount if code provided
+        $discountCode = null;
+        $discountAmount = 0;
+        if ($request->discount_code) {
+            $discountCode = DiscountCode::where('code', strtoupper(trim($request->discount_code)))->first();
+            if ($discountCode) {
+                $rawTotal = $cartItems->sum(fn (Cart $item) => $this->effectivePrice($item->product) * $item->quantity);
+                $discountAmount = $discountCode->discount_type === 'percentage'
+                    ? $rawTotal * ($discountCode->discount_value / 100)
+                    : min($discountCode->discount_value, $rawTotal);
+            }
+        }
+
+        $order = DB::transaction(function () use ($request, $validated, $cartItems, $discountAmount) {
             $total = $cartItems->sum(fn (Cart $item) => $this->effectivePrice($item->product) * $item->quantity);
+            $total = max(0, $total - $discountAmount);
 
             foreach ($cartItems as $cartItem) {
                 if ($cartItem->quantity > $cartItem->product->stock) {

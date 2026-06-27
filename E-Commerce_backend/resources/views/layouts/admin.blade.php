@@ -452,8 +452,13 @@
                 </a>
 
                 <a href="{{ route('admin.promotions.index') }}"
-                    class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.promotions.*') ? 'active' : '' }}">
+                    class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.promotions.*') && !request()->routeIs('admin.promotions.vip-codes') ? 'active' : '' }}">
                     <i class="bi bi-percent"></i> Promotions
+                </a>
+
+                <a href="{{ route('admin.promotions.vip-codes') }}"
+                    class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.promotions.vip-codes') ? 'active' : '' }}">
+                    <i class="bi bi-lock"></i> VIP Codes
                 </a>
 
                 <a href="{{ route('admin.reviews.index') }}"
