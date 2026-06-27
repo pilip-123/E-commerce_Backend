@@ -680,6 +680,90 @@
                     }
                 });
             });
+
+            // ─── Global Notification System (works on every admin page) ───
+            var notifBell = document.getElementById('notifBell');
+            var notifList = document.getElementById('notifList');
+            var notifBadge = document.getElementById('notifBadge');
+            var markAllBtn = document.getElementById('markAllRead');
+
+            function loadNotifications() {
+                if (!notifList) return;
+                fetch('{{ route('admin.notifications.index') }}')
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        var unread = data.unread_count || 0;
+                        if (notifBadge) {
+                            if (unread > 0) {
+                                notifBadge.style.display = 'inline';
+                                notifBadge.textContent = unread;
+                            } else {
+                                notifBadge.style.display = 'none';
+                            }
+                        }
+
+                        if (!data.notifications || data.notifications.length === 0) {
+                            notifList.innerHTML = '<div class="text-center text-muted py-4" style="font-size: 13px;">No notifications</div>';
+                            return;
+                        }
+
+                        var html = '';
+                        data.notifications.forEach(function(n) {
+                            var icon = n.data.icon || 'bi-bell';
+                            var title = n.data.title || 'Notification';
+                            var message = n.data.message || '';
+                            var url = n.data.url || '#';
+                            var isUnread = n.read_at === null;
+                            var bg = isUnread ? 'background:#f0fdf4;' : '';
+                            html += '<a href="' + url + '" class="dropdown-item d-flex gap-2 px-3 py-2 border-bottom" style="' + bg + 'font-size: 13px;" data-id="' + n.id + '">';
+                            html += '    <div><i class="' + icon + '" style="color:#059669;"></i></div>';
+                            html += '    <div class="flex-grow-1 min-w-0">';
+                            html += '        <div class="fw-semibold text-dark">' + title + '</div>';
+                            html += '        <div class="text-muted text-truncate">' + message + '</div>';
+                            html += '        <div style="font-size: 11px; color: #94a3b8;">' + n.created_at + '</div>';
+                            html += '    </div>';
+                            if (isUnread) {
+                                html += '    <div><span class="badge bg-success rounded-pill" style="width: 8px; height: 8px; padding: 0; display: inline-block;"></span></div>';
+                            }
+                            html += '</a>';
+                        });
+                        notifList.innerHTML = html;
+
+                        document.querySelectorAll('#notifList .dropdown-item').forEach(function(item) {
+                            item.addEventListener('click', function(e) {
+                                var id = this.getAttribute('data-id');
+                                if (id) {
+                                    fetch('{{ url('admin/notifications') }}/' + id + '/read', {
+                                        method: 'POST',
+                                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                                    });
+                                }
+                            });
+                        });
+                    });
+            }
+
+            if (notifBell) {
+                notifBell.addEventListener('click', function() {
+                    setTimeout(loadNotifications, 100);
+                });
+            }
+
+            if (markAllBtn) {
+                markAllBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    fetch('{{ route('admin.notifications.readAll') }}', {
+                        method: 'POST',
+                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                    }).then(function() {
+                        loadNotifications();
+                    });
+                });
+            }
+
+            // Poll for new notifications every 30 seconds
+            loadNotifications();
+            setInterval(loadNotifications, 30000);
         });
     </script>
 </body>

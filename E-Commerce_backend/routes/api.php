@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\NotificationController as ApiNotificationController;
+use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\ApiTokenMiddleware;
 
@@ -131,4 +132,7 @@ Route::prefix('admin')
         Route::get('/promotions/{promotion}',        [ApiPromotionController::class, 'show']);
         Route::put('/promotions/{promotion}',        [ApiPromotionController::class, 'update']);
         Route::delete('/promotions/{promotion}',     [ApiPromotionController::class, 'destroy']);
+
+        // ─── Notifications ─────────────────────────────────────────────
+        Route::post('/notifications/announcement',   [AdminNotificationController::class, 'sendAnnouncement']);
     });

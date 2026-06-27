@@ -28,7 +28,7 @@ class NewUserNotification extends Notification
             'icon' => 'bi-person-plus',
             'title' => 'New User Registered',
             'message' => $this->user->name . ' (' . $this->user->email . ') has created an account.',
-            'url' => route('admin.users.index'),
+            'url' => '/admin/users',
         ];
     }
 }
