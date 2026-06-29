@@ -99,6 +99,10 @@ Route::middleware(ApiTokenMiddleware::class)->group(function () {
             ]);
         }
 
+        if (!$discount->isValid()) {
+            return response()->json(['message' => 'This discount code has already been used.'], 422);
+        }
+
         return response()->json([
             'type' => $discount->discount_type,
             'value' => (float) $discount->discount_value,

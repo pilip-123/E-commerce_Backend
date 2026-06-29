@@ -142,7 +142,7 @@
                                     <td class="px-4 py-3">
                                         @if (!empty($entry['sent_to']))
                                             <span class="badge bg-success-subtle text-success-emphasis me-1">{{ $entry['sent_count'] ?? count($entry['sent_to']) }} customers</span>
-                                            <button class="btn btn-sm btn-outline-secondary py-0 px-1" data-bs-toggle="tooltip" title="{{ implode(', ', $entry['sent_to']) }}" onclick="alert('Sent to: {{ addslashes(implode(', ', $entry['sent_to'])) }}')">
+                                            <button class="btn btn-sm btn-outline-secondary py-0 px-1" type="button" data-bs-toggle="modal" data-bs-target="#sentToModal" data-customers='{{ json_encode($entry['sent_to']) }}' data-code="{{ $entry['code'] }}">
                                                 <i class="bi bi-people"></i>
                                             </button>
                                         @else
@@ -192,6 +192,31 @@
     </div>
 </div>
 
+{{-- Sent To Customers Modal --}}
+<div class="modal fade" id="sentToModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <div>
+                    <h5 class="fw-bold mb-1">Sent To Customers</h5>
+                    <p class="text-muted small mb-0">Customers who received this VIP code</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4 py-3" id="sentToList">
+                <div class="text-center py-4 text-muted">
+                    <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div>
+                    Loading...
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <span class="text-muted small" id="sentToCode"></span>
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
 .vip-card-green {
     background: var(--admin-primary-light) !important;
@@ -221,12 +246,45 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    var modal = document.getElementById('vipDeleteModal');
-    if (modal) {
-        modal.addEventListener('show.bs.modal', function (event) {
+    var deleteModal = document.getElementById('vipDeleteModal');
+    if (deleteModal) {
+        deleteModal.addEventListener('show.bs.modal', function (event) {
             var button = event.relatedTarget;
             document.getElementById('vipDeleteCode').textContent = button.getAttribute('data-code');
             document.getElementById('vipDeleteForm').action = button.getAttribute('data-url');
+        });
+    }
+
+    var sentToModal = document.getElementById('sentToModal');
+    if (sentToModal) {
+        sentToModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var customers = [];
+            try {
+                customers = JSON.parse(button.getAttribute('data-customers'));
+            } catch (e) {
+                customers = [];
+            }
+            var code = button.getAttribute('data-code');
+            var list = document.getElementById('sentToList');
+            var codeEl = document.getElementById('sentToCode');
+
+            codeEl.textContent = 'Code: ' + code;
+
+            if (customers.length === 0) {
+                list.innerHTML = '<div class="text-center py-4 text-muted"><i class="bi bi-people fs-1 d-block mb-2"></i><p class="mb-0">No customer data available.</p></div>';
+                return;
+            }
+
+            var html = '<div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom"><span class="badge bg-success rounded-pill fs-6 px-3 py-1">' + customers.length + '</span><span class="fw-semibold text-muted small">customer' + (customers.length !== 1 ? 's' : '') + '</span></div>';
+            customers.forEach(function (name) {
+                var initials = name.split(' ').map(function (w) { return w[0]; }).join('').toUpperCase().slice(0, 2) || '?';
+                html += '<div class="d-flex align-items-center gap-3 py-2 px-3 rounded-3 mb-1" style="background: var(--admin-surface); transition: background 0.15s;" onmouseover="this.style.background=\'var(--admin-bg)\'" onmouseout="this.style.background=\'var(--admin-surface)\'">';
+                html += '<span class="d-flex align-items-center justify-content-center rounded-circle fw-bold text-white" style="width: 36px; height: 36px; background: linear-gradient(135deg, #22c55e, #16a34a); font-size: 0.75rem;">' + initials + '</span>';
+                html += '<span class="fw-semibold">' + name + '</span>';
+                html += '</div>';
+            });
+            list.innerHTML = html;
         });
     }
 });

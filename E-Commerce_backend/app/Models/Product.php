@@ -55,11 +55,15 @@ class Product extends Model
 
     public function getBestPromotion(): ?Promotion
     {
-        return $this->activePromotions()->get()->sortByDesc(function (Promotion $promotion) {
+        $promotions = $this->relationLoaded('activePromotions')
+            ? $this->activePromotions
+            : $this->activePromotions()->get();
+
+        return $promotions->sortByDesc(function (Promotion $promotion) {
             if ($promotion->discount_type === 'percentage') {
-                return $this->price * $promotion->discount_value / 100;
+                return (float) $this->price * (float) $promotion->discount_value / 100;
             }
-            return $promotion->discount_value;
+            return (float) $promotion->discount_value;
         })->first();
     }
 

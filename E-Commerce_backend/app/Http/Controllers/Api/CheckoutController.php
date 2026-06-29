@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\User;
 use App\Notifications\NewOrderNotification;
+use App\Services\TelegramService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -35,8 +36,8 @@ class CheckoutController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'phone' => ['required', 'string', 'max:30'],
-            'shipping_address' => ['required', 'string', 'max:1000'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'shipping_address' => ['nullable', 'string', 'max:1000'],
             'discount_code' => ['nullable', 'string'],
         ]);
 
@@ -54,6 +55,9 @@ class CheckoutController extends Controller
         if ($request->discount_code) {
             $discountCode = DiscountCode::where('code', strtoupper(trim($request->discount_code)))->first();
             if ($discountCode) {
+                if (!$discountCode->isValid()) {
+                    return response()->json(['message' => 'This discount code has already been used.'], 422);
+                }
                 $rawTotal = $cartItems->sum(fn (Cart $item) => $this->effectivePrice($item->product) * $item->quantity);
                 $discountAmount = $discountCode->discount_type === 'percentage'
                     ? $rawTotal * ($discountCode->discount_value / 100)
@@ -71,12 +75,13 @@ class CheckoutController extends Controller
                 }
             }
 
+            $user = $request->user();
             $order = Order::create([
-                'user_id' => $request->user()->id,
+                'user_id' => $user->id,
                 'total_amount' => $total,
                 'status' => 'pending',
-                'phone' => $validated['phone'],
-                'shipping_address' => $validated['shipping_address'],
+                'phone' => $validated['phone'] ?? $user->phone ?? '',
+                'shipping_address' => $validated['shipping_address'] ?? $user->address ?? '',
             ]);
 
             foreach ($cartItems as $cartItem) {
@@ -95,7 +100,13 @@ class CheckoutController extends Controller
             return $order->load('items.product');
         });
 
+        if ($discountCode) {
+            $discountCode->markUsed();
+        }
+
         User::where('role', 'admin')->get()->each->notify(new NewOrderNotification($order));
+
+        app(TelegramService::class)->sendOrderNotification($order);
 
         return response()->json([
             'message' => 'Order placed successfully.',

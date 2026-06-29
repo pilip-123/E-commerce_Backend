@@ -15,7 +15,11 @@ class ProductController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = Product::query()->with('category')->latest();
+        $query = Product::query()
+            ->with('category', 'activePromotions')
+            ->withCount('reviews')
+            ->withAvg('reviews', 'rating')
+            ->latest();
 
         if ($search = $request->string('search')->trim()->toString()) {
             $query->where(function ($builder) use ($search) {
@@ -55,7 +59,7 @@ class ProductController extends Controller
 
     public function show(Product $product): JsonResponse
     {
-        $product->load('category', 'reviews.user');
+        $product->load('category', 'reviews.user', 'activePromotions');
 
         return response()->json([
             'data' => $this->productPayload($product),
@@ -171,7 +175,7 @@ class ProductController extends Controller
 
     private function productPayload(Product $product): array
     {
-        $avgRating = $product->reviews->avg('rating');
+        $avgRating = $product->reviews_avg_rating;
         $discountPrice = $product->getDiscountPrice();
         $promotion = $product->getBestPromotion();
         return [
@@ -191,9 +195,9 @@ class ProductController extends Controller
             'stock' => $product->stock,
             'status' => (bool) $product->status,
             'image' => $product->image ? $this->publicUrl($product->image) : null,
-            'rating' => $avgRating ? round($avgRating, 1) : null,
-            'reviews_count' => $product->reviews->count(),
-            'reviews' => $product->reviews->map(fn ($r) => [
+            'rating' => $avgRating ? round((float) $avgRating, 1) : null,
+            'reviews_count' => (int) $product->reviews_count,
+            'reviews' => $product->relationLoaded('reviews') ? $product->reviews->map(fn ($r) => [
                 'id' => $r->id,
                 'rating' => $r->rating,
                 'comment' => $r->comment,
@@ -203,7 +207,7 @@ class ProductController extends Controller
                     'image_url' => $r->user->image_url ? $this->publicUrl($r->user->image_url) : null,
                 ] : null,
                 'created_at' => $r->created_at,
-            ]),
+            ]) : [],
             'category' => $product->category ? [
                 'id' => $product->category->id,
                 'name' => $product->category->name,

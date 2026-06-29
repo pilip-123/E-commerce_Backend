@@ -10,6 +10,8 @@ class DiscountCode extends Model
         'code',
         'discount_type',
         'discount_value',
+        'max_uses',
+        'used_count',
         'sent_to',
         'sent_count',
     ];
@@ -19,6 +21,18 @@ class DiscountCode extends Model
         return [
             'sent_to' => 'array',
             'discount_value' => 'decimal:2',
+            'max_uses' => 'integer',
+            'used_count' => 'integer',
         ];
+    }
+
+    public function isValid(): bool
+    {
+        return $this->used_count < $this->max_uses;
+    }
+
+    public function markUsed(): void
+    {
+        $this->increment('used_count');
     }
 }
