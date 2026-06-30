@@ -13,6 +13,14 @@ use Illuminate\View\View;
 
 class PromotionController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:promotions.view', ['only' => ['index', 'show']]);
+        $this->middleware('permission:promotions.create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:promotions.edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:promotions.delete', ['only' => ['destroy']]);
+    }
+
     public function index(): View
     {
         $promotions = Promotion::withCount('products')->latest()->paginate(10);

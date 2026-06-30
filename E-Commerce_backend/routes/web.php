@@ -20,7 +20,8 @@ Route::get('/', function () {
     $user = auth()->user();
 
     if ($user) {
-        return redirect()->route($user->isAdmin() ? 'admin.dashboard' : 'dashboard');
+        $route = $user->hasPermission('dashboard.view') ? 'admin.dashboard' : 'dashboard';
+        return redirect()->route($route);
     }
 
     return redirect()->route('login');
@@ -46,7 +47,7 @@ Route::prefix('auth')->name('auth.social.')->group(function () {
 
 Route::prefix('admin')
     ->name('admin.')
-    ->middleware(['auth', AdminMiddleware::class])
+    ->middleware(['auth', 'permission:dashboard.view'])
     ->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::get('/dashboard/data', [AdminDashboardController::class, 'getData'])->name('dashboard.data');
@@ -68,5 +69,10 @@ Route::prefix('admin')
         Route::get('customers', [AdminPageController::class, 'customers'])->name('customers');
         Route::get('profile', [AdminPageController::class, 'profile'])->name('profile');
         Route::put('profile', [AdminPageController::class, 'updateProfile'])->name('profile.update');
+
+        Route::get('permissions', [AdminPageController::class, 'permissions'])->name('permissions')
+            ->middleware(AdminMiddleware::class);
+        Route::put('permissions', [AdminPageController::class, 'updatePermissions'])->name('permissions.update')
+            ->middleware(AdminMiddleware::class);
     });
 

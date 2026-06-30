@@ -16,7 +16,6 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\NotificationController as ApiNotificationController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
-use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\ApiTokenMiddleware;
 
 /*
@@ -135,7 +134,7 @@ Route::middleware(ApiTokenMiddleware::class)->group(function () {
 */
 
 Route::prefix('admin')
-    ->middleware([ApiTokenMiddleware::class, AdminMiddleware::class])
+    ->middleware([ApiTokenMiddleware::class, 'permission:dashboard.view'])
     ->group(function () {
 
         // ─── Dashboard ──────────────────────────────────────────────────

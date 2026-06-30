@@ -44,11 +44,17 @@
                                 </td>
                                 <td class="px-4 py-3 text-muted">{{ $user->email }}</td>
                                 <td class="px-4 py-3">
-                                    @if ($user->role === 'admin')
-                                        <span class="badge bg-success-subtle text-success-emphasis px-3 py-2">Admin</span>
-                                    @else
-                                        <span class="badge bg-info-subtle text-info-emphasis px-3 py-2">Customer</span>
-                                    @endif
+                                    @php
+                                        $roleColors = [
+                                            'admin' => ['bg' => '#dcfce7', 'text' => '#15803d'],
+                                            'manager' => ['bg' => '#dbeafe', 'text' => '#1d4ed8'],
+                                            'staff' => ['bg' => '#fef3c7', 'text' => '#b45309'],
+                                            'customer' => ['bg' => '#f1f5f9', 'text' => '#475569'],
+                                        ];
+                                        $color = $roleColors[$user->role] ?? ['bg' => '#f1f5f9', 'text' => '#475569'];
+                                    @endphp
+                                    <span class="badge rounded-pill px-3 py-2 fw-semibold"
+                                        style="background: {{ $color['bg'] }}; color: {{ $color['text'] }};">{{ ucfirst($user->role) }}</span>
                                 </td>
                                 <td class="px-4 py-3 text-end">
                                     <a href="{{ route('admin.users.edit', $user->id) }}"

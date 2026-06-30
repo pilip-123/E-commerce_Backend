@@ -12,6 +12,12 @@ use Illuminate\View\View;
 
 class UserController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:users.view', ['only' => ['index', 'show']]);
+        $this->middleware('permission:users.edit', ['only' => ['edit', 'update']]);
+    }
+
     public function index(): View
     {
         return view('admin.users.index', [

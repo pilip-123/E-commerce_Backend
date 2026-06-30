@@ -3,18 +3,29 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Permission;
+use App\Models\PermissionRole;
 use App\Models\User;
 use App\Models\Order;
 use App\Models\DiscountCode;
 use App\Notifications\VipDiscountNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class AdminPageController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:customers.view', ['only' => ['customers']]);
+        $this->middleware('permission:vipcodes.view', ['only' => ['vipCodes']]);
+        $this->middleware('permission:vipcodes.generate', ['only' => ['generateVipCode']]);
+        $this->middleware('permission:vipcodes.delete', ['only' => ['deleteVipCode']]);
+    }
+
     public function customers(): View
     {
         return view('admin.customers', [
@@ -134,5 +145,50 @@ class AdminPageController extends Controller
 
         return redirect()->route('admin.promotions.vip-codes')
             ->with('status', 'VIP code deleted.');
+    }
+
+    public function permissions(): View
+    {
+        $roles = User::ROLES;
+        $permissions = Permission::all();
+        $permissionGroups = $permissions->groupBy('group');
+
+        $rolePermissionIds = [];
+        foreach ($roles as $role) {
+            $rolePermissionIds[$role] = PermissionRole::where('role', $role)
+                ->pluck('permission_id')
+                ->toArray();
+        }
+
+        return view('admin.permissions', [
+            'roles' => $roles,
+            'permissionGroups' => $permissionGroups,
+            'rolePermissionIds' => $rolePermissionIds,
+        ]);
+    }
+
+    public function updatePermissions(Request $request): RedirectResponse
+    {
+        $roles = User::ROLES;
+
+        DB::table('permission_role')->truncate();
+
+        foreach ($roles as $role) {
+            if ($role === User::ROLE_ADMIN) {
+                continue;
+            }
+
+            $selected = $request->input("perms.{$role}", []);
+
+            foreach ($selected as $permissionId) {
+                PermissionRole::create([
+                    'permission_id' => $permissionId,
+                    'role' => $role,
+                ]);
+            }
+        }
+
+        return redirect()->route('admin.permissions')
+            ->with('status', 'Permissions updated successfully.');
     }
 }

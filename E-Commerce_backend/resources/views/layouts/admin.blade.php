@@ -387,36 +387,36 @@
                     </a>
                 </div>
 
-                <div class="collapse navbar-collapse" id="adminNavbar">
-                    <div class="d-flex align-items-center gap-3 flex-shrink-0 ms-auto">
-                        <button type="button" id="themeToggle" class="btn btn-sm border-0 d-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
-                            style="width: 36px; height: 36px; background: var(--admin-bg); color: var(--admin-text);"
-                            title="Toggle theme">
-                            <i class="bi bi-moon-fill" id="themeIcon"></i>
-                        </button>
-                        <div class="d-flex align-items-center gap-2">
-                            @if (auth()->user()->image_url)
-                                <img src="{{ asset('storage/' . auth()->user()->image_url) }}" alt="Avatar"
-                                    class="rounded-circle shadow-sm flex-shrink-0 border border-2 border-success"
-                                    style="width: 36px; height: 36px; object-fit: cover;">
-                            @else
-                                <div class="d-flex align-items-center justify-content-center rounded-circle text-white fw-bold text-uppercase shadow-sm flex-shrink-0"
-                                    style="width: 36px; height: 36px; font-size: 13px; background: var(--admin-primary);">
-                                    {{ substr(auth()->user()->name ?? 'A', 0, 2) }}
-                                </div>
-                            @endif
-                            <div class="d-none d-md-block lh-1">
-                                <div class="fw-bold text-dark small">{{ auth()->user()->name ?? 'Administrator' }}
-                                </div>
-                                <div class="text-success" style="font-size: 10px; letter-spacing: 0.05em;">Admin</div>
+                <div class="collapse navbar-collapse" id="adminNavbar"></div>
+
+                <div class="d-flex align-items-center gap-3 flex-shrink-0 ms-auto">
+                    <button type="button" id="themeToggle" class="btn btn-sm border-0 d-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
+                        style="width: 36px; height: 36px; background: var(--admin-bg); color: var(--admin-text);"
+                        title="Toggle theme">
+                        <i class="bi bi-moon-fill" id="themeIcon"></i>
+                    </button>
+                    <a href="{{ route('admin.profile') }}" class="d-flex align-items-center gap-2 text-decoration-none">
+                        @if (auth()->user()->image_url)
+                            <img src="{{ asset('storage/' . auth()->user()->image_url) }}" alt="Avatar"
+                                class="rounded-circle shadow-sm flex-shrink-0 border border-2 border-success"
+                                style="width: 36px; height: 36px; object-fit: cover;">
+                        @else
+                            <div class="d-flex align-items-center justify-content-center rounded-circle text-white fw-bold text-uppercase shadow-sm flex-shrink-0"
+                                style="width: 36px; height: 36px; font-size: 13px; background: var(--admin-primary);">
+                                {{ substr(auth()->user()->name ?? 'A', 0, 2) }}
                             </div>
+                        @endif
+                        <div class="d-none d-md-block lh-1">
+                            <div class="fw-bold text-dark small">{{ auth()->user()->name ?? 'Administrator' }}
+                            </div>
+                            <div class="text-success" style="font-size: 10px; letter-spacing: 0.05em;">{{ ucfirst(auth()->user()->role) }}</div>
                         </div>
-                        <button type="button" class="btn btn-sm fw-semibold text-white border-0 px-3"
-                            data-bs-toggle="modal" data-bs-target="#logoutModal"
-                            style="background: var(--admin-primary);">
-                            <i class="bi bi-box-arrow-right me-1"></i>Sign Out
-                        </button>
-                    </div>
+                    </a>
+                    <button type="button" class="btn btn-sm fw-semibold text-white border-0 px-3"
+                        data-bs-toggle="modal" data-bs-target="#logoutModal"
+                        style="background: var(--admin-primary);">
+                        <i class="bi bi-box-arrow-right me-1"></i>Sign Out
+                    </button>
                 </div>
             </div>
         </nav>
@@ -426,47 +426,70 @@
             <div class="px-3 pb-3 mb-2 border-bottom">
             </div>
             <nav class="nav flex-column px-2">
-                <a href="{{ route('admin.dashboard') }}"
-                    class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                    <i class="bi bi-graph-up"></i> Dashboard
-                </a>
+                @if (auth()->user()->hasPermission('dashboard.view'))
+                    <a href="{{ route('admin.dashboard') }}"
+                        class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                        <i class="bi bi-graph-up"></i> Dashboard
+                    </a>
+                @endif
 
-                <a href="{{ route('admin.products.index') }}"
-                    class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
-                    <i class="bi bi-box"></i> Products
-                </a>
+                @if (auth()->user()->hasPermission('products.view'))
+                    <a href="{{ route('admin.products.index') }}"
+                        class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
+                        <i class="bi bi-box"></i> Products
+                    </a>
+                @endif
 
-                <a href="{{ route('admin.categories.index') }}"
-                    class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
-                    <i class="bi bi-grid"></i> Categories
-                </a>
+                @if (auth()->user()->hasPermission('categories.view'))
+                    <a href="{{ route('admin.categories.index') }}"
+                        class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
+                        <i class="bi bi-grid"></i> Categories
+                    </a>
+                @endif
 
-                <a href="{{ route('admin.customers') }}"
-                    class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.customers') ? 'active' : '' }}">
-                    <i class="bi bi-people-fill"></i> Users
-                </a>
+                @if (auth()->user()->hasPermission('users.view'))
+                    <a href="{{ route('admin.customers') }}"
+                        class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.customers') ? 'active' : '' }}">
+                        <i class="bi bi-people-fill"></i> Users
+                    </a>
+                @endif
 
-                <a href="{{ route('admin.orders.index') }}"
-                    class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
-                    <i class="bi bi-receipt"></i> Orders
-                </a>
+                @if (auth()->user()->hasPermission('sales.view'))
+                    <a href="{{ route('admin.orders.index') }}"
+                        class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
+                        <i class="bi bi-receipt"></i> Orders
+                    </a>
+                @endif
 
-                <a href="{{ route('admin.promotions.index') }}"
-                    class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.promotions.*') && !request()->routeIs('admin.promotions.vip-codes') ? 'active' : '' }}">
-                    <i class="bi bi-percent"></i> Promotions
-                </a>
+                @if (auth()->user()->hasPermission('promotions.view'))
+                    <a href="{{ route('admin.promotions.index') }}"
+                        class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.promotions.*') && !request()->routeIs('admin.promotions.vip-codes') ? 'active' : '' }}">
+                        <i class="bi bi-percent"></i> Promotions
+                    </a>
+                @endif
 
-                <a href="{{ route('admin.promotions.vip-codes') }}"
-                    class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.promotions.vip-codes') ? 'active' : '' }}">
-                    <i class="bi bi-lock"></i> VIP Codes
-                </a>
+                @if (auth()->user()->hasPermission('vipcodes.view'))
+                    <a href="{{ route('admin.promotions.vip-codes') }}"
+                        class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.promotions.vip-codes') ? 'active' : '' }}">
+                        <i class="bi bi-lock"></i> VIP Codes
+                    </a>
+                @endif
 
-                <a href="{{ route('admin.reviews.index') }}"
-                    class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.reviews.*') ? 'active' : '' }}">
-                    <i class="bi bi-star"></i> Reviews
-                </a>
+                @if (auth()->user()->hasPermission('products.view'))
+                    <a href="{{ route('admin.reviews.index') }}"
+                        class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.reviews.*') ? 'active' : '' }}">
+                        <i class="bi bi-star"></i> Reviews
+                    </a>
+                @endif
 
                 <hr class="my-2">
+
+                @if (auth()->user()->isAdmin())
+                    <a href="{{ route('admin.permissions') }}"
+                        class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.permissions') ? 'active' : '' }}">
+                        <i class="bi bi-shield-lock"></i> Permissions
+                    </a>
+                @endif
 
                 <a href="{{ route('admin.profile') }}"
                     class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.profile') ? 'active' : '' }}">

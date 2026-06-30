@@ -15,6 +15,14 @@ use Illuminate\View\View;
 
 class ProductController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:products.view', ['only' => ['index', 'show']]);
+        $this->middleware('permission:products.create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:products.edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:products.delete', ['only' => ['destroy']]);
+    }
+
     public function index(Request $request): View
     {
         $query = Product::with('category');

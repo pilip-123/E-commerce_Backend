@@ -94,6 +94,22 @@
                     @enderror
                 </div>
 
+                {{-- Role --}}
+                <div>
+                    <label class="mb-1.5 block text-[13px] font-semibold text-slate-700">Sign in as</label>
+                    <select name="role" required
+                        class="w-full rounded-[14px] border border-green-100 bg-green-50/40 py-3 px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-[3px] focus:ring-emerald-500/10">
+                        <option value="" disabled {{ old('role') ? '' : 'selected' }}>Select role</option>
+                        <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Admin</option>
+                        <option value="manager" {{ old('role') === 'manager' ? 'selected' : '' }}>Manager</option>
+                        <option value="staff" {{ old('role') === 'staff' ? 'selected' : '' }}>Staff</option>
+                        <option value="customer" {{ old('role') === 'customer' ? 'selected' : '' }}>Customer</option>
+                    </select>
+                    @error('role')
+                        <p class="mt-1.5 text-xs font-medium text-rose-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 {{-- Remember + Forgot --}}
                 <div class="flex items-center justify-between">
                     <label class="flex cursor-pointer items-center gap-2 text-[13px] text-slate-600">
@@ -113,12 +129,12 @@
 
             </form>
 
-            {{--             @include('auth.social-buttons')
+            {{-- @include('auth.social-buttons') --}}
 
             <p class="mt-5 text-center text-[13.5px] text-slate-500">
                 Need an account?
                 <a href="{{ route('register') }}" class="font-bold text-emerald-600 hover:text-emerald-700">Create one</a>
-            </p> --}}
+            </p>
 
         </div>
     </div>

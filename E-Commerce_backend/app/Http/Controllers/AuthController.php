@@ -16,7 +16,8 @@ class AuthController extends Controller
     public function showLogin(): View|RedirectResponse
     {
         if (auth()->check()) {
-            return redirect()->route(auth()->user()->isAdmin() ? 'admin.dashboard' : 'dashboard');
+            $route = auth()->user()->hasPermission('dashboard.view') ? 'admin.dashboard' : 'dashboard';
+            return redirect()->route($route);
         }
 
         return view('auth.login');
@@ -25,7 +26,8 @@ class AuthController extends Controller
     public function showAdminLogin(): View|RedirectResponse
     {
         if (auth()->check()) {
-            return redirect()->route(auth()->user()->isAdmin() ? 'admin.dashboard' : 'dashboard');
+            $route = auth()->user()->hasPermission('dashboard.view') ? 'admin.dashboard' : 'dashboard';
+            return redirect()->route($route);
         }
 
         return view('auth.admin-login');
@@ -41,32 +43,31 @@ class AuthController extends Controller
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
+            'role' => ['nullable', 'string', 'in:' . implode(',', User::ROLES)],
         ]);
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             return back()
                 ->withErrors(['email' => 'The provided credentials are incorrect.'])
-                ->onlyInput('email');
+                ->onlyInput('email', 'role');
         }
 
         $request->session()->regenerate();
 
         $user = $request->user();
 
-        // Debugging: help confirm role & redirect target
-        if ($user) {
-            logger()->info('Auth login redirect check', [
-                'user_id' => $user->id,
-                'role_raw' => $user->role,
-                'is_admin' => $user->isAdmin(),
-            ]);
+        if ($request->filled('role') && $user->role !== $request->role) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()
+                ->withErrors(['role' => 'You do not have the selected role.'])
+                ->onlyInput('email', 'role');
         }
 
-        return $user?->isAdmin()
-            ? redirect()->route('admin.dashboard')
-            : redirect()->route('dashboard');
-
-
+        $route = $user->hasPermission('dashboard.view') ? 'admin.dashboard' : 'dashboard';
+        return redirect()->route($route);
     }
 
     public function register(Request $request): RedirectResponse
@@ -77,14 +78,14 @@ class AuthController extends Controller
             'password' => ['required', 'confirmed', Password::min(8)],
             'phone' => ['nullable', 'string', 'max:30'],
             'address' => ['nullable', 'string', 'max:1000'],
-            'role' => ['prohibited'],
+            'role' => ['required', 'string', 'in:admin,manager,staff'],
         ]);
 
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role' => 'customer',
+            'role' => $validated['role'],
             'phone' => $validated['phone'] ?? null,
             'address' => $validated['address'] ?? null,
         ]);
@@ -94,7 +95,7 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard');
+        return redirect()->route('admin.dashboard');
     }
 
     public function logout(Request $request): RedirectResponse

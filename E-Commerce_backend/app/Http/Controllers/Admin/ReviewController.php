@@ -10,6 +10,12 @@ use Illuminate\View\View;
 
 class ReviewController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:products.view', ['only' => ['index']]);
+        $this->middleware('permission:products.delete', ['only' => ['destroy']]);
+    }
+
     public function index(Request $request): View
     {
         $query = Review::with(['user', 'product'])->latest();

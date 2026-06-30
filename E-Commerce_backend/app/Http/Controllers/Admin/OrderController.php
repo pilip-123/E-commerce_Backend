@@ -10,6 +10,12 @@ use Illuminate\View\View;
 
 class OrderController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:sales.view', ['only' => ['index']]);
+        $this->middleware('permission:sales.edit', ['only' => ['edit', 'update', 'destroy']]);
+    }
+
     public function index(Request $request): View
     {
         $query = Order::with(['user', 'items.product']);

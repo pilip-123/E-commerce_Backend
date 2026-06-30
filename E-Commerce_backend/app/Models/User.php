@@ -11,6 +11,18 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+    public const ROLE_ADMIN = 'admin';
+    public const ROLE_MANAGER = 'manager';
+    public const ROLE_STAFF = 'staff';
+    public const ROLE_CUSTOMER = 'customer';
+
+    public const ROLES = [
+        self::ROLE_ADMIN,
+        self::ROLE_MANAGER,
+        self::ROLE_STAFF,
+        self::ROLE_CUSTOMER,
+    ];
+
     protected $fillable = [
         'name',
         'email',
@@ -61,7 +73,29 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return strtolower(trim((string) $this->role)) === 'admin';
+        return $this->role === self::ROLE_ADMIN;
     }
 
+    public function hasRole(string $role): bool
+    {
+        return $this->role === $role;
+    }
+
+    public function hasPermission(string $permission): bool
+    {
+        if ($this->role === self::ROLE_ADMIN) {
+            return true;
+        }
+
+        return \App\Models\Permission::whereHas('roles', function ($q) {
+                $q->where('role', $this->role);
+            })
+            ->where('name', $permission)
+            ->exists();
+    }
+
+    public static function roles(): array
+    {
+        return self::ROLES;
+    }
 }

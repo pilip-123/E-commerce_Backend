@@ -8,9 +8,4 @@
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
-@layer base {
-    body {
-        background-color: #fafdfb;
-        color: #0f172a;
-    }
-}
+
