@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Order;
 use App\Models\Review;
 use App\Models\User;
 use App\Notifications\NewReviewNotification;
@@ -31,6 +32,13 @@ class ReviewController extends Controller
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
             'comment' => ['nullable', 'string', 'max:2000'],
         ]);
+
+        $hasPurchased = Order::where('user_id', $request->user()->id)
+            ->whereHas('items', fn ($q) => $q->where('product_id', $validated['product_id']))
+            ->whereIn('status', ['delivered'])
+            ->exists();
+
+        abort_unless($hasPurchased, 403, 'You can only review products you have purchased and received.');
 
         $review = Review::updateOrCreate(
             [
