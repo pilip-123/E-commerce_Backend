@@ -5,11 +5,14 @@
 @section('content')
 <div class="container-fluid p-0">
     <div class="card border-0 shadow-sm rounded-4">
-        <div class="card-header bg-white py-3 rounded-4">
+        <div class="card-header bg-white py-3 rounded-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
             <div>
                 <h5 class="fw-bold mb-0">Users</h5>
                 <small class="text-muted">{{ $users->total() }} total</small>
             </div>
+            <a href="{{ route('admin.export.users') }}" class="btn btn-outline-success btn-sm">
+                <i class="bi bi-download me-1"></i>Export
+            </a>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">

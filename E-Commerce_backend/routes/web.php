@@ -6,6 +6,8 @@ use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\AdminPageController;
+use App\Http\Controllers\Admin\ExportController;
+use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
@@ -69,6 +71,34 @@ Route::prefix('admin')
         Route::get('customers', [AdminPageController::class, 'customers'])->name('customers');
         Route::get('profile', [AdminPageController::class, 'profile'])->name('profile');
         Route::put('profile', [AdminPageController::class, 'updateProfile'])->name('profile.update');
+
+        Route::prefix('export')->name('export.')->group(function () {
+            Route::get('products', [ExportController::class, 'products'])->name('products');
+            Route::get('categories', [ExportController::class, 'categories'])->name('categories');
+            Route::get('users', [ExportController::class, 'users'])->name('users');
+            Route::get('reviews', [ExportController::class, 'reviews'])->name('reviews');
+            Route::get('promotions', [ExportController::class, 'promotions'])->name('promotions');
+            Route::get('customers', [ExportController::class, 'customers'])->name('customers');
+            Route::get('vip-codes', [ExportController::class, 'vipCodes'])->name('vip-codes');
+            Route::get('inventory-history', [ExportController::class, 'inventoryHistory'])->name('inventory-history');
+        });
+
+        Route::prefix('inventory')->name('inventory.')->group(function () {
+            Route::get('/', [InventoryController::class, 'index'])->name('index');
+            Route::get('stock-in', [InventoryController::class, 'stockInForm'])->name('stock-in');
+            Route::post('stock-in', [InventoryController::class, 'stockIn'])->name('stock-in.store');
+            Route::get('stock-out', [InventoryController::class, 'stockOutForm'])->name('stock-out');
+            Route::post('stock-out', [InventoryController::class, 'stockOut'])->name('stock-out.store');
+            Route::get('transfer', [InventoryController::class, 'transferForm'])->name('transfer');
+            Route::post('transfer', [InventoryController::class, 'transfer'])->name('transfer.store');
+            Route::get('adjustment', [InventoryController::class, 'adjustmentForm'])->name('adjustment');
+            Route::post('adjustment', [InventoryController::class, 'adjustment'])->name('adjustment.store');
+            Route::get('stock-count', [InventoryController::class, 'stockCountForm'])->name('stock-count');
+            Route::post('stock-count', [InventoryController::class, 'stockCount'])->name('stock-count.store');
+            Route::get('history', [InventoryController::class, 'history'])->name('history');
+            Route::delete('history/clear', [InventoryController::class, 'clearHistory'])->name('history.clear');
+            Route::get('valuation', [InventoryController::class, 'valuation'])->name('valuation');
+        });
 
         Route::get('permissions', [AdminPageController::class, 'permissions'])->name('permissions')
             ->middleware(AdminMiddleware::class);

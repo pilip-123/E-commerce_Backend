@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\User;
 use App\Notifications\NewProductNotification;
+use App\Services\ProductAlertService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -96,6 +97,9 @@ class ProductController extends Controller
 
         User::where('role', 'customer')->get()->each->notify(new NewProductNotification($product, 'updated'));
 
+        app(ProductAlertService::class)->checkLowStock($product->fresh());
+        app(ProductAlertService::class)->checkOutOfStock($product->fresh());
+
         return response()->json([
             'message' => 'Product updated successfully.',
             'data' => $this->productPayload($product),
@@ -122,6 +126,7 @@ class ProductController extends Controller
             'stock' => ['required', 'integer', 'min:0'],
             'status' => ['nullable', 'boolean'],
             'image' => ['nullable', 'image', 'max:4096'],
+            'expiry_date' => ['nullable', 'date'],
         ]);
 
         return [
@@ -132,6 +137,7 @@ class ProductController extends Controller
             'price' => $validated['price'],
             'stock' => $validated['stock'],
             'status' => $request->boolean('status'),
+            'expiry_date' => $validated['expiry_date'] ?? null,
         ];
     }
 

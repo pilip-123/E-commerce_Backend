@@ -482,6 +482,13 @@
                     </a>
                 @endif
 
+                @if (auth()->user()->hasPermission('inventory.view'))
+                    <a href="{{ route('admin.inventory.index') }}"
+                        class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.inventory.*') ? 'active' : '' }}">
+                        <i class="bi bi-boxes"></i> Inventory
+                    </a>
+                @endif
+
                 <hr class="my-2">
 
                 @if (auth()->user()->isAdmin())

@@ -111,11 +111,17 @@
 
     {{-- Generated Codes List --}}
     <div class="card border-0 shadow-sm rounded-4">
-        <div class="card-header bg-white py-3 rounded-4">
-            <h5 class="fw-bold mb-0">Generated Codes ({{ count($codes) }})</h5>
+        <div class="card-header bg-white py-3 rounded-4 d-flex flex-wrap align-items-center gap-2">
+            <div>
+                <h5 class="fw-bold mb-0">Generated Codes</h5>
+                <small class="text-muted">{{ $codes->total() }} total</small>
+            </div>
+            <a href="{{ route('admin.export.vip-codes') }}" class="btn btn-outline-success btn-sm">
+                <i class="bi bi-download me-1"></i>Export
+            </a>
         </div>
         <div class="card-body p-0">
-            @if (count($codes))
+            @if ($codes->count())
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
@@ -166,6 +172,11 @@
                 </div>
             @endif
         </div>
+        @if ($codes->hasPages())
+            <div class="card-footer bg-white py-3 rounded-4 border-0">
+                {{ $codes->links() }}
+            </div>
+        @endif
     </div>
 </div>
 

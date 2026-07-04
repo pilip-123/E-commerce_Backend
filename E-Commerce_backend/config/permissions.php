@@ -38,6 +38,8 @@ return [
 
             'VIEW_REPORTS',
             'EXPORT_REPORTS',
+
+            'VIEW_ALERTS',
         ],
 
         'staff' => [

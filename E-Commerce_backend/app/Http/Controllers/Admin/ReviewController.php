@@ -29,7 +29,7 @@ class ReviewController extends Controller
         }
 
         return view('admin.reviews.index', [
-            'reviews' => $query->paginate(15),
+            'reviews' => $query->paginate(10),
         ]);
     }
 

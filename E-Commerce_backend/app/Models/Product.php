@@ -18,11 +18,15 @@ class Product extends Model
         'stock',
         'image',
         'status',
+        'expiry_date',
+        'unit_cost',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'unit_cost' => 'decimal:2',
         'status' => 'boolean',
+        'expiry_date' => 'date',
     ];
 
     public function category(): BelongsTo
@@ -80,6 +84,11 @@ class Product extends Model
         }
 
         return max(0, round((float) $this->price - (float) $promotion->discount_value, 2));
+    }
+
+    public function inventoryTransactions(): HasMany
+    {
+        return $this->hasMany(InventoryTransaction::class);
     }
 
     public function scopeActive($query)

@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
 use App\Notifications\NewProductNotification;
+use App\Services\ProductAlertService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -88,6 +89,9 @@ class ProductController extends Controller
 
         User::where('role', 'customer')->get()->each->notify(new NewProductNotification($product, 'updated'));
 
+        app(ProductAlertService::class)->checkLowStock($product->fresh());
+        app(ProductAlertService::class)->checkOutOfStock($product->fresh());
+
         return redirect()->route('admin.products.index')->with('status', 'Product updated successfully.');
     }
 
@@ -109,6 +113,7 @@ class ProductController extends Controller
             'stock' => ['required', 'integer', 'min:0'],
             'status' => ['nullable', 'boolean'],
             'image' => ['nullable', 'image', 'max:4096'],
+            'expiry_date' => ['nullable', 'date'],
         ]);
 
         $slug = Str::slug($validated['name']);
@@ -136,6 +141,7 @@ class ProductController extends Controller
             'price' => $validated['price'],
             'stock' => $validated['stock'],
             'status' => $request->boolean('status'),
+            'expiry_date' => $validated['expiry_date'] ?? null,
         ];
     }
 

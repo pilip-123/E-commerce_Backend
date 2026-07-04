@@ -10,9 +10,14 @@
                 <h5 class="fw-bold mb-0">Products</h5>
                 <small class="text-muted">{{ $products->total() }} total</small>
             </div>
-            <a href="{{ route('admin.products.create') }}" class="btn btn-success btn-sm">
-                <i class="bi bi-plus-lg me-1"></i>New Product
-            </a>
+            <div class="d-flex gap-2">
+                <a href="{{ route('admin.export.products') }}" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-download me-1"></i>Export
+                </a>
+                <a href="{{ route('admin.products.create') }}" class="btn btn-success btn-sm">
+                    <i class="bi bi-plus-lg me-1"></i>New Product
+                </a>
+            </div>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">

@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\User;
 use App\Notifications\NewOrderNotification;
+use App\Services\ProductAlertService;
 use App\Services\TelegramService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -93,6 +94,10 @@ class CheckoutController extends Controller
                 ]);
 
                 $cartItem->product->decrement('stock', $cartItem->quantity);
+
+                $product = $cartItem->product->fresh();
+                app(ProductAlertService::class)->checkLowStock($product);
+                app(ProductAlertService::class)->checkOutOfStock($product);
             }
 
             Cart::where('user_id', $request->user()->id)->delete();

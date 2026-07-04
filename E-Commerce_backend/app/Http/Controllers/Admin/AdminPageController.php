@@ -32,7 +32,7 @@ class AdminPageController extends Controller
             'users' => User::withCount('orders')
                 ->withSum('orders', 'total_amount')
                 ->latest()
-                ->paginate(15),
+                ->paginate(10),
         ]);
     }
 
@@ -92,7 +92,7 @@ class AdminPageController extends Controller
             ->sortByDesc('orders_sum_total_amount')
             ->values();
 
-        $codes = DiscountCode::latest()->get()->toArray();
+        $codes = DiscountCode::latest()->paginate(10);
 
         return view('admin.promotions.vip-codes', [
             'qualifyingCustomers' => $qualifyingCustomers,

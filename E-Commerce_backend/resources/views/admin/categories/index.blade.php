@@ -10,9 +10,14 @@
                 <h5 class="fw-bold mb-0">Categories</h5>
                 <small class="text-muted">{{ $categories->total() }} total</small>
             </div>
-            <a href="{{ route('admin.categories.create') }}" class="btn btn-success btn-sm">
-                <i class="bi bi-plus-lg me-1"></i>New Category
-            </a>
+            <div class="d-flex gap-2">
+                <a href="{{ route('admin.export.categories') }}" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-download me-1"></i>Export
+                </a>
+                <a href="{{ route('admin.categories.create') }}" class="btn btn-success btn-sm">
+                    <i class="bi bi-plus-lg me-1"></i>New Category
+                </a>
+            </div>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">

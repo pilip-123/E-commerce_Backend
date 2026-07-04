@@ -56,4 +56,31 @@ class TelegramService
 
         return $this->sendMessage($message);
     }
+
+    public function sendLowStockAlert(\App\Models\Product $product): bool
+    {
+        $message = "<b>⚠️ Low Stock Alert</b>\n"
+            . "─────────────────────\n"
+            . "<b>Product:</b> {$product->name}\n"
+            . "<b>Stock:</b> {$product->stock} remaining\n"
+            . "<b>Price:</b> \$" . number_format($product->price, 2) . "\n"
+            . "<b>Category:</b> " . ($product->category->name ?? 'N/A') . "\n"
+            . "─────────────────────\n"
+            . "Stock has dropped to {$product->stock} — below the minimum of 3.";
+
+        return $this->sendMessage($message);
+    }
+
+    public function sendOutOfStockAlert(\App\Models\Product $product): bool
+    {
+        $message = "<b>🚫 Out of Stock Alert</b>\n"
+            . "─────────────────────\n"
+            . "<b>Product:</b> {$product->name}\n"
+            . "<b>Price:</b> \$" . number_format($product->price, 2) . "\n"
+            . "<b>Category:</b> " . ($product->category->name ?? 'N/A') . "\n"
+            . "─────────────────────\n"
+            . "This product is now out of stock!";
+
+        return $this->sendMessage($message);
+    }
 }
