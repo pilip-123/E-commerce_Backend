@@ -131,10 +131,10 @@
 
             {{-- @include('auth.social-buttons') --}}
 
-            <p class="mt-5 text-center text-[13.5px] text-slate-500">
+            {{-- <p class="mt-5 text-center text-[13.5px] text-slate-500">
                 Need an account?
                 <a href="{{ route('register') }}" class="font-bold text-emerald-600 hover:text-emerald-700">Create one</a>
-            </p>
+            </p> --}}
 
         </div>
     </div>
