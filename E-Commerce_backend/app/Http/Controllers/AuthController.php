@@ -7,6 +7,7 @@ use App\Notifications\NewUserNotification;
 use App\Notifications\ResetPassword;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -154,7 +155,7 @@ class AuthController extends Controller
                 ->onlyInput('email');
         }
 
-        if ($record->created_at->addMinutes(60)->isPast()) {
+        if (Carbon::parse($record->created_at)->addMinutes(60)->isPast()) {
             DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
             return back()
