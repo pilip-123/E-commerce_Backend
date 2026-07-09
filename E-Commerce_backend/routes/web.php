@@ -41,6 +41,11 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 
 Route::get('/admin/login', [AuthController::class, 'showAdminLogin'])->name('admin.login');
 
+Route::get('/forgot-password', [AuthController::class, 'showForgotForm'])->name('password.forgot');
+Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.forgot.submit');
+Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [AuthController::class, 'reset'])->name('password.reset.submit');
+
 // Social Auth (web / session-based)
 Route::prefix('auth')->name('auth.social.')->group(function () {
     Route::get('/{provider}/redirect', [SocialAuthController::class, 'redirect'])->name('redirect');
