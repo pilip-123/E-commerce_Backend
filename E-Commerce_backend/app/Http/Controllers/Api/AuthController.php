@@ -107,8 +107,12 @@ class AuthController extends Controller
             $user->notify(new ResetPassword($token, $request->email));
         }
 
+        $frontendUrl = config('app.frontend_url', 'http://localhost:5173');
+        $resetUrl = $frontendUrl . '/#/reset-password?token=' . $token . '&email=' . urlencode($request->email);
+
         return response()->json([
             'message' => 'If that email is registered, a password reset link has been sent.',
+            'reset_url' => $resetUrl,
         ]);
     }
 

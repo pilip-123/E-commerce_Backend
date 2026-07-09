@@ -31,6 +31,13 @@
                     </div>
                 @endif
 
+                @if (session('reset_url'))
+                    <div class="mt-3 w-full p-4 bg-blue-50 border border-blue-200 rounded-[14px] text-sm text-blue-700 text-left">
+                        <p class="font-semibold mb-2">Debug: Copy this reset link (dev mode)</p>
+                        <code class="block text-xs break-all bg-white p-2 rounded border border-blue-100 mb-2 select-all">{{ session('reset_url') }}</code>
+                    </div>
+                @endif
+
                 @if ($errors->any())
                     <div class="mt-6 w-full p-4 bg-red-50 border border-red-200 rounded-[14px] text-sm text-red-600 font-medium text-center">
                         {{ $errors->first() }}

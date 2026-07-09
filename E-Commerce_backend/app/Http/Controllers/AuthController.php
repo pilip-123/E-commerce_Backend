@@ -123,7 +123,11 @@ class AuthController extends Controller
             $user->notify(new ResetPassword($token, $request->email));
         }
 
-        return back()->with('status', 'We have emailed your password reset link!');
+        $resetUrl = route('password.reset', ['token' => $token, 'email' => $request->email]);
+
+        return back()
+            ->with('status', 'We have emailed your password reset link!')
+            ->with('reset_url', $resetUrl);
     }
 
     public function showResetForm(string $token): View|RedirectResponse
