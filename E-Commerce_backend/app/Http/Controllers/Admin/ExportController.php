@@ -11,11 +11,17 @@ use App\Models\Promotion;
 use App\Models\Review;
 use App\Models\User;
 use App\Services\ExportService;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ExportController extends Controller
 {
-    public function products(): BinaryFileResponse
+    protected function getFormat(Request $request): string
+    {
+        return in_array($request->query('format'), ['csv', 'html', 'doc', 'pdf']) ? $request->query('format') : 'xlsx';
+    }
+
+    public function products(Request $request): BinaryFileResponse
     {
         $products = Product::with('category')->latest()->get();
 
@@ -29,12 +35,12 @@ class ExportController extends Controller
             $p->created_at->format('Y-m-d'),
         ]);
 
-        return app(ExportService::class)->createSheet('Products', [
+        return app(ExportService::class)->export('Products', [
             'ID', 'Name', 'Category', 'Price', 'Stock', 'Status', 'Created',
-        ], $rows->toArray());
+        ], $rows->toArray(), $this->getFormat($request));
     }
 
-    public function categories(): BinaryFileResponse
+    public function categories(Request $request): BinaryFileResponse
     {
         $categories = Category::withCount('products')->latest()->get();
 
@@ -46,12 +52,12 @@ class ExportController extends Controller
             $c->created_at->format('Y-m-d'),
         ]);
 
-        return app(ExportService::class)->createSheet('Categories', [
+        return app(ExportService::class)->export('Categories', [
             'ID', 'Name', 'Description', 'Products', 'Created',
-        ], $rows->toArray());
+        ], $rows->toArray(), $this->getFormat($request));
     }
 
-    public function users(): BinaryFileResponse
+    public function users(Request $request): BinaryFileResponse
     {
         $users = User::latest()->get();
 
@@ -64,12 +70,12 @@ class ExportController extends Controller
             $u->created_at->format('Y-m-d'),
         ]);
 
-        return app(ExportService::class)->createSheet('Users', [
+        return app(ExportService::class)->export('Users', [
             'ID', 'Name', 'Email', 'Role', 'Phone', 'Joined',
-        ], $rows->toArray());
+        ], $rows->toArray(), $this->getFormat($request));
     }
 
-    public function reviews(): BinaryFileResponse
+    public function reviews(Request $request): BinaryFileResponse
     {
         $reviews = Review::with(['user', 'product'])->latest()->get();
 
@@ -82,12 +88,12 @@ class ExportController extends Controller
             $r->created_at->format('Y-m-d'),
         ]);
 
-        return app(ExportService::class)->createSheet('Reviews', [
+        return app(ExportService::class)->export('Reviews', [
             'ID', 'User', 'Product', 'Rating', 'Comment', 'Date',
-        ], $rows->toArray());
+        ], $rows->toArray(), $this->getFormat($request));
     }
 
-    public function promotions(): BinaryFileResponse
+    public function promotions(Request $request): BinaryFileResponse
     {
         $promotions = Promotion::withCount('products')->latest()->get();
 
@@ -103,12 +109,12 @@ class ExportController extends Controller
             $p->status ? 'Active' : 'Inactive',
         ]);
 
-        return app(ExportService::class)->createSheet('Promotions', [
+        return app(ExportService::class)->export('Promotions', [
             'ID', 'Name', 'Discount', 'Start', 'End', 'Products', 'Status',
-        ], $rows->toArray());
+        ], $rows->toArray(), $this->getFormat($request));
     }
 
-    public function customers(): BinaryFileResponse
+    public function customers(Request $request): BinaryFileResponse
     {
         $users = User::withCount('orders')
             ->withSum('orders', 'total_amount')
@@ -126,12 +132,12 @@ class ExportController extends Controller
             $u->created_at->format('Y-m-d'),
         ]);
 
-        return app(ExportService::class)->createSheet('Customers', [
+        return app(ExportService::class)->export('Customers', [
             'ID', 'Name', 'Email', 'Phone', 'Role', 'Orders', 'Total Spent', 'Joined',
-        ], $rows->toArray());
+        ], $rows->toArray(), $this->getFormat($request));
     }
 
-    public function inventoryHistory(): BinaryFileResponse
+    public function inventoryHistory(Request $request): BinaryFileResponse
     {
         $transactions = InventoryTransaction::with('product', 'user')->latest()->get();
 
@@ -147,12 +153,12 @@ class ExportController extends Controller
             $t->notes ?? '',
         ]);
 
-        return app(ExportService::class)->createSheet('Inventory_History', [
+        return app(ExportService::class)->export('Inventory_History', [
             'Date', 'Type', 'Product', 'Quantity', 'Stock Before', 'Stock After', 'Reference', 'By', 'Notes',
-        ], $rows->toArray());
+        ], $rows->toArray(), $this->getFormat($request));
     }
 
-    public function vipCodes(): BinaryFileResponse
+    public function vipCodes(Request $request): BinaryFileResponse
     {
         $codes = DiscountCode::latest()->get();
 
@@ -167,8 +173,8 @@ class ExportController extends Controller
             $d->created_at->format('Y-m-d'),
         ]);
 
-        return app(ExportService::class)->createSheet('VIP_Codes', [
+        return app(ExportService::class)->export('VIP_Codes', [
             'Code', 'Discount', 'Times Used', 'Max Uses', 'Sent To', 'Created',
-        ], $rows->toArray());
+        ], $rows->toArray(), $this->getFormat($request));
     }
 }

@@ -11,9 +11,7 @@
                 <small class="text-muted">{{ $categories->total() }} total</small>
             </div>
             <div class="d-flex gap-2">
-                <a href="{{ route('admin.export.categories') }}" class="btn btn-outline-success btn-sm">
-                    <i class="bi bi-download me-1"></i>Export
-                </a>
+                @include('admin.partials.export-dropdown', ['exportRoute' => route('admin.export.categories')])
                 <a href="{{ route('admin.categories.create') }}" class="btn btn-success btn-sm">
                     <i class="bi bi-plus-lg me-1"></i>New Category
                 </a>

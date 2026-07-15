@@ -113,7 +113,6 @@
                                              style="width: 40px; height: 40px; font-size: 13px;">
                                             #{{ $order->id }}
                                         </div>
-                                        <span class="fw-semibold small">#{{ $order->id }}</span>
                                     </div>
                                 </td>
                                 <td class="px-4 py-3">

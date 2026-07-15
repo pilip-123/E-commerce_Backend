@@ -49,9 +49,7 @@
                 <small class="text-muted">{{ $transactions->total() }} records</small>
             </div>
             <div class="d-flex gap-2">
-                <a href="{{ route('admin.export.inventory-history') }}" class="btn btn-outline-success btn-sm">
-                    <i class="bi bi-download me-1"></i>Export
-                </a>
+                @include('admin.partials.export-dropdown', ['exportRoute' => route('admin.export.inventory-history')])
                 @if (auth()->user()->isAdmin())
                     <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#clearHistoryModal">
                         <i class="bi bi-trash me-1"></i>Clear History

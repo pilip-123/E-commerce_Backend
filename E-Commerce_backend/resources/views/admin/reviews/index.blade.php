@@ -45,9 +45,7 @@
                 <small class="text-muted">{{ $reviews->total() }} total</small>
             </div>
             <div class="d-flex gap-2">
-                <a href="{{ route('admin.export.reviews') }}" class="btn btn-outline-success btn-sm">
-                    <i class="bi bi-download me-1"></i>Export
-                </a>
+                @include('admin.partials.export-dropdown', ['exportRoute' => route('admin.export.reviews')])
                 <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#announcementModal">
                     <i class="bi bi-megaphone me-1"></i>Notify Customers
                 </button>

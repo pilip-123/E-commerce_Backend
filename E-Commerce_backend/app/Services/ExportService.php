@@ -4,6 +4,9 @@ namespace App\Services;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Writer\Csv;
+use PhpOffice\PhpSpreadsheet\Writer\Html as HtmlWriter;
+use PhpOffice\PhpSpreadsheet\Writer\Pdf\Dompdf as PdfWriter;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
@@ -19,10 +22,21 @@ class ExportService
         $this->spreadsheet = new Spreadsheet();
     }
 
-    public function createSheet(string $title, array $headers, array $rows): BinaryFileResponse
+    public function export(string $title, array $headers, array $rows, string $format = 'xlsx'): BinaryFileResponse
+    {
+        return match ($format) {
+            'csv' => $this->createCsv($title, $headers, $rows),
+            'html' => $this->createHtml($title, $headers, $rows),
+            'doc' => $this->createDoc($title, $headers, $rows),
+            'pdf' => $this->createPdf($title, $headers, $rows),
+            default => $this->createXlsx($title, $headers, $rows),
+        };
+    }
+
+    public function createXlsx(string $title, array $headers, array $rows): BinaryFileResponse
     {
         $sheet = $this->spreadsheet->getActiveSheet();
-        $sheet->setTitle($title);
+        $sheet->setTitle(mb_substr($title, 0, 31));
 
         $this->addHeaders($sheet, $headers);
         $this->addRows($sheet, $rows, count($headers));
@@ -35,6 +49,94 @@ class ExportService
         $response->setContentDisposition(
             ResponseHeaderBag::DISPOSITION_ATTACHMENT,
             $title . '_' . now()->format('Y-m-d') . '.xlsx'
+        );
+
+        return $response;
+    }
+
+    public function createCsv(string $title, array $headers, array $rows): BinaryFileResponse
+    {
+        $sheet = $this->spreadsheet->getActiveSheet();
+        $sheet->setTitle(mb_substr($title, 0, 31));
+
+        $this->addHeaders($sheet, $headers);
+        $this->addRows($sheet, $rows, count($headers));
+
+        $path = tempnam(sys_get_temp_dir(), 'export_') . '.csv';
+        $writer = new Csv($this->spreadsheet);
+        $writer->setDelimiter(',');
+        $writer->setEnclosure('"');
+        $writer->setLineEnding("\r\n");
+        $writer->setSheetIndex(0);
+        $writer->save($path);
+
+        $response = new BinaryFileResponse($path);
+        $response->setContentDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            $title . '_' . now()->format('Y-m-d') . '.csv'
+        );
+
+        return $response;
+    }
+
+    public function createHtml(string $title, array $headers, array $rows): BinaryFileResponse
+    {
+        $sheet = $this->spreadsheet->getActiveSheet();
+        $sheet->setTitle(mb_substr($title, 0, 31));
+
+        $this->addHeaders($sheet, $headers);
+        $this->addRows($sheet, $rows, count($headers));
+
+        $path = tempnam(sys_get_temp_dir(), 'export_') . '.html';
+        $writer = new HtmlWriter($this->spreadsheet);
+        $writer->save($path);
+
+        $response = new BinaryFileResponse($path);
+        $response->setContentDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            $title . '_' . now()->format('Y-m-d') . '.html'
+        );
+
+        return $response;
+    }
+
+    public function createDoc(string $title, array $headers, array $rows): BinaryFileResponse
+    {
+        $sheet = $this->spreadsheet->getActiveSheet();
+        $sheet->setTitle(mb_substr($title, 0, 31));
+
+        $this->addHeaders($sheet, $headers);
+        $this->addRows($sheet, $rows, count($headers));
+
+        $path = tempnam(sys_get_temp_dir(), 'export_') . '.doc';
+        $writer = new HtmlWriter($this->spreadsheet);
+        $writer->save($path);
+
+        $response = new BinaryFileResponse($path);
+        $response->setContentDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            $title . '_' . now()->format('Y-m-d') . '.doc'
+        );
+
+        return $response;
+    }
+
+    public function createPdf(string $title, array $headers, array $rows): BinaryFileResponse
+    {
+        $sheet = $this->spreadsheet->getActiveSheet();
+        $sheet->setTitle(mb_substr($title, 0, 31));
+
+        $this->addHeaders($sheet, $headers);
+        $this->addRows($sheet, $rows, count($headers));
+
+        $path = tempnam(sys_get_temp_dir(), 'export_') . '.pdf';
+        $writer = new PdfWriter($this->spreadsheet);
+        $writer->save($path);
+
+        $response = new BinaryFileResponse($path);
+        $response->setContentDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            $title . '_' . now()->format('Y-m-d') . '.pdf'
         );
 
         return $response;

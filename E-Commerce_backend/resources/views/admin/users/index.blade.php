@@ -10,9 +10,7 @@
                 <h5 class="fw-bold mb-0">Users</h5>
                 <small class="text-muted">{{ $users->total() }} total</small>
             </div>
-            <a href="{{ route('admin.export.users') }}" class="btn btn-outline-success btn-sm">
-                <i class="bi bi-download me-1"></i>Export
-            </a>
+            @include('admin.partials.export-dropdown', ['exportRoute' => route('admin.export.users')])
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">

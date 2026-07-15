@@ -116,9 +116,7 @@
                 <h5 class="fw-bold mb-0">Generated Codes</h5>
                 <small class="text-muted">{{ $codes->total() }} total</small>
             </div>
-            <a href="{{ route('admin.export.vip-codes') }}" class="btn btn-outline-success btn-sm">
-                <i class="bi bi-download me-1"></i>Export
-            </a>
+            @include('admin.partials.export-dropdown', ['exportRoute' => route('admin.export.vip-codes')])
         </div>
         <div class="card-body p-0">
             @if ($codes->count())
