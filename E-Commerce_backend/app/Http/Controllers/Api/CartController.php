@@ -7,6 +7,7 @@ use App\Models\Cart;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CartController extends Controller
 {
@@ -30,13 +31,31 @@ class CartController extends Controller
             'quantity' => ['nullable', 'integer', 'min:1'],
         ]);
 
-        $item = Cart::firstOrNew([
-            'user_id' => $request->user()->id,
-            'product_id' => $validated['product_id'],
-        ]);
+        $quantity = $validated['quantity'] ?? 1;
 
-        $item->quantity = ($item->exists ? $item->quantity : 0) + ($validated['quantity'] ?? 1);
-        $item->save();
+        $item = DB::transaction(function () use ($request, $validated, $quantity) {
+            $existing = Cart::withTrashed()
+                ->where('user_id', $request->user()->id)
+                ->where('product_id', $validated['product_id'])
+                ->lockForUpdate()
+                ->first();
+
+            if ($existing) {
+                if ($existing->trashed()) {
+                    $existing->restore();
+                    $existing->quantity = $quantity;
+                } else {
+                    $existing->increment('quantity', $quantity);
+                }
+                return $existing->fresh();
+            }
+
+            return Cart::create([
+                'user_id' => $request->user()->id,
+                'product_id' => $validated['product_id'],
+                'quantity' => $quantity,
+            ]);
+        });
 
         $item->load('product.category');
 
