@@ -8,10 +8,10 @@
         <div class="card-header bg-white py-3 rounded-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
             <div>
                 <h5 class="fw-bold mb-0">{{ $promotion->name }}</h5>
-                <small class="text-muted">Created {{ $promotion->created_at->format('M d, Y') }}</small>
+                <small class="text-muted">{{ __('Created') }} {{ $promotion->created_at->format('M d, Y') }}</small>
             </div>
             <a href="{{ route('admin.promotions.edit', $promotion->id) }}" class="btn btn-success btn-sm">
-                <i class="bi bi-pencil me-1"></i>Edit
+                <i class="bi bi-pencil me-1"></i>{{ __('Edit') }}
             </a>
         </div>
         <div class="card-body">
@@ -19,7 +19,7 @@
                 <div class="col-md-6">
                     <table class="table table-sm">
                         <tr>
-                            <th class="text-muted small fw-bold">Discount</th>
+                            <th class="text-muted small fw-bold">{{ __('Discount') }}</th>
                             <td>
                                 @if ($promotion->discount_type === 'percentage')
                                     {{ $promotion->discount_value }}% off
@@ -29,22 +29,22 @@
                             </td>
                         </tr>
                         <tr>
-                            <th class="text-muted small fw-bold">Period</th>
+                            <th class="text-muted small fw-bold">{{ __('Period') }}</th>
                             <td>{{ \Carbon\Carbon::parse($promotion->start_date)->format('M d, Y H:i') }} → {{ \Carbon\Carbon::parse($promotion->end_date)->format('M d, Y H:i') }}</td>
                         </tr>
                         <tr>
-                            <th class="text-muted small fw-bold">Status</th>
+                            <th class="text-muted small fw-bold">{{ __('Status') }}</th>
                             <td>
                                 @if ($promotion->start_date <= now() && $promotion->end_date >= now())
-                                    <span class="badge bg-success-subtle text-success-emphasis">Active</span>
+                                    <span class="badge bg-success-subtle text-success-emphasis">{{ __('Active') }}</span>
                                 @else
-                                    <span class="badge bg-danger-subtle text-danger-emphasis">Inactive</span>
+                                    <span class="badge bg-danger-subtle text-danger-emphasis">{{ __('Inactive') }}</span>
                                 @endif
                             </td>
                         </tr>
                         @if ($promotion->description)
                             <tr>
-                                <th class="text-muted small fw-bold">Description</th>
+                                <th class="text-muted small fw-bold">{{ __('Description') }}</th>
                                 <td>{{ $promotion->description }}</td>
                             </tr>
                         @endif
@@ -52,7 +52,7 @@
                 </div>
 
                 <div class="col-md-6">
-                    <h6 class="fw-bold small text-uppercase text-muted mb-3">Discounted Products</h6>
+                    <h6 class="fw-bold small text-uppercase text-muted mb-3">{{ __('Discounted Products') }}</h6>
                     @if ($promotion->products->count())
                         <div class="list-group">
                             @foreach ($promotion->products as $product)
@@ -63,7 +63,7 @@
                             @endforeach
                         </div>
                     @else
-                        <p class="text-muted small">No products assigned to this promotion.</p>
+                        <p class="text-muted small">{{ __('No products assigned to this promotion.') }}</p>
                     @endif
                 </div>
             </div>

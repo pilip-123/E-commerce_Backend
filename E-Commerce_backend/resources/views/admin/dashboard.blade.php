@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Admin Dashboard')
+@section('title', __('Admin Dashboard'))
 
 @section('content')
     <div class="container-fluid p-0">
@@ -16,7 +16,7 @@
                         viewBox="0 0 24 24">
                         <path d="M12 5v14M5 12h14" />
                     </svg>
-                    Add Product
+                    {{ __('Add Product') }}
                 </a>
                 <form action="{{ route('admin.products.index') }}" method="GET" class="d-inline">
                     <div class="input-group input-group-sm" style="max-width: 320px;">
@@ -28,7 +28,7 @@
                             </svg>
                         </span>
                         <input type="text" name="search" class="form-control border-0 bg-light"
-                            placeholder="Search products..." style="font-size: 13px;" value="{{ request('search') }}">
+                            placeholder="{{ __('Search products...') }}" style="font-size: 13px;" value="{{ request('search') }}">
                         <button type="submit" class="btn btn-sm fw-semibold text-white border-0"
                             style="background: #4f46e5;">
                             <i class="bi bi-search"></i>
@@ -38,7 +38,8 @@
             </div>
             <div class="d-flex align-items-center gap-2">
                 <div class="dropdown">
-                    <button class="btn btn-light btn-sm position-relative border" title="Notifications" data-bs-toggle="dropdown" aria-expanded="false" id="notifBell">
+                    <button class="btn btn-light btn-sm position-relative border" title="{{ __('Notifications') }}"
+                        data-bs-toggle="dropdown" aria-expanded="false" id="notifBell">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
                             viewBox="0 0 24 24">
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -47,13 +48,15 @@
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                             style="font-size: 9px; display: none;" id="notifBadge">0</span>
                     </button>
-                    <div class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 p-0" style="width: 360px; max-height: 420px; overflow-y: auto;" id="notifDropdown">
+                    <div class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 p-0"
+                        style="width: 360px; max-height: 420px; overflow-y: auto;" id="notifDropdown">
                         <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
-                            <strong style="font-size: 14px;">Notifications</strong>
-                            <button class="btn btn-sm btn-link text-decoration-none p-0" id="markAllRead" style="font-size: 12px;">Mark all as read</button>
+                            <strong style="font-size: 14px;">{{ __('Notifications') }}</strong>
+                            <button class="btn btn-sm btn-link text-decoration-none p-0" id="markAllRead"
+                                style="font-size: 12px;">{{ __('Mark all as read') }}</button>
                         </div>
                         <div id="notifList">
-                            <div class="text-center text-muted py-4" style="font-size: 13px;">Loading...</div>
+                            <div class="text-center text-muted py-4" style="font-size: 13px;">{{ __('Loading...') }}</div>
                         </div>
                     </div>
                 </div>
@@ -84,16 +87,16 @@
         {{-- PAGE TITLE --}}
         <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
             <div>
-                <p class="text-muted small mb-0">Dashboard &rsaquo; Ecommerce Dashboard</p>
-                <h1 class="h3 fw-bold mb-0">Ecommerce Dashboard</h1>
+                {{-- <p class="text-muted small mb-0">Dashboard &rsaquo; Ecommerce Dashboard</p> --}}
+                <h1 class="h3 fw-bold mb-0">{{ __('Ecommerce Dashboard') }}</h1>
             </div>
             <div class="d-flex align-items-center gap-2 flex-wrap">
                 <div class="btn-group btn-group-sm" role="group">
-                    <button type="button" class="btn btn-outline-secondary period-btn" data-period="day">Day</button>
-                    <button type="button" class="btn btn-outline-secondary period-btn" data-period="week">Week</button>
+                    <button type="button" class="btn btn-outline-secondary period-btn" data-period="day">{{ __('Day') }}</button>
+                    <button type="button" class="btn btn-outline-secondary period-btn" data-period="week">{{ __('Week') }}</button>
                     <button type="button" class="btn period-btn active" data-period="month"
-                        style="background: #4f46e5; color: #fff; border-color: #4f46e5;">Month</button>
-                    <button type="button" class="btn btn-outline-secondary period-btn" data-period="annual">Annual</button>
+                        style="background: #4f46e5; color: #fff; border-color: #4f46e5;">{{ __('Month') }}</button>
+                    <button type="button" class="btn btn-outline-secondary period-btn" data-period="annual">{{ __('Annual') }}</button>
                 </div>
                 <div class="d-flex align-items-center gap-1 border rounded-2 px-2 py-1">
                     <button type="button" class="btn btn-sm border-0 p-0 text-muted lh-1 date-prev">&lsaquo;</button>
@@ -110,8 +113,9 @@
                     style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); min-height: 160px;">
                     <div class="card-body d-flex flex-column pb-0">
                         <p class="small text-uppercase fw-bold opacity-75 mb-0"
-                            style="font-size: 11px; letter-spacing: .08em;">New Orders</p>
-                        <p class="fw-bold mb-0" style="font-size: 38px; line-height: 1.15; margin-top: 4px;" id="statOrders">
+                            style="font-size: 11px; letter-spacing: .08em;">{{ __('New Orders') }}</p>
+                        <p class="fw-bold mb-0" style="font-size: 38px; line-height: 1.15; margin-top: 4px;"
+                            id="statOrders">
                             {{ number_format($stats['orders']) }}</p>
                         <p class="small opacity-75" style="font-size: 11px; margin-top: 3px;" id="trendOrders">
                             {{ $trends['orders'] >= 0 ? '+' : '' }}{{ number_format($trends['orders'], 2) }}% (30 days)
@@ -140,11 +144,12 @@
                     style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); min-height: 160px;">
                     <div class="card-body d-flex flex-column pb-0">
                         <p class="small text-uppercase fw-bold opacity-75 mb-0"
-                            style="font-size: 11px; letter-spacing: .08em;">Total Income</p>
-                        <p class="fw-bold mb-0" style="font-size: 38px; line-height: 1.15; margin-top: 4px;" id="statRevenue">
+                            style="font-size: 11px; letter-spacing: .08em;">{{ __('Total Income') }}</p>
+                        <p class="fw-bold mb-0" style="font-size: 38px; line-height: 1.15; margin-top: 4px;"
+                            id="statRevenue">
                             ${{ number_format($stats['revenue'], 2) }}</p>
                         <p class="small opacity-75" style="font-size: 11px; margin-top: 3px;" id="trendRevenue">
-                            {{ $trends['revenue'] >= 0 ? 'Increased' : 'Decreased' }} by
+                            {{ $trends['revenue'] >= 0 ? __('Increased') : __('Decreased') }} by
                             {{ number_format(abs($trends['revenue']), 2) }}%
                         </p>
                     </div>
@@ -176,8 +181,9 @@
                     style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); min-height: 160px;">
                     <div class="card-body d-flex flex-column pb-0">
                         <p class="small text-uppercase fw-bold opacity-75 mb-0"
-                            style="font-size: 11px; letter-spacing: .08em;">Pending Orders</p>
-                        <p class="fw-bold mb-0" style="font-size: 38px; line-height: 1.15; margin-top: 4px;" id="statPending">
+                            style="font-size: 11px; letter-spacing: .08em;">{{ __('Pending Orders') }}</p>
+                        <p class="fw-bold mb-0" style="font-size: 38px; line-height: 1.15; margin-top: 4px;"
+                            id="statPending">
                             {{ number_format($stats['pendingOrders']) }}</p>
                         <p class="small opacity-75" style="font-size: 11px; margin-top: 3px;" id="trendLabel">
                             {{ $trends['orders'] >= 0 ? '+' : '' }}{{ number_format($trends['orders'], 2) }}% (30 days)
@@ -207,8 +213,9 @@
                     style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); min-height: 160px;">
                     <div class="card-body d-flex flex-column pb-0">
                         <p class="small text-uppercase fw-bold opacity-75 mb-0"
-                            style="font-size: 11px; letter-spacing: .08em;">New Users</p>
-                        <p class="fw-bold mb-0" style="font-size: 38px; line-height: 1.15; margin-top: 4px;" id="statUsers">
+                            style="font-size: 11px; letter-spacing: .08em;">{{ __('New Users') }}</p>
+                        <p class="fw-bold mb-0" style="font-size: 38px; line-height: 1.15; margin-top: 4px;"
+                            id="statUsers">
                             {{ number_format($stats['users']) }}</p>
                         <p class="small opacity-75" style="font-size: 11px; margin-top: 3px;" id="trendUsers">
                             {{ $trends['users'] >= 0 ? '+' : '' }}{{ number_format($trends['users'], 2) }}% (30 days)
@@ -247,24 +254,24 @@
                 {{-- Summary Chart --}}
                 <div class="card border-0 shadow-sm rounded-4 mb-3">
                     <div class="card-body">
-                        <h5 class="card-title fw-bold mb-3" style="font-size: 15px;">Summary</h5>
+                        <h5 class="card-title fw-bold mb-3" style="font-size: 15px;">{{ __('Summary') }}</h5>
                         <div class="row g-0 border-bottom pb-3 mb-3">
                             <div class="col border-end">
                                 <p class="fw-bold mb-0" style="font-size: 15px;">{{ $stats['products'] }}</p>
-                                <p class="small text-muted mb-0">Total Products</p>
+                                <p class="small text-muted mb-0">{{ __('Total Products') }}</p>
                             </div>
                             <div class="col border-end">
                                 <p class="fw-bold mb-0" style="font-size: 15px;">{{ number_format($totalSold) }}</p>
-                                <p class="small text-muted mb-0">Units Sold</p>
+                                <p class="small text-muted mb-0">{{ __('Units Sold') }}</p>
                             </div>
                             <div class="col border-end">
                                 <p class="fw-bold mb-0" style="font-size: 15px;">${{ number_format($totalCost) }}</p>
-                                <p class="small text-muted mb-0">Inventory Cost</p>
+                                <p class="small text-muted mb-0">{{ __('Inventory Cost') }}</p>
                             </div>
                             <div class="col">
                                 <p class="fw-bold mb-0" style="font-size: 15px;">
                                     ${{ number_format($stats['revenue'], 2) }}</p>
-                                <p class="small text-muted mb-0">Total Revenue</p>
+                                <p class="small text-muted mb-0">{{ __('Total Revenue') }}</p>
                             </div>
                         </div>
                         <div>
@@ -296,7 +303,7 @@
                 {{-- Recent Orders --}}
                 <div class="card border-0 shadow-sm rounded-4">
                     <div class="card-body">
-                        <h5 class="card-title fw-bold mb-3" style="font-size: 15px;">Recent Orders</h5>
+                        <h5 class="card-title fw-bold mb-3" style="font-size: 15px;">{{ __('Recent Orders') }}</h5>
                         <div class="d-flex flex-column">
                             @forelse ($recentOrders as $order)
                                 <div class="d-flex align-items-center gap-3 py-3 border-bottom">
@@ -305,7 +312,7 @@
                                         {{ strtoupper(substr($order->user->name ?? 'C', 0, 1)) }}
                                     </div>
                                     <div class="flex-grow-1 min-w-0">
-                                        <p class="fw-bold mb-0 small text-truncate">{{ $order->user->name ?? 'Customer' }}
+                                        <p class="fw-bold mb-0 small text-truncate">{{ $order->user->name ?? __('Customer') }}
                                         </p>
                                         <p class="text-muted mb-0" style="font-size: 11px;">
                                             {{ $order->created_at?->format('M d, Y') }}</p>
@@ -326,7 +333,7 @@
                                     </div>
                                 </div>
                             @empty
-                                <p class="text-muted text-center py-4 mb-0">No orders yet.</p>
+                                <p class="text-muted text-center py-4 mb-0">{{ __('No orders yet.') }}</p>
                             @endforelse
                         </div>
                     </div>
@@ -337,7 +344,7 @@
                 {{-- Top Selling Products --}}
                 <div class="card border-0 shadow-sm rounded-4 h-100">
                     <div class="card-body">
-                        <h5 class="card-title fw-bold mb-3" style="font-size: 15px;">Top Selling Products</h5>
+                        <h5 class="card-title fw-bold mb-3" style="font-size: 15px;">{{ __('Top Selling Products') }}</h5>
                         <div class="d-flex flex-column">
                             @forelse ($topSellingProducts as $product)
                                 <div class="d-flex align-items-center gap-3 py-3 border-bottom">
@@ -359,7 +366,7 @@
                                     <div class="flex-grow-1 min-w-0">
                                         <p class="fw-bold mb-0 small text-truncate">{{ $product->name }}</p>
                                         <p class="text-muted mb-0" style="font-size: 11px;">
-                                            {{ $product->category->name ?? 'No category' }}</p>
+                                            {{ $product->category->name ?? __('No category') }}</p>
                                         @php
                                             $r = $product->avg_rating ?? 0;
                                             $full = floor($r);
@@ -382,12 +389,12 @@
                                     <div class="text-end flex-shrink-0">
                                         <p class="fw-bold mb-0" style="font-size: 14px;">
                                             ${{ number_format($product->price, 2) }}</p>
-                                        <p class="mb-0" style="font-size: 11px; color: #1d63d4; font-weight: 600;">Sales
+                                        <p class="mb-0" style="font-size: 11px; color: #1d63d4; font-weight: 600;">{{ __('Sales') }}
                                         </p>
                                     </div>
                                 </div>
                             @empty
-                                <p class="text-muted text-center py-4 mb-0">No products yet.</p>
+                                <p class="text-muted text-center py-4 mb-0">{{ __('No products yet.') }}</p>
                             @endforelse
                         </div>
                     </div>
@@ -424,20 +431,29 @@
 
             function fetchDashboardData(period) {
                 fetch('{{ route('admin.dashboard.data') }}?period=' + period)
-                    .then(function(r) { return r.json(); })
+                    .then(function(r) {
+                        return r.json();
+                    })
                     .then(function(data) {
                         document.getElementById('statOrders').textContent = data.stats.orders.toLocaleString();
-                        document.getElementById('statRevenue').textContent = '$' + parseFloat(data.stats.revenue).toFixed(2);
-                        document.getElementById('statPending').textContent = data.stats.pendingOrders.toLocaleString();
+                        document.getElementById('statRevenue').textContent = '$' + parseFloat(data.stats
+                            .revenue).toFixed(2);
+                        document.getElementById('statPending').textContent = data.stats.pendingOrders
+                            .toLocaleString();
                         document.getElementById('statUsers').textContent = data.stats.users.toLocaleString();
 
-                        document.getElementById('trendOrders').textContent = (data.trends.orders >= 0 ? '+' : '') + data.trends.orders.toFixed(2) + '% (' + data.label + ')';
-                        document.getElementById('trendRevenue').textContent = (data.trends.revenue >= 0 ? 'Increased' : 'Decreased') + ' by ' + Math.abs(data.trends.revenue).toFixed(2) + '%';
-                        document.getElementById('trendUsers').textContent = (data.trends.users >= 0 ? '+' : '') + data.trends.users.toFixed(2) + '% (' + data.label + ')';
+                        document.getElementById('trendOrders').textContent = (data.trends.orders >= 0 ? '+' :
+                            '') + data.trends.orders.toFixed(2) + '% (' + data.label + ')';
+                        document.getElementById('trendRevenue').textContent = (data.trends.revenue >= 0 ?
+                                '{{ __("Increased") }}' : '{{ __("Decreased") }}') + ' by ' + Math.abs(data.trends.revenue).toFixed(2) +
+                            '%';
+                        document.getElementById('trendUsers').textContent = (data.trends.users >= 0 ? '+' :
+                            '') + data.trends.users.toFixed(2) + '% (' + data.label + ')';
 
                         var trendLabel = document.getElementById('trendLabel');
                         if (trendLabel) {
-                            trendLabel.textContent = (data.trends.orders >= 0 ? '+' : '') + data.trends.orders.toFixed(2) + '% (' + data.label + ')';
+                            trendLabel.textContent = (data.trends.orders >= 0 ? '+' : '') + data.trends.orders
+                                .toFixed(2) + '% (' + data.label + ')';
                         }
                     });
             }

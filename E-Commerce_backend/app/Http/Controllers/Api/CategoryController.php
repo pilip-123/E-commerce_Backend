@@ -12,12 +12,18 @@ use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $categories = Category::withCount('products')->orderBy('name')->get();
+        $categories = Category::withCount('products')->orderBy('name')->paginate($request->integer('per_page', 10));
 
         return response()->json([
-            'data' => $categories,
+            'data' => $categories->getCollection(),
+            'meta' => [
+                'current_page' => $categories->currentPage(),
+                'last_page' => $categories->lastPage(),
+                'per_page' => $categories->perPage(),
+                'total' => $categories->total(),
+            ],
         ]);
     }
 

@@ -383,11 +383,11 @@
     <div class="profile-bar__actions">
       <a href="{{ route('admin.users.edit', $user->id) }}" class="btn-accent btn-accent-sm">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        Edit
+        {{ __('Edit') }}
       </a>
       <a href="{{ route('admin.customers') }}" class="btn-outline-accent">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-        Back to Users
+        {{ __('Back to Users') }}
       </a>
     </div>
   </div>
@@ -396,15 +396,15 @@
     <div class="tabs-nav">
       <button class="tab-btn active" data-tab="profile">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        Profile
+        {{ __('Profile') }}
       </button>
       <button class="tab-btn" data-tab="orders">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
-        Orders
+        {{ __('Orders') }}
       </button>
       <button class="tab-btn" data-tab="security">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        Security
+        {{ __('Security') }}
       </button>
     </div>
   </div>
@@ -418,9 +418,9 @@
           <div class="card-custom">
             <h3 class="card-title">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              Introduction
+              {{ __('Introduction') }}
             </h3>
-            <p class="card-text">Member since {{ $user->created_at?->format('F Y') ?? 'N/A' }}.</p>
+            <p class="card-text">{{ __('Member since') }} {{ $user->created_at?->format('F Y') ?? __('N/A') }}.</p>
             <div class="info-rows">
               <div class="info-row">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
@@ -440,7 +440,7 @@
               @endif
               <div class="info-row">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <span>Joined {{ $user->created_at?->format('F Y') }}</span>
+                <span>{{ __('Joined') }} {{ $user->created_at?->format('F Y') }}</span>
               </div>
               <div class="info-row">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -454,9 +454,9 @@
           <div class="card-custom">
             <h3 class="card-title">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
-              Activity Overview
+              {{ __('Activity Overview') }}
             </h3>
-            <p class="card-text">Summary of {{ $user->name }}'s activity on the platform.</p>
+            <p class="card-text">{{ __('Summary of') }} {{ $user->name }}'s {{ __('activity on the platform.') }}</p>
 
             <div class="stats-grid">
               <div class="stat-card">
@@ -464,14 +464,14 @@
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                 </div>
                 <p class="stat-value">{{ $user->orders_count }}</p>
-                <p class="stat-label">Orders Placed</p>
+                <p class="stat-label">{{ __('Orders Placed') }}</p>
               </div>
               <div class="stat-card">
                 <div class="stat-icon">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                 </div>
                 <p class="stat-value">${{ number_format($user->orders_sum_total_amount ?? 0, 2) }}</p>
-                <p class="stat-label">Total Spent</p>
+                <p class="stat-label">{{ __('Total Spent') }}</p>
               </div>
             </div>
           </div>
@@ -479,17 +479,17 @@
           <div class="card-custom">
             <h3 class="card-title">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-              Quick Actions
+              {{ __('Quick Actions') }}
             </h3>
-            <p class="card-text">Manage this user from here.</p>
+            <p class="card-text">{{ __('Manage this user from here.') }}</p>
             <div class="d-flex gap-2 flex-wrap">
               <a href="{{ route('admin.users.edit', $user->id) }}" class="btn-accent btn-accent-sm">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                Edit Profile
+                {{ __('Edit Profile') }}
               </a>
               <a href="{{ route('admin.orders.index', ['user_id' => $user->id]) }}" class="btn-accent-ghost">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
-                View Orders
+                {{ __('View Orders') }}
               </a>
             </div>
           </div>
@@ -503,13 +503,13 @@
         <div class="card-custom">
           <h3 class="card-title">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
-            Orders History
-          </h3>
-          <p class="card-text">This user has placed {{ $user->orders_count }} order(s) totaling ${{ number_format($user->orders_sum_total_amount ?? 0, 2) }}.</p>
+            {{ __('Orders History') }}
+            </h3>
+            <p class="card-text">{{ __('This user has placed') }} {{ $user->orders_count }} {{ __('order(s) totaling') }} ${{ number_format($user->orders_sum_total_amount ?? 0, 2) }}.</p>
           <div class="d-flex justify-content-center pt-2">
             <a href="{{ route('admin.orders.index', ['user_id' => $user->id]) }}" class="btn-accent">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              View All Orders
+              {{ __('View All Orders') }}
             </a>
           </div>
         </div>
@@ -522,21 +522,21 @@
         <div class="card-custom">
           <h3 class="card-title">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            Account Security
-          </h3>
-          <p class="card-text">Security information for this account.</p>
+            {{ __('Account Security') }}
+            </h3>
+            <p class="card-text">{{ __('Security information for this account.') }}</p>
           <div class="info-rows">
             <div class="info-row">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              <span>Email Verified: {{ $user->email_verified_at ? 'Yes' : 'No' }}</span>
+              <span>{{ __('Email Verified:') }} {{ $user->email_verified_at ? __('Yes') : __('No') }}</span>
             </div>
             <div class="info-row">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <span>Registered: {{ $user->created_at?->format('M d, Y \a\t h:i A') }}</span>
+              <span>{{ __('Registered:') }} {{ $user->created_at?->format('M d, Y \a\t h:i A') }}</span>
             </div>
             <div class="info-row">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              <span>Last Updated: {{ $user->updated_at?->format('M d, Y \a\t h:i A') }}</span>
+              <span>{{ __('Last Updated:') }} {{ $user->updated_at?->format('M d, Y \a\t h:i A') }}</span>
             </div>
           </div>
         </div>

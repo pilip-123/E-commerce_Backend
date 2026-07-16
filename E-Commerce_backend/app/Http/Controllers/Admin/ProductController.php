@@ -35,8 +35,20 @@ class ProductController extends Controller
             });
         }
 
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->integer('category_id'));
+        }
+
+        if ($request->has('status') && $request->input('status') !== '') {
+            $status = filter_var($request->input('status'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            if ($status !== null) {
+                $query->where('status', $status);
+            }
+        }
+
         return view('admin.products.index', [
             'products' => $query->latest()->paginate(10),
+            'categories' => Category::orderBy('name')->get(),
         ]);
     }
 
@@ -57,6 +69,28 @@ class ProductController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $existing = Product::withTrashed()->where('name', $request->input('name'))->first();
+
+        if ($existing) {
+            if ($existing->trashed()) {
+                $existing->restore();
+            }
+
+            $data = $this->validateProduct($request, $existing->id);
+            $image = $this->storeImage($request);
+
+            if ($image) {
+                $this->deleteImage($existing->image);
+                $data['image'] = $image;
+            }
+
+            $existing->update($data);
+
+            User::where('role', 'customer')->get()->each->notify(new NewProductNotification($existing, 'updated'));
+
+            return redirect()->route('admin.products.index')->with('status', "<strong>{$existing->name}</strong> already exists — the record has been updated with your new data.");
+        }
+
         $data = $this->validateProduct($request);
         $data['image'] = $this->storeImage($request);
 
@@ -64,7 +98,7 @@ class ProductController extends Controller
 
         User::where('role', 'customer')->get()->each->notify(new NewProductNotification($product, 'created'));
 
-        return redirect()->route('admin.products.index')->with('status', 'Product created successfully.');
+        return redirect()->route('admin.products.index')->with('status', "<strong>{$product->name}</strong> has been created successfully.");
     }
 
     public function edit(Product $product): View
@@ -92,7 +126,7 @@ class ProductController extends Controller
         app(ProductAlertService::class)->checkLowStock($product->fresh());
         app(ProductAlertService::class)->checkOutOfStock($product->fresh());
 
-        return redirect()->route('admin.products.index')->with('status', 'Product updated successfully.');
+        return redirect()->route('admin.products.index')->with('status', "<strong>{$product->name}</strong> has been updated successfully.");
     }
 
     public function destroy(Product $product): RedirectResponse
@@ -100,7 +134,7 @@ class ProductController extends Controller
         $this->deleteImage($product->image);
         $product->delete();
 
-        return redirect()->route('admin.products.index')->with('status', 'Product deleted successfully.');
+        return redirect()->route('admin.products.index')->with('status', "<strong>{$product->name}</strong> has been archived.");
     }
 
     private function validateProduct(Request $request, ?int $ignoreId = null): array

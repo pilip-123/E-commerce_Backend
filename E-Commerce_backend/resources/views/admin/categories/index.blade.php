@@ -1,32 +1,43 @@
 @extends('layouts.admin')
 
-@section('title', 'Categories')
+@section('title', __('Categories'))
 
 @section('content')
 <div class="container-fluid p-0">
     <div class="card border-0 shadow-sm rounded-4">
         <div class="card-header bg-white py-3 rounded-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
             <div>
-                <h5 class="fw-bold mb-0">Categories</h5>
-                <small class="text-muted">{{ $categories->total() }} total</small>
+                <h5 class="fw-bold mb-0">{{ __('Categories') }}</h5>
+                <small class="text-muted">{{ $categories->total() }} {{ __('total') }}</small>
             </div>
             <div class="d-flex gap-2">
                 @include('admin.partials.export-dropdown', ['exportRoute' => route('admin.export.categories')])
                 <a href="{{ route('admin.categories.create') }}" class="btn btn-success btn-sm">
-                    <i class="bi bi-plus-lg me-1"></i>New Category
+                    <i class="bi bi-plus-lg me-1"></i>{{ __('New Category') }}
                 </a>
             </div>
+        </div>
+        <div class="card-body border-bottom px-3 py-3">
+            <form method="GET" class="row g-2 align-items-end">
+                <div class="col-auto">
+                    <input type="search" name="search" class="form-control form-control-sm" placeholder="{{ __('Search by name or description...') }}" value="{{ request('search') }}">
+                </div>
+                <div class="col-auto d-flex gap-1">
+                    <button type="submit" class="btn btn-sm btn-success"><i class="bi bi-funnel me-1"></i>{{ __('Filter') }}</button>
+                    <a href="{{ route('admin.categories.index') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-x-circle"></i></a>
+                </div>
+            </form>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th class="px-4 py-3 small fw-bold text-uppercase">ID</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase">Name</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase">Description</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase">Products</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase text-end">Actions</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('ID') }}</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Name') }}</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Description') }}</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Products') }}</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase text-end">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -56,7 +67,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-4 py-5 text-center text-muted">No categories found.</td>
+                                <td colspan="5" class="px-4 py-5 text-center text-muted">{{ __('No categories found.') }}</td>
                             </tr>
                         @endforelse
                     </tbody>

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Orders')
+@section('title', __('Orders'))
 
 @section('content')
 <div class="container-fluid p-0">
@@ -16,7 +16,7 @@
                         <i class="bi bi-receipt text-success fs-5"></i>
                     </div>
                     <div>
-                        <p class="text-muted small mb-0">Total Orders</p>
+                        <p class="text-muted small mb-0">{{ __('Total Orders') }}</p>
                         <h5 class="fw-bold mb-0">{{ $totalOrders }}</h5>
                     </div>
                 </div>
@@ -30,7 +30,7 @@
                         <i class="bi bi-clock text-warning fs-5"></i>
                     </div>
                     <div>
-                        <p class="text-muted small mb-0">Pending</p>
+                        <p class="text-muted small mb-0">{{ __('Pending') }}</p>
                         <h5 class="fw-bold mb-0">{{ $pendingCount }}</h5>
                     </div>
                 </div>
@@ -44,7 +44,7 @@
                         <i class="bi bi-currency-dollar text-info fs-5"></i>
                     </div>
                     <div>
-                        <p class="text-muted small mb-0">Revenue</p>
+                        <p class="text-muted small mb-0">{{ __('Revenue') }}</p>
                         <h5 class="fw-bold mb-0">${{ number_format($revenueTotal, 2) }}</h5>
                     </div>
                 </div>
@@ -56,19 +56,39 @@
     <div class="card border-0 shadow-sm rounded-4">
         <div class="card-header bg-white py-3 rounded-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
             <div>
-                <h5 class="fw-bold mb-0">All Orders</h5>
-                <small class="text-muted">{{ $orders->total() }} total</small>
+                <h5 class="fw-bold mb-0">{{ __('All Orders') }}</h5>
+                <small class="text-muted">{{ $orders->total() }} {{ __('total') }}</small>
             </div>
             <div class="d-flex gap-2">
-                <select class="form-select form-select-sm" style="width: auto;" onchange="window.location.href=this.value">
-                    <option value="{{ route('admin.orders.index') }}">All Statuses</option>
-                    <option value="{{ route('admin.orders.index', ['status' => 'pending']) }}" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
-                    <option value="{{ route('admin.orders.index', ['status' => 'processing']) }}" {{ request('status') === 'processing' ? 'selected' : '' }}>Processing</option>
-                    <option value="{{ route('admin.orders.index', ['status' => 'shipped']) }}" {{ request('status') === 'shipped' ? 'selected' : '' }}>Shipped</option>
-                    <option value="{{ route('admin.orders.index', ['status' => 'delivered']) }}" {{ request('status') === 'delivered' ? 'selected' : '' }}>Delivered</option>
-                    <option value="{{ route('admin.orders.index', ['status' => 'cancelled']) }}" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                </select>
+                @include('admin.partials.export-dropdown', ['exportRoute' => route('admin.export.orders')])
             </div>
+        </div>
+        <div class="card-body border-bottom px-3 py-3">
+            <form method="GET" class="row g-2 align-items-end">
+                <div class="col-auto">
+                    <input type="search" name="search" class="form-control form-control-sm" placeholder="{{ __('Search orders...') }}" value="{{ request('search') }}">
+                </div>
+                <div class="col-auto">
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="">{{ __('All Statuses') }}</option>
+                        <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>{{ __('Pending') }}</option>
+                        <option value="processing" {{ request('status') === 'processing' ? 'selected' : '' }}>{{ __('Processing') }}</option>
+                        <option value="shipped" {{ request('status') === 'shipped' ? 'selected' : '' }}>{{ __('Shipped') }}</option>
+                        <option value="delivered" {{ request('status') === 'delivered' ? 'selected' : '' }}>{{ __('Delivered') }}</option>
+                        <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>{{ __('Cancelled') }}</option>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <input type="date" name="date_from" class="form-control form-control-sm" value="{{ request('date_from') }}" placeholder="{{ __('From') }}">
+                </div>
+                <div class="col-auto">
+                    <input type="date" name="date_to" class="form-control form-control-sm" value="{{ request('date_to') }}" placeholder="{{ __('To') }}">
+                </div>
+                <div class="col-auto d-flex gap-1">
+                    <button type="submit" class="btn btn-sm btn-success"><i class="bi bi-funnel me-1"></i>{{ __('Filter') }}</button>
+                    <a href="{{ route('admin.orders.index') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-x-circle"></i></a>
+                </div>
+            </form>
         </div>
 
         <div class="card-body p-0">
@@ -76,13 +96,13 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th class="px-4 py-3 small fw-bold text-uppercase">Order</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase">Customer</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase">Items</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase">Total</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase">Status</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase">Date</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase text-end">Actions</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Order') }}</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Customer') }}</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Items') }}</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Total') }}</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Status') }}</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Date') }}</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase text-end">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -128,7 +148,7 @@
                                             </div>
                                         @endif
                                         <div>
-                                            <p class="fw-semibold mb-0 small">{{ $order->user->name ?? 'N/A' }}</p>
+                                            <p class="fw-semibold mb-0 small">{{ $order->user->name ?? __('N/A') }}</p>
                                             @if ($order->phone)
                                                 <span class="text-muted" style="font-size: 11px;">{{ $order->phone }}</span>
                                             @endif
@@ -137,17 +157,17 @@
                                 </td>
                                 <td class="px-4 py-3">
                                     <span class="fw-semibold">{{ $itemCount }}</span>
-                                    <span class="text-muted small">item{{ $itemCount !== 1 ? 's' : '' }}</span>
+                                    <span class="text-muted small">{{ __('item') }}{{ $itemCount !== 1 ? 's' : '' }}</span>
                                     @if ($itemCount > 0)
                                         <div class="mt-1 d-flex flex-wrap gap-1">
                                             @foreach ($order->items->take(2) as $item)
                                                 <span class="badge bg-light text-dark fw-normal" style="font-size: 10px;">
-                                                    {{ Str::limit($item->product->name ?? 'Product', 18) }}
+                                                    {{ Str::limit($item->product->name ?? __('Product'), 18) }}
                                                 </span>
                                             @endforeach
                                             @if ($itemCount > 2)
                                                 <span class="badge bg-light text-muted fw-normal" style="font-size: 10px;">
-                                                    +{{ $itemCount - 2 }} more
+                                                    +{{ $itemCount - 2 }} {{ __('more') }}
                                                 </span>
                                             @endif
                                         </div>
@@ -173,7 +193,7 @@
                                                     <i class="bi bi-arrow-repeat"></i>
                                                 </button>
                                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
-                                                    <li><span class="dropdown-item-text small text-muted fw-semibold">Update status</span></li>
+                                                    <li><span class="dropdown-item-text small text-muted fw-semibold">{{ __('Update status') }}</span></li>
                                                     <li><hr class="dropdown-divider"></li>
                                                     @foreach (['pending', 'processing', 'shipped', 'delivered', 'cancelled'] as $status)
                                                         @if ($status !== $order->status)
@@ -210,7 +230,7 @@
                             <tr>
                                 <td colspan="7" class="px-4 py-5 text-center text-muted">
                                     <i class="bi bi-inbox fs-2 d-block mb-2 text-muted"></i>
-                                    No orders found.
+                                    {{ __('No orders found.') }}
                                 </td>
                             </tr>
                         @endforelse

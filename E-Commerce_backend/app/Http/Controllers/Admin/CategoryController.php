@@ -19,10 +19,19 @@ class CategoryController extends Controller
         $this->middleware('permission:categories.delete', ['only' => ['destroy']]);
     }
 
-    public function index(): View
+    public function index(Request $request): View
     {
+        $query = Category::withCount('products');
+
+        if ($search = $request->get('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
         return view('admin.categories.index', [
-            'categories' => Category::withCount('products')->latest()->paginate(10),
+            'categories' => $query->latest()->paginate(10),
         ]);
     }
 
@@ -37,9 +46,9 @@ class CategoryController extends Controller
     {
         $data = $this->validateCategory($request);
 
-        Category::create($data);
+        $category = Category::create($data);
 
-        return redirect()->route('admin.categories.index')->with('status', 'Category created successfully.');
+        return redirect()->route('admin.categories.index')->with('status', "Category <strong>{$category->name}</strong> has been created successfully.");
     }
 
     public function edit(Category $category): View
@@ -53,14 +62,15 @@ class CategoryController extends Controller
 
         $category->update($data);
 
-        return redirect()->route('admin.categories.index')->with('status', 'Category updated successfully.');
+        return redirect()->route('admin.categories.index')->with('status', "Category <strong>{$category->name}</strong> has been updated successfully.");
     }
 
     public function destroy(Category $category): RedirectResponse
     {
+        $name = $category->name;
         $category->delete();
 
-        return redirect()->route('admin.categories.index')->with('status', 'Category deleted successfully.');
+        return redirect()->route('admin.categories.index')->with('status', "Category <strong>{$name}</strong> has been archived.");
     }
 
     private function validateCategory(Request $request, ?int $ignoreId = null): array

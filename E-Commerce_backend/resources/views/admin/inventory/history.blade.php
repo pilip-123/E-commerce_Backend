@@ -1,42 +1,42 @@
 @extends('layouts.admin')
 
-@section('title', 'Inventory History')
+@section('title', __('Inventory History'))
 
 @section('content')
 <div class="container-fluid p-0">
     <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-header bg-white py-3 rounded-4">
-            <h5 class="fw-bold mb-0">Filter Transactions</h5>
+            <h5 class="fw-bold mb-0">{{ __('Filter Transactions') }}</h5>
         </div>
         <div class="card-body p-3">
             <form method="GET" class="row g-3">
                 <div class="col-md-3">
                     <select name="type" class="form-select form-select-sm">
-                        <option value="">All Types</option>
-                        <option value="stock_in" @selected(request('type') == 'stock_in')>Stock In</option>
-                        <option value="stock_out" @selected(request('type') == 'stock_out')>Stock Out</option>
-                        <option value="transfer_out" @selected(request('type') == 'transfer_out')>Transfer Out</option>
-                        <option value="transfer_in" @selected(request('type') == 'transfer_in')>Transfer In</option>
-                        <option value="adjustment" @selected(request('type') == 'adjustment')>Adjustment</option>
-                        <option value="stock_count" @selected(request('type') == 'stock_count')>Stock Count</option>
+                        <option value="">{{ __('All Types') }}</option>
+                        <option value="stock_in" @selected(request('type') == 'stock_in')>{{ __('Stock In') }}</option>
+                        <option value="stock_out" @selected(request('type') == 'stock_out')>{{ __('Stock Out') }}</option>
+                        <option value="transfer_out" @selected(request('type') == 'transfer_out')>{{ __('Transfer Out') }}</option>
+                        <option value="transfer_in" @selected(request('type') == 'transfer_in')>{{ __('Transfer In') }}</option>
+                        <option value="adjustment" @selected(request('type') == 'adjustment')>{{ __('Adjustment') }}</option>
+                        <option value="stock_count" @selected(request('type') == 'stock_count')>{{ __('Stock Count') }}</option>
                     </select>
                 </div>
                 <div class="col-md-3">
                     <select name="product_id" class="form-select form-select-sm">
-                        <option value="">All Products</option>
+                        <option value="">{{ __('All Products') }}</option>
                         @foreach ($products as $p)
                             <option value="{{ $p->id }}" @selected(request('product_id') == $p->id)>{{ $p->name }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <input type="date" name="date_from" class="form-control form-control-sm" value="{{ request('date_from') }}" placeholder="From">
+                    <input type="date" name="date_from" class="form-control form-control-sm" value="{{ request('date_from') }}">
                 </div>
                 <div class="col-md-2">
-                    <input type="date" name="date_to" class="form-control form-control-sm" value="{{ request('date_to') }}" placeholder="To">
+                    <input type="date" name="date_to" class="form-control form-control-sm" value="{{ request('date_to') }}">
                 </div>
                 <div class="col-md-2">
-                    <button type="submit" class="btn btn-sm btn-success w-100"><i class="bi bi-funnel me-1"></i>Filter</button>
+                    <button type="submit" class="btn btn-sm btn-success w-100"><i class="bi bi-funnel me-1"></i>{{ __('Filter') }}</button>
                 </div>
             </form>
         </div>
@@ -45,14 +45,14 @@
     <div class="card border-0 shadow-sm rounded-4">
         <div class="card-header bg-white py-3 rounded-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
             <div>
-                <h5 class="fw-bold mb-0">Transaction History</h5>
-                <small class="text-muted">{{ $transactions->total() }} records</small>
+                <h5 class="fw-bold mb-0">{{ __('Transaction History') }}</h5>
+                <small class="text-muted">{{ $transactions->total() }} {{ __('records') }}</small>
             </div>
             <div class="d-flex gap-2">
                 @include('admin.partials.export-dropdown', ['exportRoute' => route('admin.export.inventory-history')])
                 @if (auth()->user()->isAdmin())
                     <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#clearHistoryModal">
-                        <i class="bi bi-trash me-1"></i>Clear History
+                        <i class="bi bi-trash me-1"></i>{{ __('Clear History') }}
                     </button>
                 @endif
             </div>
@@ -62,15 +62,15 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th class="px-4 py-3 small fw-bold text-uppercase">Date</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase">Type</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase">Product</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase text-end">Qty</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase text-end">Before</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase text-end">After</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase">Reference</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase">By</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase">Notes</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Date') }}</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Type') }}</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Product') }}</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase text-end">{{ __('Qty') }}</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase text-end">{{ __('Before') }}</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase text-end">{{ __('After') }}</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Reference') }}</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('By') }}</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Notes') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -91,21 +91,21 @@
                                     @endphp
                                     <span class="badge {{ $badge[0] }} px-3 py-2">{{ $badge[1] }}</span>
                                 </td>
-                                <td class="px-4 py-3 fw-semibold small">{{ $t->product->name ?? 'Deleted' }}</td>
+                                <td class="px-4 py-3 fw-semibold small">{{ $t->product->name ?? __('Deleted') }}</td>
                                 <td class="px-4 py-3 text-end fw-bold {{ $t->quantity > 0 ? 'text-success' : 'text-danger' }}">
                                     {{ $t->quantity > 0 ? '+' . $t->quantity : $t->quantity }}
                                 </td>
                                 <td class="px-4 py-3 text-end text-muted">{{ $t->stock_before ?? '—' }}</td>
                                 <td class="px-4 py-3 text-end fw-semibold">{{ $t->stock_after ?? '—' }}</td>
                                 <td class="px-4 py-3 text-muted small">{{ $t->reference ?? '—' }}</td>
-                                <td class="px-4 py-3 text-muted small">{{ $t->user->name ?? 'System' }}</td>
+                                <td class="px-4 py-3 text-muted small">{{ $t->user->name ?? __('System') }}</td>
                                 <td class="px-4 py-3 text-muted small" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                     {{ $t->notes ?? '—' }}
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="px-4 py-5 text-center text-muted">No transactions found.</td>
+                                <td colspan="9" class="px-4 py-5 text-center text-muted">{{ __('No transactions found.') }}</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -133,13 +133,13 @@
                         </svg>
                     </span>
                 </div>
-                <h5 class="fw-bold mb-2">Clear All History?</h5>
-                <p class="text-muted mb-1">This will permanently delete all {{ $transactions->total() }} inventory transaction records.</p>
-                <p class="text-muted small mb-4">This action cannot be undone.</p>
+                <h5 class="fw-bold mb-2">{{ __('Clear All History?') }}</h5>
+                <p class="text-muted mb-1">{{ __('This will permanently delete all') }} {{ $transactions->total() }} {{ __('inventory transaction records.') }}</p>
+                <p class="text-muted small mb-4">{{ __('This action cannot be undone.') }}</p>
                 <form method="POST" action="{{ route('admin.inventory.history.clear') }}">
                     @csrf @method('DELETE')
-                    <button type="button" class="btn btn-secondary px-4 me-2" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger px-4">Yes, Clear All</button>
+                    <button type="button" class="btn btn-secondary px-4 me-2" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn btn-danger px-4">{{ __('Yes, Clear All') }}</button>
                 </form>
             </div>
         </div>

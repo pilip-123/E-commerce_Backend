@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Reviews')
+@section('title', __('Reviews'))
 
 @section('content')
 <div class="container-fluid p-0">
@@ -15,7 +15,7 @@
                         <i class="bi bi-star text-warning fs-5"></i>
                     </div>
                     <div>
-                        <p class="text-muted small mb-0">Total Reviews</p>
+                        <p class="text-muted small mb-0">{{ __('Total Reviews') }}</p>
                         <h5 class="fw-bold mb-0">{{ $reviews->total() }}</h5>
                     </div>
                 </div>
@@ -29,7 +29,7 @@
                         <i class="bi bi-people text-info fs-5"></i>
                     </div>
                     <div>
-                        <p class="text-muted small mb-0">Reviewers</p>
+                        <p class="text-muted small mb-0">{{ __('Reviewers') }}</p>
                         <h5 class="fw-bold mb-0">{{ $reviews->pluck('user_id')->unique()->count() }}</h5>
                     </div>
                 </div>
@@ -41,37 +41,47 @@
     <div class="card border-0 shadow-sm rounded-4">
         <div class="card-header bg-white py-3 rounded-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
             <div>
-                <h5 class="fw-bold mb-0">All Reviews</h5>
-                <small class="text-muted">{{ $reviews->total() }} total</small>
+                <h5 class="fw-bold mb-0">{{ __('All Reviews') }}</h5>
+                <small class="text-muted">{{ $reviews->total() }} {{ __('total') }}</small>
             </div>
             <div class="d-flex gap-2">
                 @include('admin.partials.export-dropdown', ['exportRoute' => route('admin.export.reviews')])
                 <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#announcementModal">
-                    <i class="bi bi-megaphone me-1"></i>Notify Customers
+                    <i class="bi bi-megaphone me-1"></i>{{ __('Notify Customers') }}
                 </button>
-                <select class="form-select form-select-sm" style="width: auto;" onchange="window.location.href=this.value">
-                    <option value="{{ route('admin.reviews.index') }}">All Ratings</option>
-                    @foreach ([5,4,3,2,1] as $r)
-                        <option value="{{ route('admin.reviews.index', ['rating' => $r]) }}" {{ request('rating') == $r ? 'selected' : '' }}>
-                            {{ $r }} Star{{ $r !== 1 ? 's' : '' }}
-                        </option>
-                    @endforeach
-                </select>
             </div>
         </div>
-
+        <div class="card-body border-bottom px-3 py-3">
+            <form method="GET" class="row g-2 align-items-end">
+                <div class="col-auto">
+                    <input type="search" name="product" class="form-control form-control-sm" placeholder="{{ __('Search by product name...') }}" value="{{ request('product') }}">
+                </div>
+                <div class="col-auto">
+                    <select name="rating" class="form-select form-select-sm">
+                        <option value="">{{ __('All Ratings') }}</option>
+                        @foreach ([5,4,3,2,1] as $r)
+                            <option value="{{ $r }}" {{ request('rating') == $r ? 'selected' : '' }}>{{ $r }} Star{{ $r !== 1 ? 's' : '' }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-auto d-flex gap-1">
+                    <button type="submit" class="btn btn-sm btn-success"><i class="bi bi-funnel me-1"></i>{{ __('Filter') }}</button>
+                    <a href="{{ route('admin.reviews.index') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-x-circle"></i></a>
+                </div>
+            </form>
+        </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
                             <th class="px-4 py-3 small fw-bold text-uppercase">#</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase">User</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase">Product</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase">Rating</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase">Comment</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase">Date</th>
-                            <th class="px-4 py-3 small fw-bold text-uppercase text-end">Actions</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('User') }}</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Product') }}</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Rating') }}</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Comment') }}</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Date') }}</th>
+                            <th class="px-4 py-3 small fw-bold text-uppercase text-end">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -91,13 +101,13 @@
                                             </div>
                                         @endif
                                         <div>
-                                            <p class="fw-semibold mb-0 small">{{ $review->user->name ?? 'Deleted User' }}</p>
+                                            <p class="fw-semibold mb-0 small">{{ $review->user->name ?? __('Deleted User') }}</p>
                                             <span class="text-muted" style="font-size: 11px;">{{ $review->user->email ?? '' }}</span>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="px-4 py-3">
-                                    <a href="{{ route('admin.products.show', $review->product_id) }}" class="fw-semibold small text-decoration-none">{{ $review->product->name ?? 'Deleted Product' }}</a>
+                                    <a href="{{ route('admin.products.show', $review->product_id) }}" class="fw-semibold small text-decoration-none">{{ $review->product->name ?? __('Deleted Product') }}</a>
                                 </td>
                                 <td class="px-4 py-3">
                                     <div style="color: #f59e0b; font-size: 14px; white-space: nowrap;">
@@ -127,7 +137,7 @@
                             <tr>
                                 <td colspan="7" class="px-4 py-5 text-center text-muted">
                                     <i class="bi bi-star fs-2 d-block mb-2 text-muted"></i>
-                                    No reviews found.
+                                    {{ __('No reviews found.') }}
                                 </td>
                             </tr>
                         @endforelse
@@ -156,24 +166,24 @@
                             <i class="bi bi-megaphone-fill text-success fs-4"></i>
                         </div>
                         <div>
-                            <h5 class="fw-bold mb-1">Notify Customers</h5>
-                            <p class="text-muted small mb-0">Send an announcement to all customers.</p>
+                            <h5 class="fw-bold mb-1">{{ __('Notify Customers') }}</h5>
+                            <p class="text-muted small mb-0">{{ __('Send an announcement to all customers.') }}</p>
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">Title</label>
-                        <input type="text" name="title" class="form-control" placeholder="e.g. New Season Sale" required maxlength="255">
+                        <label class="form-label fw-semibold small">{{ __('Title') }}</label>
+                        <input type="text" name="title" class="form-control" placeholder="{{ __('e.g. New Season Sale') }} required maxlength="255">
                     </div>
                     <div class="mb-2">
-                        <label class="form-label fw-semibold small">Message</label>
-                        <textarea name="message" class="form-control" rows="4" placeholder="Write your announcement..." required maxlength="5000"></textarea>
+                        <label class="form-label fw-semibold small">{{ __('Message') }}</label>
+                        <textarea name="message" class="form-control" rows="4" placeholder="{{ __('Write your announcement...') }} required maxlength="5000"></textarea>
                     </div>
                     <div id="announcementFeedback" class="form-success d-none"></div>
                 </div>
                 <div class="modal-footer border-0 justify-content-center pb-4 pt-0">
-                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
                     <button type="submit" class="btn btn-success px-4" id="announcementSubmit">
-                        <i class="bi bi-send me-1"></i>Send to All Customers
+<i class="bi bi-send me-1"></i>{{ __('Send to All Customers') }}
                     </button>
                 </div>
             </form>

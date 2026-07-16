@@ -26,13 +26,25 @@ class AdminPageController extends Controller
         $this->middleware('permission:vipcodes.delete', ['only' => ['deleteVipCode']]);
     }
 
-    public function customers(): View
+    public function customers(Request $request): View
     {
+        $query = User::withCount('orders')
+            ->withSum('orders', 'total_amount');
+
+        if ($search = $request->get('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('role')) {
+            $query->where('role', $request->input('role'));
+        }
+
         return view('admin.customers', [
-            'users' => User::withCount('orders')
-                ->withSum('orders', 'total_amount')
-                ->latest()
-                ->paginate(10),
+            'users' => $query->latest()->paginate(10),
         ]);
     }
 
@@ -73,7 +85,7 @@ class AdminPageController extends Controller
 
         $user->update($data);
 
-        return redirect()->route('admin.profile')->with('status', 'Profile updated successfully.');
+        return redirect()->route('admin.profile')->with('status', 'Your profile has been updated successfully.');
     }
 
     public function vipCodes(): View
@@ -136,7 +148,7 @@ class AdminPageController extends Controller
         return redirect()->route('admin.promotions.vip-codes')
             ->with('generated_code', $code)
             ->with('sent_count', $customerCount)
-            ->with('status', 'VIP code generated and sent to ' . $customerCount . ' customer(s)!');
+            ->with('status', "VIP code <strong>{$code}</strong> generated and sent to <strong>{$customerCount}</strong> customer(s).");
     }
 
     public function deleteVipCode($id): RedirectResponse
@@ -144,7 +156,22 @@ class AdminPageController extends Controller
         DiscountCode::findOrFail($id)->delete();
 
         return redirect()->route('admin.promotions.vip-codes')
-            ->with('status', 'VIP code deleted.');
+            ->with('status', 'VIP discount code has been archived.');
+    }
+
+    public function updateNotificationPreferences(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $validated = $request->validate([
+            'key' => ['required', 'string', 'in:order_updates,new_promotions,low_stock,new_products,review_alerts'],
+            'value' => ['required', 'in:0,1'],
+        ]);
+
+        $user = auth()->user();
+        $prefs = $user->notification_preferences ?? [];
+        $prefs[$validated['key']] = (bool) $validated['value'];
+        $user->update(['notification_preferences' => $prefs]);
+
+        return response()->json(['success' => true, 'message' => 'Preference saved.']);
     }
 
     public function permissions(): View
@@ -189,6 +216,6 @@ class AdminPageController extends Controller
         }
 
         return redirect()->route('admin.permissions')
-            ->with('status', 'Permissions updated successfully.');
+            ->with('status', 'Role permissions have been updated successfully.');
     }
 }

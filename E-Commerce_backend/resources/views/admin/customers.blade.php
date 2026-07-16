@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Customers')
+@section('title', __('Customers'))
 
 @section('content')
     <div class="container-fluid p-0">
@@ -8,10 +8,30 @@
             <div
                 class="card-header bg-white py-3 rounded-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <div>
-                    <h5 class="fw-bold mb-0">All Users</h5>
-                    <small class="text-muted">{{ $users->total() }} total</small>
+                    <h5 class="fw-bold mb-0">{{ __('All Users') }}</h5>
+                    <small class="text-muted">{{ $users->total() }} {{ __('total') }}</small>
                 </div>
                 @include('admin.partials.export-dropdown', ['exportRoute' => route('admin.export.customers')])
+            </div>
+            <div class="card-body border-bottom px-3 py-3">
+                <form method="GET" class="row g-2 align-items-end">
+                    <div class="col-auto">
+                        <input type="search" name="search" class="form-control form-control-sm" placeholder="{{ __('Search by name, email or phone...') }}" value="{{ request('search') }}">
+                    </div>
+                    <div class="col-auto">
+                        <select name="role" class="form-select form-select-sm">
+                            <option value="">{{ __('All Roles') }}</option>
+                            <option value="customer" {{ request('role') === 'customer' ? 'selected' : '' }}>{{ __('Customer') }}</option>
+                            <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>{{ __('Admin') }}</option>
+                            <option value="manager" {{ request('role') === 'manager' ? 'selected' : '' }}>{{ __('Manager') }}</option>
+                            <option value="staff" {{ request('role') === 'staff' ? 'selected' : '' }}>{{ __('Staff') }}</option>
+                        </select>
+                    </div>
+                    <div class="col-auto d-flex gap-1">
+                        <button type="submit" class="btn btn-sm btn-success"><i class="bi bi-funnel me-1"></i>{{ __('Filter') }}</button>
+                        <a href="{{ route('admin.customers') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-x-circle"></i></a>
+                    </div>
+                </form>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -19,13 +39,13 @@
                         <thead class="table-light">
                             <tr>
                                 <th class="px-4 py-3 small fw-bold text-uppercase">#</th>
-                                <th class="px-4 py-3 small fw-bold text-uppercase">User</th>
-                                <th class="px-4 py-3 small fw-bold text-uppercase">Contact</th>
-                                <th class="px-4 py-3 small fw-bold text-uppercase">Role</th>
-                                <th class="px-4 py-3 small fw-bold text-uppercase text-center">Orders</th>
-                                <th class="px-4 py-3 small fw-bold text-uppercase text-end">Total Spent</th>
-                                <th class="px-4 py-3 small fw-bold text-uppercase text-end">Joined</th>
-                                <th class="px-4 py-3 small fw-bold text-uppercase text-end">Actions</th>
+                                <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('User') }}</th>
+                                <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Contact') }}</th>
+                                <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Role') }}</th>
+                                <th class="px-4 py-3 small fw-bold text-uppercase text-center">{{ __('Orders') }}</th>
+                                <th class="px-4 py-3 small fw-bold text-uppercase text-end">{{ __('Total Spent') }}</th>
+                                <th class="px-4 py-3 small fw-bold text-uppercase text-end">{{ __('Joined') }}</th>
+                                <th class="px-4 py-3 small fw-bold text-uppercase text-end">{{ __('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -86,14 +106,14 @@
                                     <td class="px-4 py-3 text-end">
                                         <div class="d-flex gap-1 justify-content-end">
                                             <a href="{{ route('admin.users.show', $user->id) }}"
-                                                class="btn btn-sm btn-outline-info" title="View">
+                                                class="btn btn-sm btn-outline-info" title="{{ __('View') }}">
                                                 <i class="bi bi-eye"></i>
                                             </a>
                                             @if (auth()->id() !== $user->id)
                                                 <button type="button" class="btn btn-sm btn-outline-danger"
                                                     data-bs-toggle="modal" data-bs-target="#deleteModal"
                                                     data-url="{{ route('admin.users.destroy', $user->id) }}"
-                                                    title="Delete">
+                                                    title="{{ __('Delete') }}">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             @endif
@@ -102,7 +122,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="px-4 py-5 text-center text-muted">No users found.</td>
+                                    <td colspan="8" class="px-4 py-5 text-center text-muted">{{ __('No users found.') }}</td>
                                 </tr>
                             @endforelse
                         </tbody>

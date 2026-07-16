@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Register')
+@section('title', __('Register'))
 
 @section('content')
     <div class="flex min-h-screen items-center justify-center bg-green-50 px-6 py-10">
@@ -18,9 +18,9 @@
 
             {{-- Heading --}}
             <div class="mb-8 text-center">
-                <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-600">Create account</p>
-                <h2 class="mt-2 text-[26px] font-extrabold leading-tight text-slate-900">Join E-Commerce</h2>
-                <p class="mt-1.5 text-[13.5px] text-slate-500">Manage your orders and wishlist in one place.</p>
+                <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-600">{{ __('Create account') }}</p>
+                <h2 class="mt-2 text-[26px] font-extrabold leading-tight text-slate-900">{{ __('Join E-Commerce') }}</h2>
+                <p class="mt-1.5 text-[13.5px] text-slate-500">{{ __('Manage your orders and wishlist in one place.') }}</p>
             </div>
 
             {{-- Error messages --}}
@@ -52,12 +52,12 @@
                 @csrf
 
                 {{-- Section: Personal Info --}}
-                <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Personal info</p>
+                <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('Personal info') }}</p>
 
                 {{-- Name + Phone (2-col) --}}
                 <div class="grid grid-cols-2 gap-3.5">
                     <div>
-                        <label class="mb-1.5 block text-[13px] font-semibold text-slate-700">Full name</label>
+                        <label class="mb-1.5 block text-[13px] font-semibold text-slate-700">{{ __('Full name') }}</label>
                         <div class="relative">
                             <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
                                 <svg class="h-[15px] w-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -67,12 +67,12 @@
                                 </svg>
                             </span>
                             <input type="text" name="name" value="{{ old('name') }}" required
-                                placeholder="Your name"
+                                placeholder="{{ __('Your name') }}
                                 class="w-full rounded-[14px] border border-green-100 bg-green-50/40 py-[11px] pl-[38px] pr-3 text-[13.5px] text-slate-900 placeholder-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-[3px] focus:ring-emerald-500/10">
                         </div>
                     </div>
                     <div>
-                        <label class="mb-1.5 block text-[13px] font-semibold text-slate-700">Phone</label>
+                        <label class="mb-1.5 block text-[13px] font-semibold text-slate-700">{{ __('Phone') }}</label>
                         <div class="relative">
                             <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
                                 <svg class="h-[15px] w-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -81,7 +81,7 @@
                                         d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.88 13.5 19.79 19.79 0 0 1 1.81 4.9 2 2 0 0 1 3.8 2.72h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10a16 16 0 0 0 6.09 6.09l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
                                 </svg>
                             </span>
-                            <input type="text" name="phone" value="{{ old('phone') }}" placeholder="+855 ..."
+                            <input type="text" name="phone" value="{{ old('phone') }}" placeholder="{{ __('+855 ...') }}
                                 class="w-full rounded-[14px] border border-green-100 bg-green-50/40 py-[11px] pl-[38px] pr-3 text-[13.5px] text-slate-900 placeholder-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-[3px] focus:ring-emerald-500/10">
                         </div>
                     </div>
@@ -89,7 +89,7 @@
 
                 {{-- Email --}}
                 <div>
-                    <label class="mb-1.5 block text-[13px] font-semibold text-slate-700">Email address</label>
+                    <label class="mb-1.5 block text-[13px] font-semibold text-slate-700">{{ __('Email address') }}</label>
                     <div class="relative">
                         <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
                             <svg class="h-[15px] w-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -99,14 +99,14 @@
                             </svg>
                         </span>
                         <input type="email" name="email" value="{{ old('email') }}" required
-                            placeholder="you@example.com"
+                            placeholder="{{ __('you@example.com') }}
                             class="w-full rounded-[14px] border border-green-100 bg-green-50/40 py-[11px] pl-[38px] pr-3 text-[13.5px] text-slate-900 placeholder-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-[3px] focus:ring-emerald-500/10">
                     </div>
                 </div>
 
                 {{-- Address --}}
                 <div>
-                    <label class="mb-1.5 block text-[13px] font-semibold text-slate-700">Shipping address</label>
+                    <label class="mb-1.5 block text-[13px] font-semibold text-slate-700">{{ __('Shipping address') }}</label>
                     <div class="relative">
                         <span class="pointer-events-none absolute left-3 top-[13px] text-slate-400">
                             <svg class="h-[15px] w-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -115,7 +115,7 @@
                                 <circle cx="12" cy="10" r="3" />
                             </svg>
                         </span>
-                        <textarea name="address" rows="2" placeholder="Street, city, province…"
+                        <textarea name="address" rows="2" placeholder="{{ __('Street, city, province…') }}
                             class="w-full resize-none rounded-[14px] border border-green-100 bg-green-50/40 py-[11px] pl-[38px] pr-3 text-[13.5px] leading-relaxed text-slate-900 placeholder-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-[3px] focus:ring-emerald-500/10">{{ old('address') }}</textarea>
                     </div>
                 </div>
@@ -124,12 +124,12 @@
                 <div class="!my-5 border-t border-slate-100"></div>
 
                 {{-- Section: Security --}}
-                <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Security</p>
+                <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('Security') }}</p>
 
                 {{-- Password + Confirm (2-col) --}}
                 <div class="grid grid-cols-2 gap-3.5">
                     <div>
-                        <label class="mb-1.5 block text-[13px] font-semibold text-slate-700">Password</label>
+                        <label class="mb-1.5 block text-[13px] font-semibold text-slate-700">{{ __('Password') }}</label>
                         <div class="relative">
                             <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
                                 <svg class="h-[15px] w-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -152,7 +152,7 @@
                         </div>
                     </div>
                     <div>
-                        <label class="mb-1.5 block text-[13px] font-semibold text-slate-700">Confirm password</label>
+                        <label class="mb-1.5 block text-[13px] font-semibold text-slate-700">{{ __('Confirm password') }}</label>
                         <div class="relative">
                             <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
                                 <svg class="h-[15px] w-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -179,13 +179,13 @@
 
                 {{-- Role --}}
                 <div class="!mt-4">
-                    <label class="mb-1.5 block text-[13px] font-semibold text-slate-700">Register as</label>
+                    <label class="mb-1.5 block text-[13px] font-semibold text-slate-700">{{ __('Register as') }}</label>
                     <select name="role" required
                         class="w-full rounded-[14px] border border-green-100 bg-green-50/40 py-[11px] px-3 text-[13.5px] text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-[3px] focus:ring-emerald-500/10">
-                        <option value="" disabled {{ old('role') ? '' : 'selected' }}>Select role</option>
-                        <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Admin</option>
-                        <option value="manager" {{ old('role') === 'manager' ? 'selected' : '' }}>Manager</option>
-                        <option value="staff" {{ old('role') === 'staff' ? 'selected' : '' }}>Staff</option>
+                        <option value="" disabled {{ old('role') ? '' : 'selected' }}>{{ __('Select role') }}</option>
+                        <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>{{ __('Admin') }}</option>
+                        <option value="manager" {{ old('role') === 'manager' ? 'selected' : '' }}>{{ __('Manager') }}</option>
+                        <option value="staff" {{ old('role') === 'staff' ? 'selected' : '' }}>{{ __('Staff') }}</option>
                     </select>
                     @error('role')
                         <p class="mt-1.5 text-xs font-medium text-rose-600">{{ $message }}</p>
@@ -195,7 +195,7 @@
                 {{-- Submit --}}
                 <button type="submit"
                     class="mt-2 w-full rounded-[14px] bg-gradient-to-br from-emerald-600 to-emerald-400 py-3.5 text-[15px] font-bold text-white shadow-[0_4px_14px_rgba(5,150,105,0.3)] transition hover:-translate-y-0.5 hover:opacity-90 active:translate-y-0">
-                    Create account
+                    {{ __('Create account') }}
                 </button>
 
             </form>
@@ -203,8 +203,8 @@
             {{-- @include('auth.social-buttons') --}}
 
             <p class="mt-5 text-center text-[13.5px] text-slate-500">
-                Already have an account?
-                <a href="{{ route('login') }}" class="font-bold text-emerald-600 hover:text-emerald-700">Sign in</a>
+                {{ __('Already have an account?') }}
+                <a href="{{ route('login') }}" class="font-bold text-emerald-600 hover:text-emerald-700">{{ __('Sign in') }}</a>
             </p>
 
         </div>

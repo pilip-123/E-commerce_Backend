@@ -18,10 +18,23 @@ class UserController extends Controller
         $this->middleware('permission:users.edit', ['only' => ['edit', 'update']]);
     }
 
-    public function index(): View
+    public function index(Request $request): View
     {
+        $query = User::query();
+
+        if ($search = $request->get('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('role')) {
+            $query->where('role', $request->input('role'));
+        }
+
         return view('admin.users.index', [
-            'users' => User::latest()->paginate(10),
+            'users' => $query->latest()->paginate(10),
         ]);
     }
 
@@ -65,17 +78,18 @@ class UserController extends Controller
 
         $user->update($data);
 
-        return redirect()->route('admin.users.index')->with('status', 'User updated successfully.');
+        return redirect()->route('admin.users.index')->with('status', "User <strong>{$user->name}</strong> has been updated successfully.");
     }
 
     public function destroy(User $user): RedirectResponse
     {
         if (auth()->id() === $user->id) {
-            return back()->withErrors(['user' => 'You cannot delete your own account.']);
+            return back()->withErrors(['user' => 'You cannot archive your own account.']);
         }
 
+        $name = $user->name;
         $user->delete();
 
-        return redirect()->route('admin.users.index')->with('status', 'User deleted successfully.');
+        return redirect()->route('admin.users.index')->with('status', "User <strong>{$name}</strong> has been archived.");
     }
 }

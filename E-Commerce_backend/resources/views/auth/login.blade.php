@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Login')
+@section('title', __('Login'))
 
 @section('content')
     <div
@@ -70,15 +70,15 @@
 
                 {{-- Copyright --}}
                 <div class="flex-shrink-0 text-center lg:text-left">
-                    <p class="text-sm text-gray-400">&copy; 2026 E-Commerce. All rights reserved.</p>
+                    <p class="text-sm text-gray-400">&copy; 2026 E-Commerce. {{ __('All rights reserved.') }}</p>
                 </div>
             </div>
 
             {{-- Right Column --}}
             <div class="p-8 lg:p-12 xl:p-16 flex flex-col justify-center">
                 {{-- Heading --}}
-                <h1 class="text-[#0F172A] text-[36px] lg:text-[44px] font-bold leading-tight">Welcome Back!</h1>
-                <p class="text-gray-400 mt-2 text-lg">Login to continue</p>
+                <h1 class="text-[#0F172A] text-[36px] lg:text-[44px] font-bold leading-tight">{{ __('Welcome Back!') }}</h1>
+                <p class="text-gray-400 mt-2 text-lg">{{ __('Login to continue') }}</p>
 
                 {{-- Error messages --}}
                 @if ($errors->any())
@@ -112,7 +112,7 @@
                                 </svg>
                             </span>
                             <input type="email" name="email" value="{{ old('email') }}" required
-                                placeholder="Enter your email"
+                                placeholder="{{ __('Enter your email') }}"
                                 class="w-full h-[55px] pl-12 pr-4 border border-gray-200 rounded-[14px] text-[#1E293B] placeholder-gray-400 outline-none transition-all duration-300 focus:border-[#22c55e] focus:ring-4 focus:ring-[#22c55e]/10 bg-white text-[15px] @error('email') border-red-300 @enderror">
                         </div>
                         @error('email')
@@ -133,7 +133,7 @@
                                 </svg>
                             </span>
                             <input type="password" name="password" id="login-password" required
-                                placeholder="Enter your password"
+                                placeholder="{{ __('Enter your password') }}"
                                 class="w-full h-[55px] pl-12 pr-12 border border-gray-200 rounded-[14px] text-[#1E293B] placeholder-gray-400 outline-none transition-all duration-300 focus:border-[#22c55e] focus:ring-4 focus:ring-[#22c55e]/10 bg-white text-[15px] @error('password') border-red-300 @enderror">
                             <button type="button" onclick="togglePwd('login-password', this)" tabindex="-1"
                                 class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-600 transition-colors duration-300">
@@ -154,16 +154,16 @@
                         <label class="flex items-center gap-2 cursor-pointer select-none">
                             <input type="checkbox" name="remember"
                                 class="w-4 h-4 rounded border-gray-300 text-[#22c55e] focus:ring-[#22c55e] accent-[#22c55e]">
-                            <span class="text-sm text-[#64748B]">Remember Me</span>
+                            <span class="text-sm text-[#64748B]">{{ __('Remember Me') }}</span>
                         </label>
                         <a href="{{ route('password.forgot') }}"
-                            class="text-sm font-semibold text-[#22c55e] hover:text-[#16a34a] transition-colors duration-300">Forgot Password?</a>
+                            class="text-sm font-semibold text-[#22c55e] hover:text-[#16a34a] transition-colors duration-300">{{ __('Forgot Password?') }}</a>
                     </div>
 
                     {{-- Submit --}}
                     <button type="submit"
                         class="w-full h-[52px] bg-gradient-to-r from-[#22c55e] to-[#16a34a] hover:from-[#16a34a] hover:to-[#15803d] rounded-[14px] text-white font-semibold text-[15px] tracking-wide shadow-[0_4px_20px_-4px_rgba(34,197,94,0.4)] transition-all duration-300 hover:shadow-[0_8px_30px_-4px_rgba(34,197,94,0.5)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_10px_-4px_rgba(34,197,94,0.4)] flex items-center justify-center gap-2">
-                        <span>Sign In</span>
+                        <span>{{ __('Sign In') }}</span>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="5" y1="12" x2="19" y2="12" />
@@ -181,10 +181,9 @@
                 {{-- Bottom links --}}
                 <div
                     class="mt-8 pt-6 border-t border-gray-100 flex items-center justify-center gap-4 text-xs text-gray-400">
-                    <a href="#" class="hover:text-gray-600 transition-colors duration-300">Terms &amp;
-                        Conditions</a>
+                    <a href="#" class="hover:text-gray-600 transition-colors duration-300">{{ __('Terms & Conditions') }}</a>
                     <span class="text-gray-300">|</span>
-                    <a href="#" class="hover:text-gray-600 transition-colors duration-300">Privacy Policy</a>
+                    <a href="#" class="hover:text-gray-600 transition-colors duration-300">{{ __('Privacy Policy') }}</a>
                 </div>
             </div>
         </div>

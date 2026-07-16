@@ -18,9 +18,34 @@ class InventoryController extends Controller
         $this->middleware('permission:inventory.view');
     }
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $products = Product::with('category')->paginate(10);
+        $query = Product::with('category');
+
+        if ($search = $request->get('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->integer('category_id'));
+        }
+
+        if ($request->filled('stock_status')) {
+            match ($request->input('stock_status')) {
+                'low' => $query->where('stock', '<=', 3)->where('stock', '>', 0),
+                'out' => $query->where('stock', '<=', 0),
+                'in' => $query->where('stock', '>', 3),
+                default => null,
+            };
+        }
+
+        if ($request->boolean('low')) {
+            $query->where('stock', '<=', 3);
+        }
+
+        $products = $query->paginate(10);
         $lowStockCount = Product::where('stock', '<=', 3)->where('stock', '>', 0)->count();
         $outOfStockCount = Product::where('stock', '<=', 0)->count();
         $totalProducts = Product::count();
@@ -28,7 +53,7 @@ class InventoryController extends Controller
 
         return view('admin.inventory.index', compact(
             'products', 'lowStockCount', 'outOfStockCount', 'totalProducts', 'totalValue'
-        ));
+        ))->with('categories', \App\Models\Category::orderBy('name')->get());
     }
 
     public function stockInForm(): View
@@ -71,7 +96,7 @@ class InventoryController extends Controller
         });
 
         return redirect()->route('admin.inventory.index')
-            ->with('status', 'Stock added successfully.');
+            ->with('status', "<strong>{$product->name}</strong> — <span class=\"text-success\">+{$data['quantity']} units</span> added. New stock: <strong>{$product->fresh()->stock}</strong>.");
     }
 
     public function stockOutForm(): View
@@ -115,7 +140,7 @@ class InventoryController extends Controller
         app(ProductAlertService::class)->checkOutOfStock($product->fresh());
 
         return redirect()->route('admin.inventory.index')
-            ->with('status', 'Stock removed successfully.');
+            ->with('status', "<strong>{$product->name}</strong> — <span class=\"text-danger\">-{$data['quantity']} units</span> removed. New stock: <strong>{$product->fresh()->stock}</strong>.");
     }
 
     public function transferForm(): View
@@ -175,7 +200,7 @@ class InventoryController extends Controller
         app(ProductAlertService::class)->checkOutOfStock($fromProduct->fresh());
 
         return redirect()->route('admin.inventory.index')
-            ->with('status', 'Stock transferred successfully.');
+            ->with('status', "Transferred <strong>{$data['quantity']} units</strong> from <strong>{$fromProduct->name}</strong> to <strong>{$toProduct->name}</strong>.");
     }
 
     public function adjustmentForm(): View
@@ -193,10 +218,10 @@ class InventoryController extends Controller
         ]);
 
         $product = Product::findOrFail($data['product_id']);
+        $oldStock = $product->stock;
 
-        DB::transaction(function () use ($product, $data) {
-            $stockBefore = $product->stock;
-            $difference = $data['new_quantity'] - $stockBefore;
+        DB::transaction(function () use ($product, $data, $oldStock) {
+            $difference = $data['new_quantity'] - $oldStock;
 
             $product->update(['stock' => $data['new_quantity']]);
 
@@ -204,7 +229,7 @@ class InventoryController extends Controller
                 'product_id' => $product->id,
                 'type' => 'adjustment',
                 'quantity' => $difference,
-                'stock_before' => $stockBefore,
+                'stock_before' => $oldStock,
                 'stock_after' => $data['new_quantity'],
                 'notes' => $data['reason'],
                 'user_id' => auth()->id(),
@@ -215,7 +240,7 @@ class InventoryController extends Controller
         app(ProductAlertService::class)->checkOutOfStock($product->fresh());
 
         return redirect()->route('admin.inventory.index')
-            ->with('status', 'Stock adjusted successfully.');
+            ->with('status', "<strong>{$product->name}</strong> adjusted from <strong>{$oldStock}</strong> to <strong>{$data['new_quantity']}</strong> units.");
     }
 
     public function stockCountForm(): View
@@ -266,7 +291,7 @@ class InventoryController extends Controller
         });
 
         return redirect()->route('admin.inventory.index')
-            ->with('status', 'Stock count completed. Reference: ' . $reference);
+            ->with('status', "Stock count completed. All discrepancies have been corrected. <span class=\"text-muted small\">Ref: {$reference}</span>");
     }
 
     public function history(Request $request): View
@@ -301,7 +326,7 @@ class InventoryController extends Controller
         InventoryTransaction::truncate();
 
         return redirect()->route('admin.inventory.history')
-            ->with('status', "{$count} transaction(s) cleared successfully.");
+            ->with('status', "All <strong>{$count} transaction(s)</strong> have been cleared from the history log.");
     }
 
     public function valuation(): View

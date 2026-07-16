@@ -35,6 +35,13 @@ Route::get('/register', [AuthController::class, 'showRegister'])->name('register
 Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
+Route::get('/language/{locale}', function (string $locale) {
+    if (in_array($locale, ['en', 'km'])) {
+        session(['locale' => $locale]);
+    }
+    return redirect()->back();
+})->name('language.switch');
+
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware('auth')
     ->name('dashboard');
@@ -76,9 +83,11 @@ Route::prefix('admin')
         Route::get('customers', [AdminPageController::class, 'customers'])->name('customers');
         Route::get('profile', [AdminPageController::class, 'profile'])->name('profile');
         Route::put('profile', [AdminPageController::class, 'updateProfile'])->name('profile.update');
+        Route::post('profile/notifications', [AdminPageController::class, 'updateNotificationPreferences'])->name('notifications.preferences');
 
         Route::prefix('export')->name('export.')->group(function () {
             Route::get('products', [ExportController::class, 'products'])->name('products');
+            Route::get('orders', [ExportController::class, 'orders'])->name('orders');
             Route::get('categories', [ExportController::class, 'categories'])->name('categories');
             Route::get('users', [ExportController::class, 'users'])->name('users');
             Route::get('reviews', [ExportController::class, 'reviews'])->name('reviews');

@@ -390,6 +390,28 @@
                 <div class="collapse navbar-collapse" id="adminNavbar"></div>
 
                 <div class="d-flex align-items-center gap-3 flex-shrink-0 ms-auto">
+                    <div class="dropdown">
+                        <button class="btn btn-sm border-0 d-flex align-items-center justify-content-center rounded-circle flex-shrink-0 dropdown-toggle"
+                            style="width: 36px; height: 36px; background: var(--admin-bg); color: var(--admin-text); font-size: 13px; font-weight: 700;"
+                            type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                            title="{{ __('Language') }}">
+                            {{ strtoupper(session('locale', 'en')) }}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3" style="min-width: 120px;">
+                            <li>
+                                <a class="dropdown-item py-2 d-flex align-items-center gap-2 {{ session('locale', 'en') === 'en' ? 'active' : '' }}"
+                                   href="{{ route('language.switch', 'en') }}">
+                                    🇬🇧 {{ __('English') }}
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2 d-flex align-items-center gap-2 {{ session('locale') === 'km' ? 'active' : '' }}"
+                                   href="{{ route('language.switch', 'km') }}">
+                                    🇰🇭 {{ __('Khmer') }}
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                     <button type="button" id="themeToggle" class="btn btn-sm border-0 d-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
                         style="width: 36px; height: 36px; background: var(--admin-bg); color: var(--admin-text);"
                         title="Toggle theme">
@@ -429,63 +451,63 @@
                 @if (auth()->user()->hasPermission('dashboard.view'))
                     <a href="{{ route('admin.dashboard') }}"
                         class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                        <i class="bi bi-graph-up"></i> Dashboard
+                        <i class="bi bi-graph-up"></i> {{ __('Dashboard') }}
                     </a>
                 @endif
 
                 @if (auth()->user()->hasPermission('products.view'))
                     <a href="{{ route('admin.products.index') }}"
                         class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
-                        <i class="bi bi-box"></i> Products
+                        <i class="bi bi-box"></i> {{ __('Products') }}
                     </a>
                 @endif
 
                 @if (auth()->user()->hasPermission('categories.view'))
                     <a href="{{ route('admin.categories.index') }}"
                         class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
-                        <i class="bi bi-grid"></i> Categories
+                        <i class="bi bi-grid"></i> {{ __('Categories') }}
                     </a>
                 @endif
 
                 @if (auth()->user()->hasPermission('users.view'))
                     <a href="{{ route('admin.customers') }}"
                         class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.customers') ? 'active' : '' }}">
-                        <i class="bi bi-people-fill"></i> Users
+                        <i class="bi bi-people-fill"></i> {{ __('Users') }}
                     </a>
                 @endif
 
                 @if (auth()->user()->hasPermission('sales.view'))
                     <a href="{{ route('admin.orders.index') }}"
                         class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
-                        <i class="bi bi-receipt"></i> Orders
+                        <i class="bi bi-receipt"></i> {{ __('Orders') }}
                     </a>
                 @endif
 
                 @if (auth()->user()->hasPermission('promotions.view'))
                     <a href="{{ route('admin.promotions.index') }}"
                         class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.promotions.*') && !request()->routeIs('admin.promotions.vip-codes') ? 'active' : '' }}">
-                        <i class="bi bi-percent"></i> Promotions
+                        <i class="bi bi-percent"></i> {{ __('Promotions') }}
                     </a>
                 @endif
 
                 @if (auth()->user()->hasPermission('vipcodes.view'))
                     <a href="{{ route('admin.promotions.vip-codes') }}"
                         class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.promotions.vip-codes') ? 'active' : '' }}">
-                        <i class="bi bi-lock"></i> VIP Codes
+                        <i class="bi bi-lock"></i> {{ __('Discount Codes') }}
                     </a>
                 @endif
 
                 @if (auth()->user()->hasPermission('products.view'))
                     <a href="{{ route('admin.reviews.index') }}"
                         class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.reviews.*') ? 'active' : '' }}">
-                        <i class="bi bi-star"></i> Reviews
+                        <i class="bi bi-star"></i> {{ __('Reviews') }}
                     </a>
                 @endif
 
                 @if (auth()->user()->hasPermission('inventory.view'))
                     <a href="{{ route('admin.inventory.index') }}"
                         class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.inventory.*') ? 'active' : '' }}">
-                        <i class="bi bi-boxes"></i> Inventory
+                        <i class="bi bi-boxes"></i> {{ __('Inventory') }}
                     </a>
                 @endif
 
@@ -494,13 +516,13 @@
                 @if (auth()->user()->isAdmin())
                     <a href="{{ route('admin.permissions') }}"
                         class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.permissions') ? 'active' : '' }}">
-                        <i class="bi bi-shield-lock"></i> Permissions
+                        <i class="bi bi-shield-lock"></i> {{ __('Permissions') }}
                     </a>
                 @endif
 
                 <a href="{{ route('admin.profile') }}"
                     class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.profile') ? 'active' : '' }}">
-                    <i class="bi bi-gear"></i> Settings
+                    <i class="bi bi-gear"></i> {{ __('Settings') }}
                 </a>
             </nav>
             </aside>
@@ -513,42 +535,30 @@
 
     {{-- Toast Container --}}
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
-        @if (session('status'))
-            <div class="toast align-items-center border-0 shadow rounded-3" role="alert" aria-live="assertive"
-                aria-atomic="true" data-bs-delay="4000" data-bs-autohide="true">
-                <div class="d-flex">
-                    <div class="toast-body d-flex align-items-center gap-2 fw-semibold" style="color: #047857;">
-                        <i class="bi bi-check-circle-fill" style="color: #059669;"></i>
-                        {{ session('status') }}
+        @php
+            $toastTypes = [
+                'status' => ['icon' => 'bi-check-circle-fill', 'color' => '#059669', 'bg' => '#ecfdf5', 'border' => '#10b981'],
+                'success' => ['icon' => 'bi-check-circle-fill', 'color' => '#059669', 'bg' => '#ecfdf5', 'border' => '#10b981'],
+                'error' => ['icon' => 'bi-exclamation-circle-fill', 'color' => '#dc2626', 'bg' => '#fef2f2', 'border' => '#ef4444'],
+                'warning' => ['icon' => 'bi-exclamation-triangle-fill', 'color' => '#d97706', 'bg' => '#fffbeb', 'border' => '#f59e0b'],
+                'info' => ['icon' => 'bi-info-circle-fill', 'color' => '#2563eb', 'bg' => '#eff6ff', 'border' => '#3b82f6'],
+            ];
+        @endphp
+        @foreach ($toastTypes as $key => $cfg)
+            @if (session($key))
+                <div class="toast border-0 shadow rounded-3 p-0 overflow-hidden" role="alert" aria-live="assertive"
+                    aria-atomic="true" data-bs-delay="5000" data-bs-autohide="true"
+                    style="border-left: 4px solid {{ $cfg['border'] }} !important; min-width: 320px;">
+                    <div class="d-flex align-items-center" style="background: {{ $cfg['bg'] }};">
+                        <div class="toast-body d-flex align-items-start gap-3 py-3 px-3 fw-semibold" style="color: #1f2937;">
+                            <i class="bi {{ $cfg['icon'] }} fs-5 flex-shrink-0 mt-0" style="color: {{ $cfg['color'] }};"></i>
+                            <div class="small">{!! session($key) !!}</div>
+                        </div>
+                        <button type="button" class="btn-close me-3 flex-shrink-0" data-bs-dismiss="toast" style="font-size: 12px;"></button>
                     </div>
-                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
                 </div>
-            </div>
-        @endif
-        @if (session('success'))
-            <div class="toast align-items-center border-0 shadow rounded-3" role="alert" aria-live="assertive"
-                aria-atomic="true" data-bs-delay="4000" data-bs-autohide="true">
-                <div class="d-flex">
-                    <div class="toast-body d-flex align-items-center gap-2 fw-semibold" style="color: #047857;">
-                        <i class="bi bi-check-circle-fill" style="color: #059669;"></i>
-                        {{ session('success') }}
-                    </div>
-                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
-                </div>
-            </div>
-        @endif
-        @if (session('error'))
-            <div class="toast align-items-center border-0 shadow rounded-3" role="alert" aria-live="assertive"
-                aria-atomic="true" data-bs-delay="4000" data-bs-autohide="true">
-                <div class="d-flex">
-                    <div class="toast-body d-flex align-items-center gap-2 fw-semibold" style="color: #dc2626;">
-                        <i class="bi bi-exclamation-circle-fill" style="color: #dc2626;"></i>
-                        {{ session('error') }}
-                    </div>
-                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
-                </div>
-            </div>
-        @endif
+            @endif
+        @endforeach
     </div>
 
     {{-- Logout Confirmation Modal --}}
