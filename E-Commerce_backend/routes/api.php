@@ -25,10 +25,18 @@ use App\Http\Middleware\ApiTokenMiddleware;
 */
 
 // ─── Auth ───────────────────────────────────────────────────────────────
-Route::post('/auth/register',       [AuthController::class, 'register']);
-Route::post('/auth/login',          [AuthController::class, 'login']);
-Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
-Route::post('/auth/reset-password',  [AuthController::class, 'resetPassword']);
+Route::post('/auth/register',                     [AuthController::class, 'register']);
+Route::post('/auth/login',                        [AuthController::class, 'login']);
+Route::post('/auth/forgot-password',               [AuthController::class, 'forgotPassword'])
+    ->middleware('throttle:5,60');
+Route::post('/auth/reset-password',                [AuthController::class, 'resetPassword']);
+Route::post('/auth/validate-reset-token',          [AuthController::class, 'validateResetToken']);
+
+// Admin password reset (same logic, role context applied)
+Route::post('/admin/auth/forgot-password',         [AuthController::class, 'forgotPassword'])
+    ->middleware('throttle:5,60');
+Route::post('/admin/auth/reset-password',          [AuthController::class, 'resetPassword']);
+Route::post('/admin/auth/validate-reset-token',    [AuthController::class, 'validateResetToken']);
 
 // Social Auth (API / stateless)
 Route::prefix('auth')->group(function () {
