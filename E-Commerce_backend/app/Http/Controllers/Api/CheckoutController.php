@@ -54,10 +54,22 @@ class CheckoutController extends Controller
         $discountCode = null;
         $discountAmount = 0;
         if ($request->discount_code) {
+            // Require $500+ spending today to use a VIP code
+            $todayTotal = Order::where('user_id', $request->user()->id)
+                ->whereDate('created_at', today())
+                ->sum('total_amount');
+
+            if ($todayTotal < 500) {
+                return response()->json(['message' => 'VIP codes require $500+ in orders today.'], 422);
+            }
+
             $discountCode = DiscountCode::where('code', strtoupper(trim($request->discount_code)))->first();
             if ($discountCode) {
-                if (!$discountCode->isValid()) {
-                    return response()->json(['message' => 'This discount code has already been used.'], 422);
+                if (!$discountCode->isValidForUser($request->user())) {
+                    $msg = $discountCode->isValid()
+                        ? 'You have already used this discount code.'
+                        : 'This discount code has already been used.';
+                    return response()->json(['message' => $msg], 422);
                 }
                 $rawTotal = $cartItems->sum(fn (Cart $item) => $this->effectivePrice($item->product) * $item->quantity);
                 $discountAmount = $discountCode->discount_type === 'percentage'
@@ -106,7 +118,7 @@ class CheckoutController extends Controller
         });
 
         if ($discountCode) {
-            $discountCode->markUsed();
+            $discountCode->markUsedBy($request->user());
         }
 
         User::where('role', 'admin')->get()->each->notify(new NewOrderNotification($order));

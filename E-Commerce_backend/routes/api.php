@@ -88,6 +88,15 @@ Route::middleware(ApiTokenMiddleware::class)->group(function () {
 
         $code = strtoupper(trim($request->code));
 
+        // Require $500+ spending today to use a VIP code
+        $todayTotal = \App\Models\Order::where('user_id', $request->user()->id)
+            ->whereDate('created_at', today())
+            ->sum('total_amount');
+
+        if ($todayTotal < 500) {
+            return response()->json(['message' => 'VIP codes require $500+ in orders today.'], 422);
+        }
+
         $discount = \App\Models\DiscountCode::where('code', $code)->first();
 
         if (!$discount) {
@@ -108,8 +117,11 @@ Route::middleware(ApiTokenMiddleware::class)->group(function () {
             ]);
         }
 
-        if (!$discount->isValid()) {
-            return response()->json(['message' => 'This discount code has already been used.'], 422);
+        if (!$discount->isValidForUser($request->user())) {
+            $msg = $discount->isValid()
+                ? 'You have already used this discount code.'
+                : 'This discount code has already been used.';
+            return response()->json(['message' => $msg], 422);
         }
 
         return response()->json([
