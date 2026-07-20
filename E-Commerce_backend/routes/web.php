@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -118,5 +119,12 @@ Route::prefix('admin')
             ->middleware(AdminMiddleware::class);
         Route::put('permissions', [AdminPageController::class, 'updatePermissions'])->name('permissions.update')
             ->middleware(AdminMiddleware::class);
+
+        Route::get('reports', [ReportController::class, 'index'])->name('reports');
+        Route::get('reports/data/daily-sales', [ReportController::class, 'dailySales'])->name('reports.daily-sales');
+        Route::get('reports/data/monthly-sales', [ReportController::class, 'monthlySales'])->name('reports.monthly-sales');
+        Route::get('reports/data/revenue', [ReportController::class, 'revenue'])->name('reports.revenue');
+        Route::get('reports/data/top-customers', [ReportController::class, 'topCustomers'])->name('reports.top-customers');
+        Route::get('reports/data/best-sellers', [ReportController::class, 'bestSellers'])->name('reports.best-sellers');
     });
 

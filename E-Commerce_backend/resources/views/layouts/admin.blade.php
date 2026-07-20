@@ -511,6 +511,11 @@
                     </a>
                 @endif
 
+                <a href="{{ route('admin.reports') }}"
+                    class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.reports*') ? 'active' : '' }}">
+                    <i class="bi bi-graph-up-arrow"></i> {{ __('Reports') }}
+                </a>
+
                 <hr class="my-2">
 
                 @if (auth()->user()->isAdmin())

@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\NotificationController as ApiNotificationController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Middleware\ApiTokenMiddleware;
 
 /*
@@ -193,4 +194,11 @@ Route::prefix('admin')
 
         // ─── Notifications ─────────────────────────────────────────────
         Route::post('/notifications/announcement',   [AdminNotificationController::class, 'sendAnnouncement']);
+
+        // ─── Reports ──────────────────────────────────────────────────
+        Route::get('/reports/daily-sales',     [ReportController::class, 'dailySales']);
+        Route::get('/reports/monthly-sales',   [ReportController::class, 'monthlySales']);
+        Route::get('/reports/revenue',         [ReportController::class, 'revenue']);
+        Route::get('/reports/top-customers',   [ReportController::class, 'topCustomers']);
+        Route::get('/reports/best-sellers',    [ReportController::class, 'bestSellers']);
     });
