@@ -36,12 +36,9 @@ class SocialAuthController extends Controller
             : null;
 
         try {
-            $redirectUri = $isApiFlow
-                ? rtrim(config('app.url'), '/') . '/api/auth/' . $provider . '/callback'
-                : config("services.{$provider}.redirect");
             $socialUser = Socialite::driver($provider)
                 ->stateless()
-                ->redirectUrl($redirectUri)
+                ->redirectUrl(config("services.{$provider}.redirect"))
                 ->user();
         } catch (\Throwable $e) {
             Log::error('Social auth callback failed: ' . $e->getMessage(), [

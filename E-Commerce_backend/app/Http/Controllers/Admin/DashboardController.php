@@ -122,6 +122,31 @@ class DashboardController extends Controller
         $revenueTrend = $prevRevenue > 0 ? round((($revenue - $prevRevenue) / $prevRevenue) * 100, 2) : 0;
         $userTrend = $prevUsers > 0 ? round((($users - $prevUsers) / $prevUsers) * 100, 2) : 0;
 
+        $totalSoldPeriod = OrderItem::whereHas('order', fn($q) => $q->whereBetween('created_at', [$dateFrom, $dateTo]))
+            ->sum('quantity');
+        $totalCostPeriod = Product::sum(\DB::raw('price * stock'));
+        $totalProducts = Product::count();
+
+        $monthlyOrders = Order::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as count, SUM(total_amount) as total")
+            ->where('created_at', '>=', $dateFrom)
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get()
+            ->keyBy('month');
+
+        $chartMonths = [];
+        $chartOrders = [];
+        $chartRevenue = [];
+        $cursor = $dateFrom->copy();
+        while ($cursor <= $dateTo) {
+            $key = $cursor->format('Y-m');
+            $chartMonths[] = $cursor->format('M');
+            $data = $monthlyOrders->get($key);
+            $chartOrders[] = $data ? (int) $data->count : 0;
+            $chartRevenue[] = $data ? (float) $data->total : 0;
+            $cursor->addMonth();
+        }
+
         $label = match ($period) {
             'day' => 'today',
             'week' => 'this week',
@@ -135,11 +160,23 @@ class DashboardController extends Controller
                 'revenue' => $revenue,
                 'pendingOrders' => $pendingCount,
                 'users' => $users,
+                'products' => $totalProducts,
+            ],
+            'summary' => [
+                'totalProducts' => $totalProducts,
+                'totalSold' => $totalSoldPeriod,
+                'totalCost' => $totalCostPeriod,
+                'totalRevenue' => $revenue,
             ],
             'trends' => [
                 'orders' => $orderTrend,
                 'revenue' => $revenueTrend,
                 'users' => $userTrend,
+            ],
+            'chart' => [
+                'months' => $chartMonths,
+                'orders' => $chartOrders,
+                'revenue' => $chartRevenue,
             ],
             'label' => $label,
         ]);

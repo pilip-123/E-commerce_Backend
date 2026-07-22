@@ -518,6 +518,112 @@
         return fetch(u+(q?'?'+q:'')).then(function(r){return r.json();});
     }
 
+    function lineChartPath(values, width, height) {
+        if (!values || values.length < 2) return { area: '', line: '', points: [] };
+        var maxVal = Math.max.apply(null, values) || 1;
+        var stepX = width / (values.length - 1);
+        var points = values.map(function(v, i) {
+            var x = i * stepX;
+            var y = height - (v / maxVal) * (height * 0.82) - 8;
+            return { x: x, y: Math.max(y, 2), value: v, index: i };
+        });
+
+        var d = 'M' + points[0].x + ',' + points[0].y;
+        for (var i = 1; i < points.length; i++) {
+            var prev = points[i - 1], cur = points[i];
+            var cx1 = prev.x + (cur.x - prev.x) / 2, cy1 = prev.y;
+            var cx2 = cur.x - (cur.x - prev.x) / 2, cy2 = cur.y;
+            d += ' C' + cx1 + ',' + cy1 + ' ' + cx2 + ',' + cy2 + ' ' + cur.x + ',' + cur.y;
+        }
+        var area = d + ' L' + points[points.length - 1].x + ',' + height + ' L' + points[0].x + ',' + height + ' Z';
+        return { area: area, line: d, points: points };
+    }
+
+    function lc(id, items, vk, lk, color) {
+        var el = document.getElementById(id); if (!el || !items || !items.length) return;
+        var values = items.map(function(it) { return it[vk] || 0; });
+        var labels = items.map(function(it) { return it[lk] != null ? String(it[lk]).substring(0, 8) : ''; });
+        var w = 600, h = 200;
+        var pathData = lineChartPath(values, w, h);
+        var pts = pathData.points;
+
+        var strokeColor = color === 'g' ? '#059669' : color === 'p' ? '#047857' : '#10b981';
+        var gradId = 'lcGrad_' + id;
+
+        var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" style="width:100%;height:100%;display:block;position:absolute;top:0;left:0;" xmlns="http://www.w3.org/2000/svg">' +
+            '<defs><linearGradient id="' + gradId + '" x1="0" y1="0" x2="0" y2="1">' +
+            '<stop offset="0%" stop-color="' + strokeColor + '" stop-opacity="0.45"/>' +
+            '<stop offset="100%" stop-color="' + strokeColor + '" stop-opacity="0.04"/>' +
+            '</linearGradient></defs>' +
+            '<path d="' + pathData.area + '" fill="url(#' + gradId + ')"/>' +
+            '<path d="' + pathData.line + '" fill="none" stroke="' + strokeColor + '" stroke-width="2.5"/>' +
+            '<g id="dots_' + id + '">' +
+            pts.map(function(p) {
+                return '<circle cx="' + p.x + '" cy="' + p.y + '" r="4" fill="#fff" stroke="' + strokeColor + '" stroke-width="2.5" class="lc-dot-' + id + '" style="cursor:crosshair"/>';
+            }).join('') +
+            '</g>' +
+            '<rect width="' + w + '" height="' + h + '" fill="transparent" style="cursor:crosshair;pointer-events:all;" class="lc-overlay-' + id + '"/>' +
+            '</svg>';
+
+        var tooltipId = 'lcTooltip_' + id;
+        var labelsHtml = '<div class="d-flex justify-content-between small text-muted mt-1 px-1">' +
+            items.map(function(it, i) {
+                var show = (items.length <= 8 || i % Math.ceil(items.length / 6) === 0 || i === items.length - 1);
+                return show ? '<span>' + labels[i] + '</span>' : '';
+            }).join('') +
+            '</div>';
+
+        el.innerHTML = '<div style="position:relative;height:100%;">' +
+            '<div id="' + tooltipId + '" style="display:none;position:absolute;background:#1f2937;color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;pointer-events:none;white-space:nowrap;z-index:10;transform:translate(-50%,-110%);box-shadow:0 4px 12px rgba(0,0,0,.2);"></div>' +
+            svg +
+            '</div>' +
+            labelsHtml;
+
+        // Hover logic
+        var container = el.querySelector('div[style*="position:relative"]') || el;
+        var overlay = el.querySelector('.lc-overlay-' + id);
+        var tooltip = document.getElementById(tooltipId);
+        if (overlay && tooltip) {
+            overlay.addEventListener('mousemove', function(e) {
+                var rect = container.getBoundingClientRect();
+                var scaleX = w / rect.width;
+                var mx = (e.clientX - rect.left) * scaleX;
+                var closest = pts[0], minDist = Math.abs(mx - pts[0].x);
+                for (var i = 1; i < pts.length; i++) {
+                    var dist = Math.abs(mx - pts[i].x);
+                    if (dist < minDist) { minDist = dist; closest = pts[i]; }
+                }
+                var label = labels[closest.index] || '';
+                tooltip.textContent = label + ': ' + (closest.value || 0).toLocaleString();
+
+                var elRect = el.getBoundingClientRect();
+                var tx = e.clientX - elRect.left;
+                var ty = (closest.y / h) * rect.height;
+                tooltip.style.display = 'block';
+                tooltip.style.left = tx + 'px';
+                tooltip.style.top = ty + 'px';
+
+                document.querySelectorAll('.lc-dot-' + id).forEach(function(dot) {
+                    var cx = parseFloat(dot.getAttribute('cx'));
+                    if (Math.abs(cx - closest.x) < 1) {
+                        dot.setAttribute('r', '6');
+                        dot.setAttribute('fill', strokeColor);
+                    } else {
+                        dot.setAttribute('r', '4');
+                        dot.setAttribute('fill', '#fff');
+                    }
+                });
+            });
+            overlay.addEventListener('mouseleave', function() {
+                tooltip.style.display = 'none';
+                document.querySelectorAll('.lc-dot-' + id).forEach(function(dot) {
+                    dot.setAttribute('r', '4');
+                    dot.setAttribute('fill', '#fff');
+                });
+            });
+        }
+    }
+
     function bc(id,items,vk,lk,cl,ev){
         var el=document.getElementById(id);if(!el)return;
         var m=mx(items,vk),e=ev||3;
@@ -605,7 +711,7 @@
             document.getElementById('dailyAvgOrder').textContent=fm(r.average_order);
             var meta=document.getElementById('dailyChartMeta');
             if(meta&&r.date)meta.textContent=new Date(r.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-            bc('dailyHourlyChart',r.hourly_distribution||[],'count','hour','c',3);
+            lc('dailyHourlyChart',r.hourly_distribution||[],'count','hour','c');
             sg('dailyStatus',r.status_breakdown||[]);
         }).catch(function(){});
     };
@@ -621,7 +727,7 @@
             var s=r.sales_growth||0,v=r.revenue_growth||0;
             if(sv){sv.style.display='inline';sv.className='small fw-bold '+(s>=0?'text-success':'text-danger');sv.innerHTML=(s>=0?'&#8593; ':'&#8595; ')+Math.abs(s).toFixed(2)+'%';}
             if(rv){rv.style.display='inline';rv.className='small fw-bold '+(v>=0?'text-success':'text-danger');rv.innerHTML=(v>=0?'&#8593; ':'&#8595; ')+Math.abs(v).toFixed(2)+'%';}
-            bc('monthlyDailyChart',r.daily_distribution||[],'total','date','g',4);
+            lc('monthlyDailyChart',r.daily_distribution||[],'total','date','g');
             sg('monthlyStatus',r.status_breakdown||[]);
         }).catch(function(){});
     };
@@ -632,7 +738,7 @@
             document.getElementById('revTotalSales').textContent=(r.total_sales||0).toLocaleString();
             document.getElementById('revCompleted').textContent=fm(r.completed_revenue);
             document.getElementById('revAvgOrder').textContent=fm(r.average_order);
-            bc('revMonthlyChart',r.monthly_breakdown||[],'total','month','g',1);
+            lc('revMonthlyChart',r.monthly_breakdown||[],'total','month','g');
             cb(r.revenue_by_category||[]);
         }).catch(function(){});
     };

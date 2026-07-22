@@ -79,6 +79,9 @@ class ProductController extends Controller
             $data = $this->validateProduct($request, $existing->id);
             $image = $this->storeImage($request);
 
+            $data['stock'] = $existing->stock + $data['stock'];
+            $data['slug'] = $existing->slug;
+
             if ($image) {
                 $this->deleteImage($existing->image);
                 $data['image'] = $image;
@@ -86,9 +89,12 @@ class ProductController extends Controller
 
             $existing->update($data);
 
+            app(ProductAlertService::class)->checkLowStock($existing->fresh());
+            app(ProductAlertService::class)->checkOutOfStock($existing->fresh());
+
             User::where('role', 'customer')->get()->each->notify(new NewProductNotification($existing, 'updated'));
 
-            return redirect()->route('admin.products.index')->with('status', "<strong>{$existing->name}</strong> already exists — the record has been updated with your new data.");
+            return redirect()->route('admin.products.index')->with('status', "<strong>{$existing->name}</strong> already exists — stock increased by {$request->input('stock')} to {$existing->fresh()->stock}.");
         }
 
         $data = $this->validateProduct($request);

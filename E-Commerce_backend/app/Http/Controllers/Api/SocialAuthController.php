@@ -15,11 +15,9 @@ class SocialAuthController extends Controller
     {
         abort_if(!in_array($provider, self::ALLOWED_PROVIDERS), 404);
 
-        $apiCallbackUrl = rtrim(config('app.url'), '/') . '/api/auth/' . $provider . '/callback';
-
         $url = Socialite::driver($provider)
             ->stateless()
-            ->redirectUrl($apiCallbackUrl)
+            ->redirectUrl(config("services.{$provider}.redirect"))
             ->redirect()
             ->getTargetUrl();
 

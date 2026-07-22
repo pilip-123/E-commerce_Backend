@@ -67,6 +67,7 @@ Route::middleware(ApiTokenMiddleware::class)->group(function () {
     // ─── Profile ────────────────────────────────────────────────────────
     Route::get('/profile',            [ProfileController::class, 'show']);
     Route::patch('/profile',          [ProfileController::class, 'update']);
+    Route::post('/profile/password',  [ProfileController::class, 'changePassword']);
     
     // Use POST with _method=PATCH for image uploads via FormData:
     // POST /api/profile _method=PATCH + image file

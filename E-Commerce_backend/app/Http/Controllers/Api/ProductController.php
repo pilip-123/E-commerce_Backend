@@ -69,6 +69,38 @@ class ProductController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $existing = Product::withTrashed()->where('name', $request->input('name'))->first();
+
+        if ($existing) {
+            if ($existing->trashed()) {
+                $existing->restore();
+            }
+
+            $data = $this->validateProduct($request, $existing->id);
+            $image = $this->storeImage($request);
+
+            $data['stock'] = $existing->stock + $data['stock'];
+            $data['slug'] = $existing->slug;
+
+            if ($image) {
+                $this->deleteImage($existing->image);
+                $data['image'] = $image;
+            }
+
+            $existing->update($data);
+            $existing->load('category');
+
+            app(ProductAlertService::class)->checkLowStock($existing->fresh());
+            app(ProductAlertService::class)->checkOutOfStock($existing->fresh());
+
+            User::where('role', 'customer')->get()->each->notify(new NewProductNotification($existing, 'updated'));
+
+            return response()->json([
+                'message' => 'Product already exists — stock increased by ' . ((int) $request->input('stock')) . '.',
+                'data' => $this->productPayload($existing->fresh()),
+            ]);
+        }
+
         $data = $this->validateProduct($request);
         $data['image'] = $this->storeImage($request);
 

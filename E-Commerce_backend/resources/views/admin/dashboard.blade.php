@@ -257,24 +257,24 @@
                         <h5 class="card-title fw-bold mb-3" style="font-size: 15px;">{{ __('Summary') }}</h5>
                         <div class="row g-0 border-bottom pb-3 mb-3">
                             <div class="col border-end">
-                                <p class="fw-bold mb-0" style="font-size: 15px;">{{ $stats['products'] }}</p>
+                                <p class="fw-bold mb-0" style="font-size: 15px;" id="summaryProducts">{{ $stats['products'] }}</p>
                                 <p class="small text-muted mb-0">{{ __('Total Products') }}</p>
                             </div>
                             <div class="col border-end">
-                                <p class="fw-bold mb-0" style="font-size: 15px;">{{ number_format($totalSold) }}</p>
+                                <p class="fw-bold mb-0" style="font-size: 15px;" id="summarySold">{{ number_format($totalSold) }}</p>
                                 <p class="small text-muted mb-0">{{ __('Units Sold') }}</p>
                             </div>
                             <div class="col border-end">
-                                <p class="fw-bold mb-0" style="font-size: 15px;">${{ number_format($totalCost) }}</p>
+                                <p class="fw-bold mb-0" style="font-size: 15px;" id="summaryCost">${{ number_format($totalCost) }}</p>
                                 <p class="small text-muted mb-0">{{ __('Inventory Cost') }}</p>
                             </div>
                             <div class="col">
-                                <p class="fw-bold mb-0" style="font-size: 15px;">
+                                <p class="fw-bold mb-0" style="font-size: 15px;" id="summaryRevenue">
                                     ${{ number_format($stats['revenue'], 2) }}</p>
                                 <p class="small text-muted mb-0">{{ __('Total Revenue') }}</p>
                             </div>
                         </div>
-                        <div>
+                        <div id="chartContainer" style="position: relative;">
                             <svg viewBox="0 0 600 130" preserveAspectRatio="none" class="w-100"
                                 style="height: 130px; display: block;" xmlns="http://www.w3.org/2000/svg">
                                 <defs>
@@ -284,13 +284,18 @@
                                         <stop offset="100%" stop-color="#f87171" stop-opacity="0.04" />
                                     </linearGradient>
                                 </defs>
-                                <path
+                                <path id="chartArea"
                                     d="M0,120 C60,115 90,100 120,95 C160,88 190,105 240,100 C290,95 320,85 360,70 C400,55 440,75 490,55 C530,38 570,20 600,10 L600,130 L0,130 Z"
                                     fill="url(#areaGrad)" />
-                                <path
+                                <path id="chartLine"
                                     d="M0,120 C60,115 90,100 120,95 C160,88 190,105 240,100 C290,95 320,85 360,70 C400,55 440,75 490,55 C530,38 570,20 600,10"
                                     fill="none" stroke="#f87171" stroke-width="2.5" />
+                                <g id="chartDots"></g>
+                                <rect id="chartOverlay" width="600" height="130" fill="transparent" style="cursor: crosshair;" />
                             </svg>
+                            <div id="chartTooltip"
+                                style="display:none; position:absolute; background:#1f2937; color:#fff; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:600; pointer-events:none; white-space:nowrap; z-index:10; transform:translate(-50%,-110%); box-shadow:0 4px 12px rgba(0,0,0,.2);">
+                            </div>
                             <div class="d-flex justify-content-between small text-muted mt-1 px-1" id="chartLabels">
                                 @foreach ($chartMonths as $month)
                                     <span>{{ $month }}</span>
@@ -429,6 +434,103 @@
                 });
             });
 
+            var chartPoints = [];
+            var chartMonths = [];
+            var chartValues = [];
+
+            function buildChartPath(values, width, height) {
+                if (!values || values.length < 2) return { area: '', line: '', points: [] };
+                var maxVal = Math.max.apply(null, values) || 1;
+                var stepX = width / (values.length - 1);
+                var points = values.map(function(v, i) {
+                    var x = i * stepX;
+                    var y = height - (v / maxVal) * (height * 0.85) - 8;
+                    return { x: x, y: Math.max(y, 2), value: v, index: i };
+                });
+                var d = 'M' + points[0].x + ',' + points[0].y;
+                for (var i = 1; i < points.length; i++) {
+                    var prev = points[i - 1];
+                    var cur = points[i];
+                    var cx1 = prev.x + (cur.x - prev.x) / 2;
+                    var cy1 = prev.y;
+                    var cx2 = cur.x - (cur.x - prev.x) / 2;
+                    var cy2 = cur.y;
+                    d += ' C' + cx1 + ',' + cy1 + ' ' + cx2 + ',' + cy2 + ' ' + cur.x + ',' + cur.y;
+                }
+                var area = d + ' L' + points[points.length - 1].x + ',' + height + ' L' + points[0].x + ',' + height + ' Z';
+                return { area: area, line: d, points: points };
+            }
+
+            function renderChartDots(points) {
+                var dotsEl = document.getElementById('chartDots');
+                if (!dotsEl) return;
+                dotsEl.innerHTML = '';
+                points.forEach(function(p) {
+                    var circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', p.x);
+                    circle.setAttribute('cy', p.y);
+                    circle.setAttribute('r', '4');
+                    circle.setAttribute('fill', '#fff');
+                    circle.setAttribute('stroke', '#f87171');
+                    circle.setAttribute('stroke-width', '2.5');
+                    circle.setAttribute('class', 'chart-dot');
+                    circle.style.cursor = 'crosshair';
+                    dotsEl.appendChild(circle);
+                });
+            }
+
+            function setupChartHover(points, months, values) {
+                var container = document.getElementById('chartContainer');
+                var overlay = document.getElementById('chartOverlay');
+                var tooltip = document.getElementById('chartTooltip');
+                if (!overlay || !tooltip || !container) return;
+
+                overlay.addEventListener('mousemove', function(e) {
+                    var rect = container.getBoundingClientRect();
+                    var svg = overlay.closest('svg');
+                    var viewBoxW = 600;
+                    var svgRect = svg.getBoundingClientRect();
+                    var scaleX = svgRect.width / viewBoxW;
+                    var mx = (e.clientX - svgRect.left) / scaleX;
+
+                    var closest = points[0];
+                    var minDist = Math.abs(mx - points[0].x);
+                    for (var i = 1; i < points.length; i++) {
+                        var dist = Math.abs(mx - points[i].x);
+                        if (dist < minDist) { minDist = dist; closest = points[i]; }
+                    }
+
+                    var label = months[closest.index] || '';
+                    var val = values[closest.index];
+                    tooltip.textContent = label + ': ' + (val !== undefined ? val.toLocaleString() : '0') + ' orders';
+                    tooltip.style.display = 'block';
+
+                    var tooltipX = e.clientX - rect.left;
+                    var tooltipY = (closest.y / 130) * svgRect.height;
+                    tooltip.style.left = tooltipX + 'px';
+                    tooltip.style.top = tooltipY + 'px';
+
+                    document.querySelectorAll('.chart-dot').forEach(function(dot) {
+                        var cx = parseFloat(dot.getAttribute('cx'));
+                        if (Math.abs(cx - closest.x) < 1) {
+                            dot.setAttribute('r', '6');
+                            dot.setAttribute('fill', '#f87171');
+                        } else {
+                            dot.setAttribute('r', '4');
+                            dot.setAttribute('fill', '#fff');
+                        }
+                    });
+                });
+
+                overlay.addEventListener('mouseleave', function() {
+                    tooltip.style.display = 'none';
+                    document.querySelectorAll('.chart-dot').forEach(function(dot) {
+                        dot.setAttribute('r', '4');
+                        dot.setAttribute('fill', '#fff');
+                    });
+                });
+            }
+
             function fetchDashboardData(period) {
                 fetch('{{ route('admin.dashboard.data') }}?period=' + period)
                     .then(function(r) {
@@ -454,6 +556,40 @@
                         if (trendLabel) {
                             trendLabel.textContent = (data.trends.orders >= 0 ? '+' : '') + data.trends.orders
                                 .toFixed(2) + '% (' + data.label + ')';
+                        }
+
+                        if (data.summary) {
+                            var el = document.getElementById('summaryProducts');
+                            if (el) el.textContent = data.summary.totalProducts.toLocaleString();
+                            el = document.getElementById('summarySold');
+                            if (el) el.textContent = data.summary.totalSold.toLocaleString();
+                            el = document.getElementById('summaryCost');
+                            if (el) el.textContent = '$' + parseFloat(data.summary.totalCost).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                            el = document.getElementById('summaryRevenue');
+                            if (el) el.textContent = '$' + parseFloat(data.summary.totalRevenue).toFixed(2);
+                        }
+
+                        if (data.chart && data.chart.orders) {
+                            chartMonths = data.chart.months || [];
+                            chartValues = data.chart.orders || [];
+
+                            var paths = buildChartPath(chartValues, 600, 130);
+                            chartPoints = paths.points || [];
+
+                            var areaEl = document.getElementById('chartArea');
+                            var lineEl = document.getElementById('chartLine');
+                            if (areaEl) areaEl.setAttribute('d', paths.area);
+                            if (lineEl) lineEl.setAttribute('d', paths.line);
+
+                            renderChartDots(chartPoints);
+                            setupChartHover(chartPoints, chartMonths, chartValues);
+
+                            var labelsEl = document.getElementById('chartLabels');
+                            if (labelsEl && chartMonths.length) {
+                                labelsEl.innerHTML = chartMonths.map(function(m) {
+                                    return '<span>' + m + '</span>';
+                                }).join('');
+                            }
                         }
                     });
             }
