@@ -54,13 +54,13 @@ class CheckoutController extends Controller
         $discountCode = null;
         $discountAmount = 0;
         if ($request->discount_code) {
-            // Require $500+ spending today to use a VIP code
+            // Require $100+ spending today to use a VIP code
             $todayTotal = Order::where('user_id', $request->user()->id)
                 ->whereDate('created_at', today())
                 ->sum('total_amount');
 
-            if ($todayTotal < 500) {
-                return response()->json(['message' => 'VIP codes require $500+ in orders today.'], 422);
+            if ($todayTotal < 100) {
+                return response()->json(['message' => 'VIP codes require $100+ in orders today.'], 422);
             }
 
             $discountCode = DiscountCode::where('code', strtoupper(trim($request->discount_code)))->first();
@@ -121,9 +121,17 @@ class CheckoutController extends Controller
             $discountCode->markUsedBy($request->user());
         }
 
-        User::where('role', 'admin')->get()->each->notify(new NewOrderNotification($order));
+        try {
+            User::where('role', 'admin')->get()->each->notify(new NewOrderNotification($order));
+        } catch (\Throwable $e) {
+            // Notification failure should not block order
+        }
 
-        app(TelegramService::class)->sendOrderNotification($order);
+        try {
+            app(TelegramService::class)->sendOrderNotification($order);
+        } catch (\Throwable $e) {
+            // Telegram failure should not block order
+        }
 
         return response()->json([
             'message' => 'Order placed successfully.',

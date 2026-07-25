@@ -9,9 +9,10 @@
             <h5 class="fw-bold mb-0 fs-6"><i class="bi bi-pencil-square me-2 text-success"></i>{{ __('Edit Product') }}</h5>
         </div>
         <div class="card-body">
-            <form action="{{ route('admin.products.update', $product->id) }}" method="POST" enctype="multipart/form-data">
+            <form id="editProductForm" action="{{ route('admin.products.update', $product->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
+                <div id="formAlert" class="alert d-none mb-3 py-2 small"></div>
 
                 <div class="row g-3">
                     <div class="col-12">
@@ -107,3 +108,48 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.getElementById('editProductForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var form = this;
+    var btn = form.querySelector('button[type="submit"]');
+    var alert = document.getElementById('formAlert');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Updating...';
+    alert.classList.add('d-none');
+    fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    }).then(function(r) {
+        return r.json().then(function(data) {
+            if (r.ok) {
+                alert.className = 'alert alert-success mb-3 py-2 small';
+                alert.innerHTML = data.message || 'Product updated successfully.';
+                alert.classList.remove('d-none');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Update';
+            } else {
+                var msg = data.message || 'Validation error.';
+                if (data.errors) {
+                    msg = Object.values(data.errors).flat().join('<br>');
+                }
+                alert.className = 'alert alert-danger mb-3 py-2 small';
+                alert.innerHTML = msg;
+                alert.classList.remove('d-none');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Update';
+            }
+        });
+    }).catch(function() {
+        alert.className = 'alert alert-danger mb-3 py-2 small';
+        alert.innerHTML = 'Network error. Please try again.';
+        alert.classList.remove('d-none');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Update';
+    });
+});
+</script>
+@endpush

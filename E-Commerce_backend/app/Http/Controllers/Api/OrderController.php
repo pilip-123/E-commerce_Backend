@@ -38,7 +38,7 @@ class OrderController extends Controller
         abort_unless($order->user_id === $user->id, 403);
 
         return response()->json([
-            'data' => $this->orderPayload($order->load('items.product'), $user),
+            'data' => $this->orderPayload($order->load('items.product', 'user'), $user),
         ]);
     }
 
@@ -47,6 +47,7 @@ class OrderController extends Controller
         return [
             'id' => $order->id,
             'user_id' => $order->user_id,
+            'user_name' => $order->user?->name ?? $user->name,
             'total_amount' => (float) $order->total_amount,
             'status' => $order->status,
             'phone' => $order->phone,

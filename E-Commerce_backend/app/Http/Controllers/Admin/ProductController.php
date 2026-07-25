@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Notifications\NewProductNotification;
 use App\Services\ProductAlertService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -67,7 +68,7 @@ class ProductController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $existing = Product::withTrashed()->where('name', $request->input('name'))->first();
 
@@ -94,6 +95,9 @@ class ProductController extends Controller
 
             User::where('role', 'customer')->get()->each->notify(new NewProductNotification($existing, 'updated'));
 
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => true, 'message' => "<strong>{$existing->name}</strong> already exists — stock increased by {$request->input('stock')} to {$existing->fresh()->stock}."]);
+            }
             return redirect()->route('admin.products.index')->with('status', "<strong>{$existing->name}</strong> already exists — stock increased by {$request->input('stock')} to {$existing->fresh()->stock}.");
         }
 
@@ -104,6 +108,9 @@ class ProductController extends Controller
 
         User::where('role', 'customer')->get()->each->notify(new NewProductNotification($product, 'created'));
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => "<strong>{$product->name}</strong> has been created successfully."]);
+        }
         return redirect()->route('admin.products.index')->with('status', "<strong>{$product->name}</strong> has been created successfully.");
     }
 
@@ -115,7 +122,7 @@ class ProductController extends Controller
         ]);
     }
 
-    public function update(Request $request, Product $product): RedirectResponse
+    public function update(Request $request, Product $product): RedirectResponse|JsonResponse
     {
         $data = $this->validateProduct($request, $product->id);
         $image = $this->storeImage($request);
@@ -132,7 +139,10 @@ class ProductController extends Controller
         app(ProductAlertService::class)->checkLowStock($product->fresh());
         app(ProductAlertService::class)->checkOutOfStock($product->fresh());
 
-        return redirect()->route('admin.products.index')->with('status', "<strong>{$product->name}</strong> has been updated successfully.");
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => "<strong>{$product->name}</strong> has been updated successfully."]);
+        }
+        return redirect()->route('admin.products.index')->with('status', "<strong{$product->name}</strong> has been updated successfully.");
     }
 
     public function destroy(Product $product): RedirectResponse

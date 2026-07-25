@@ -447,7 +447,7 @@
         <aside class="sidebar bg-white border-end d-none d-lg-flex flex-column py-3">
             <div class="px-3 pb-3 mb-2 border-bottom">
             </div>
-            <nav class="nav flex-column px-2">
+            <nav class="nav flex-column px-2 gap-2">
                 @if (auth()->user()->hasPermission('dashboard.view'))
                     <a href="{{ route('admin.dashboard') }}"
                         class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">

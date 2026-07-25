@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -68,5 +69,11 @@ class OrderController extends Controller
         $order->delete();
 
         return redirect()->route('admin.orders.index')->with('status', "Order <strong>#{$order->id}</strong> has been archived.");
+    }
+
+    public function receipt(Order $order): View
+    {
+        $order->load('user', 'items.product');
+        return view('admin.orders.receipt', compact('order'));
     }
 }

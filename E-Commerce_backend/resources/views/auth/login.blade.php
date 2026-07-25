@@ -22,17 +22,11 @@
 
         {{-- Main card --}}
         <div
-            class="w-full max-w-[1200px] bg-white rounded-[20px] shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-2 animate-slideUp">
+            class="w-full max-w-[1000px] bg-white rounded-[20px] shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-2 animate-slideUp">
 
             {{-- Left Column --}}
             <div
                 class="relative bg-gradient-to-br from-[#f0fdf4] to-[#dcfce7] p-8 lg:p-12 xl:p-16 flex flex-col min-h-[500px] lg:min-h-[650px]">
-                {{-- Logo --}}
-                <div class="flex-shrink-0">
-                    <img src="{{ asset('images/logo.png') }}" alt="E-Commerce"
-                        class="h-20 w-20 rounded-full object-cover border-[4px] border-white shadow-lg">
-                </div>
-
                 {{-- Illustration --}}
                 <div class="flex-1 flex items-center justify-center py-6">
                     <svg viewBox="0 0 400 400" class="w-full max-w-[320px] h-auto">

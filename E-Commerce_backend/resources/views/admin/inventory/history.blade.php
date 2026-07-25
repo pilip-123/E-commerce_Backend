@@ -75,7 +75,7 @@
                     </thead>
                     <tbody>
                         @forelse ($transactions as $t)
-                            <tr>
+                            <tr role="button" class="cursor-pointer" onclick="window.location='{{ route('admin.inventory.history.show', $t) }}'" style="cursor: pointer;">
                                 <td class="px-4 py-3 text-muted small">{{ $t->created_at->format('M d, Y H:i') }}</td>
                                 <td class="px-4 py-3">
                                     @php
@@ -146,3 +146,8 @@
     </div>
 </div>
 @endsection
+
+<style>
+    .table tbody tr { cursor: pointer; transition: background 0.15s; }
+    .table tbody tr:hover { background: #f0fdf4 !important; }
+</style>

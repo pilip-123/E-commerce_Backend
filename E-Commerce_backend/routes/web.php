@@ -80,6 +80,7 @@ Route::prefix('admin')
         Route::resource('promotions', PromotionController::class);
         Route::resource('reviews', ReviewController::class)->only(['index', 'destroy']);
         Route::resource('orders', OrderController::class)->except(['show', 'create', 'store']);
+        Route::get('orders/{order}/receipt', [OrderController::class, 'receipt'])->name('orders.receipt');
         Route::resource('users', UserController::class)->except(['create', 'store']);
         Route::get('customers', [AdminPageController::class, 'customers'])->name('customers');
         Route::get('profile', [AdminPageController::class, 'profile'])->name('profile');
@@ -111,6 +112,7 @@ Route::prefix('admin')
             Route::get('stock-count', [InventoryController::class, 'stockCountForm'])->name('stock-count');
             Route::post('stock-count', [InventoryController::class, 'stockCount'])->name('stock-count.store');
             Route::get('history', [InventoryController::class, 'history'])->name('history');
+            Route::get('history/{transaction}', [InventoryController::class, 'showTransaction'])->name('history.show');
             Route::delete('history/clear', [InventoryController::class, 'clearHistory'])->name('history.clear');
             Route::get('valuation', [InventoryController::class, 'valuation'])->name('valuation');
         });
@@ -126,5 +128,6 @@ Route::prefix('admin')
         Route::get('reports/data/revenue', [ReportController::class, 'revenue'])->name('reports.revenue');
         Route::get('reports/data/top-customers', [ReportController::class, 'topCustomers'])->name('reports.top-customers');
         Route::get('reports/data/best-sellers', [ReportController::class, 'bestSellers'])->name('reports.best-sellers');
+        Route::get('reports/data/promotions', [ReportController::class, 'promotions'])->name('reports.promotions');
     });
 

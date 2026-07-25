@@ -90,8 +90,19 @@ class AdminPageController extends Controller
 
     public function vipCodes(): View
     {
+        $sentIds = DiscountCode::whereNotNull('sent_to')->get()->flatMap(function ($code) {
+            $data = collect($code->sent_to);
+            // New format: [{id: 1, name: 'John'}, ...] -> pluck id
+            if ($data->isNotEmpty() && isset($data[0]['id'])) {
+                return $data->pluck('id');
+            }
+            // Old format: ['John', 'Jane'] -> skip, no IDs available
+            return collect();
+        })->filter()->unique()->values()->toArray();
+
         $qualifyingCustomers = User::where('role', 'customer')
             ->whereHas('orders')
+            ->whereNotIn('id', $sentIds)
             ->withCount('orders')
             ->withCount(['orders as week_orders' => function ($q) {
                 $q->where('created_at', '>=', now()->subWeek());
@@ -99,7 +110,7 @@ class AdminPageController extends Controller
             ->withSum('orders', 'total_amount')
             ->get()
             ->filter(function ($user) {
-                return ($user->orders_sum_total_amount ?? 0) >= 500;
+                return ($user->orders_sum_total_amount ?? 0) >= 100;
             })
             ->sortByDesc('orders_sum_total_amount')
             ->values();
@@ -125,7 +136,7 @@ class AdminPageController extends Controller
 
         // Send notification only to selected customers
         $customers = User::whereIn('id', $request->customer_ids)->get();
-        $customerNames = $customers->pluck('name')->toArray();
+        $customerData = $customers->map(fn($c) => ['id' => $c->id, 'name' => $c->name])->toArray();
         $customerCount = $customers->count();
 
         foreach ($customers as $customer) {
@@ -141,7 +152,7 @@ class AdminPageController extends Controller
             'code' => $code,
             'discount_type' => $request->discount_type,
             'discount_value' => $request->discount_value,
-            'sent_to' => $customerNames,
+            'sent_to' => $customerData,
             'sent_count' => $customerCount,
         ]);
 

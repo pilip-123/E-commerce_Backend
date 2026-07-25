@@ -116,15 +116,22 @@
                             </tr>
                         @endforelse
                     </tbody>
+                    @php
+                        $totalStock = $products->sum('stock');
+                        $totalCostSum = $products->sum(fn($p) => $p->stock * (float)($p->unit_cost ?? $p->price));
+                        $totalValueSum = $products->sum(fn($p) => $p->stock * (float)$p->price);
+                        $avgUnitCost = $totalStock > 0 ? $totalCostSum / $totalStock : 0;
+                        $avgSellingPrice = $totalStock > 0 ? $totalValueSum / $totalStock : 0;
+                    @endphp
                     <tfoot class="table-light fw-bold">
                         <tr>
                             <td colspan="2" class="px-4 py-3">{{ __('Total') }}</td>
-                            <td class="px-4 py-3 text-end">{{ $products->sum('stock') }}</td>
-                            <td class="px-4 py-3 text-end">—</td>
-                            <td class="px-4 py-3 text-end">—</td>
-                            <td class="px-4 py-3 text-end">${{ number_format($products->sum(fn($p) => $p->stock * (float)($p->unit_cost ?? $p->price)), 2) }}</td>
-                            <td class="px-4 py-3 text-end">${{ number_format($products->sum(fn($p) => $p->stock * (float)$p->price), 2) }}</td>
-                            <td class="px-4 py-3 text-end">${{ number_format($products->sum(fn($p) => $p->stock * (float)$p->price - $p->stock * (float)($p->unit_cost ?? $p->price)), 2) }}</td>
+                            <td class="px-4 py-3 text-end">{{ $totalStock }}</td>
+                            <td class="px-4 py-3 text-end">${{ number_format($avgUnitCost, 2) }}</td>
+                            <td class="px-4 py-3 text-end">${{ number_format($avgSellingPrice, 2) }}</td>
+                            <td class="px-4 py-3 text-end">${{ number_format($totalCostSum, 2) }}</td>
+                            <td class="px-4 py-3 text-end">${{ number_format($totalValueSum, 2) }}</td>
+                            <td class="px-4 py-3 text-end">${{ number_format($totalValueSum - $totalCostSum, 2) }}</td>
                         </tr>
                     </tfoot>
                 </table>

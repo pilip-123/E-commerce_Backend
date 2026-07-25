@@ -320,6 +320,12 @@ class InventoryController extends Controller
         return view('admin.inventory.history', compact('transactions', 'products'));
     }
 
+    public function showTransaction(InventoryTransaction $transaction): View
+    {
+        $transaction->load('product', 'user');
+        return view('admin.inventory.show-transaction', compact('transaction'));
+    }
+
     public function clearHistory(): RedirectResponse
     {
         $count = InventoryTransaction::count();

@@ -218,6 +218,9 @@
                                                 </ul>
                                             </div>
                                         @endif
+                                        <a href="{{ route('admin.orders.receipt', $order->id) }}" class="btn btn-sm btn-outline-info" target="_blank">
+                                            <i class="bi bi-receipt"></i>
+                                        </a>
                                         <button type="button" class="btn btn-sm btn-outline-danger"
                                                 data-bs-toggle="modal" data-bs-target="#deleteModal"
                                                 data-url="{{ route('admin.orders.destroy', $order->id) }}">

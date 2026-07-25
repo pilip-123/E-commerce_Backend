@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\DiscountCode;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\Promotion;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -74,13 +76,93 @@ class ReportController extends Controller
                 'total_revenue' => (float) $product->total_revenue,
             ]);
 
+        $totalPromotions = Promotion::count();
+        $promoThisWeek = Promotion::whereBetween('created_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->count();
+        $promoThisMonth = Promotion::whereBetween('created_at', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])->count();
+        $promoThisYear = Promotion::whereYear('created_at', Carbon::now()->year)->count();
+        $activePromotions = Promotion::active()->count();
+        $totalDiscountCodes = DiscountCode::count();
+        $totalCodeUses = (int) DiscountCode::sum('used_count');
+
         return view('admin.reports', compact(
             'today', 'currentMonth', 'threeMonthsAgo', 'now',
             'dailyTotalSales', 'dailyTotalRevenue',
             'monthlyTotalSales', 'monthlyTotalRevenue',
             'totalRevenue', 'totalSales',
             'topCustomers', 'bestSellers',
+            'totalPromotions', 'promoThisWeek', 'promoThisMonth', 'promoThisYear', 'activePromotions',
+            'totalDiscountCodes', 'totalCodeUses',
         ));
+    }
+
+    public function promotions(Request $request): JsonResponse
+    {
+        $period = $request->input('period', 'daily');
+        $end = Carbon::now()->endOfDay();
+
+        [$start, $selectRaw, $labelKey] = match ($period) {
+            'yearly' => [
+                Carbon::now()->subYears(3)->startOfYear(),
+                "DATE_FORMAT(created_at, '%Y')",
+                'year',
+            ],
+            'monthly' => [
+                Carbon::now()->startOfYear(),
+                "DATE_FORMAT(created_at, '%Y-%m')",
+                'month',
+            ],
+            'weekly' => [
+                Carbon::now()->subWeeks(8)->startOfWeek(),
+                "DATE_FORMAT(created_at, '%x-W%v')",
+                'week',
+            ],
+            default => [
+                Carbon::now()->subDays(14)->startOfDay(),
+                "DATE(created_at)",
+                'date',
+            ],
+        };
+
+        $promotions = Promotion::whereBetween('created_at', [$start, $end])
+            ->selectRaw("{$selectRaw} as label, COUNT(*) as count")
+            ->groupBy('label')
+            ->orderBy('label')
+            ->get()
+            ->map(fn ($r) => ['label' => $r->label, 'count' => (int) $r->count]);
+
+        $codes = DiscountCode::whereBetween('created_at', [$start, $end])
+            ->selectRaw("{$selectRaw} as label, COUNT(*) as count")
+            ->groupBy('label')
+            ->orderBy('label')
+            ->get()
+            ->map(fn ($r) => ['label' => $r->label, 'count' => (int) $r->count]);
+
+        $sales = Order::whereBetween('created_at', [$start, $end])
+            ->selectRaw("{$selectRaw} as label, COUNT(*) as orders, SUM(total_amount) as revenue")
+            ->groupBy('label')
+            ->orderBy('label')
+            ->get()
+            ->map(fn ($r) => ['label' => $r->label, 'orders' => (int) $r->orders, 'revenue' => (float) $r->revenue]);
+
+        $typeBreakdown = Promotion::selectRaw('discount_type, COUNT(*) as count')
+            ->groupBy('discount_type')
+            ->get()
+            ->map(fn ($r) => ['type' => $r->discount_type, 'count' => (int) $r->count]);
+
+        return response()->json([
+            'period'             => $period,
+            'label_key'          => $labelKey,
+            'promotions'         => $promotions,
+            'discount_codes'     => $codes,
+            'sales'              => $sales,
+            'type_breakdown'     => $typeBreakdown,
+            'summary'            => [
+                'total_promotions'   => Promotion::count(),
+                'active_promotions'  => Promotion::active()->count(),
+                'total_codes'        => DiscountCode::count(),
+                'total_code_uses'    => (int) DiscountCode::sum('used_count'),
+            ],
+        ]);
     }
 
     public function dailySales(Request $request): JsonResponse

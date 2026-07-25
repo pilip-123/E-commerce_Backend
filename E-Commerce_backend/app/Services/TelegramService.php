@@ -23,7 +23,7 @@ class TelegramService
             return false;
         }
 
-        $response = Http::post("https://api.telegram.org/bot{$this->botToken}/sendMessage", [
+        $response = Http::timeout(5)->post("https://api.telegram.org/bot{$this->botToken}/sendMessage", [
             'chat_id' => $this->chatId,
             'text' => $message,
             'parse_mode' => 'HTML',
