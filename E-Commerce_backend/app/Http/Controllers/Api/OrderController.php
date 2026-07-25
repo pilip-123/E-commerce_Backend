@@ -19,7 +19,7 @@ class OrderController extends Controller
         $orders = Order::with('items.product')
             ->where('user_id', $user->id)
             ->latest()
-            ->paginate($request->integer('per_page', 10));
+            ->paginate($request->integer('per_page', 4));
 
         return response()->json([
             'data' => $orders->getCollection()->map(fn (Order $order) => $this->orderPayload($order, $user)),
