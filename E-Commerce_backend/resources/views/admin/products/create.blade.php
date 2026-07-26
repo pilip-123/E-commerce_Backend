@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="container-fluid p-0">
-        <div class="card border-0 shadow-sm rounded-4" style="max-width: 820px;">
+        <div class="card border-0 shadow-sm rounded-4" style="max-width: 720px;">
             <div class="card-header bg-white py-3 rounded-4">
                 <h5 class="fw-bold mb-0 fs-6"><i class="bi bi-plus-circle me-2 text-success"></i>{{ __('Create Product') }}
                 </h5>
@@ -17,10 +17,10 @@
 
                     <div class="row g-3">
                         <div class="col-12">
-                            <label class="form-label fw-semibold small mb-1">{{ __('Product Name') }}</label>
+                            <label class="form-label fw-semibold small mb-2">{{ __('Product Name') }}</label>
                             <input type="text" name="name" value="{{ old('name') }}"
                                 class="form-control form-control-sm @error('name') is-invalid @enderror" required
-                                placeholder="e.g. Wireless Headphones">
+                                placeholder="Product Name" style="height: 48px;">
                             @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -71,8 +71,8 @@
                                 </h6>
                             </div>
                             <textarea name="description" id="productDescription" rows="6"
-                                class="form-control @error('description') is-invalid @enderror"
-                                placeholder="Write your product description..." style="min-height: 150px;">{{ old('description') }}</textarea>
+                                class="form-control @error('description') is-invalid @enderror" placeholder="Write your product description..."
+                                style="min-height: 150px;">{{ old('description') }}</textarea>
                             @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -166,14 +166,7 @@
             }).then(function(r) {
                 return r.json().then(function(data) {
                     if (r.ok) {
-                        alert.className = 'alert alert-success mb-3 py-2 small';
-                        alert.innerHTML = data.message || 'Product created successfully.';
-                        alert.classList.remove('d-none');
-                        form.reset();
-                        document.getElementById('dropPreview').classList.add('d-none');
-                        document.getElementById('dropContent').classList.remove('d-none');
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Create';
+                        window.location.href = '{{ route('admin.products.index') }}';
                     } else {
                         var msg = data.message || 'Validation error.';
                         if (data.errors) {
