@@ -11,6 +11,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
+    @stack('styles')
+
     <style>
         [x-cloak] {
             display: none !important;
@@ -221,18 +223,26 @@
 
         .drop-zone {
             border: 2px dashed var(--admin-border);
-            border-radius: 0.75rem;
-            padding: 1.5rem;
+            border-radius: 12px;
+            padding: 2.5rem 2rem;
             text-align: center;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.25s ease;
             background: var(--admin-bg);
         }
 
-        .drop-zone:hover,
+        .drop-zone:hover {
+            border-color: var(--admin-primary);
+            background: var(--admin-primary-light);
+            transform: translateY(-1px);
+        }
+
         .drop-zone.drag-over {
             border-color: var(--admin-primary);
             background: var(--admin-primary-light);
+            border-style: solid;
+            transform: scale(1.01);
+            box-shadow: 0 4px 16px rgba(5, 150, 105, 0.15);
         }
 
         .drop-zone.has-image {

@@ -50,35 +50,72 @@
                         @error('stock') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
-                    <div class="col-12">
-                        <label class="form-label fw-semibold small mb-1">{{ __('Description') }}</label>
-                        <textarea name="description" rows="3"
-                                  class="form-control form-control-sm @error('description') is-invalid @enderror"
-                                  placeholder="{{ __('Full product description') }}">{{ old('description', $product->description) }}</textarea>
-                        @error('description') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
-
-                    <div class="col-12">
-                        <label class="form-label fw-semibold small mb-1">{{ __('Image') }}</label>
-                        <div class="drop-zone {{ $product->image ? 'has-image' : '' }}" id="dropZone">
-                            <input type="file" name="image" id="imageInput" accept="image/*" hidden>
-                            <div id="dropContent" class="{{ $product->image ? 'd-none' : '' }}">
-                                <i class="bi bi-cloud-arrow-up text-success" style="font-size: 2rem;"></i>
-                                <p class="mb-0 mt-2 small fw-semibold">{{ __('Drop image here or click to browse') }}</p>
-                                <p class="text-muted mb-0" style="font-size: 11px;">{{ __('PNG, JPG up to 4MB') }}</p>
+                    {{-- ═══════════════════ Product Description Section ═══════════════════ --}}
+                    <div class="col-12" style="margin-bottom: 16px;">
+                        <div class="section-card">
+                            <div class="section-card-header">
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <i class="bi bi-card-text text-success fs-5"></i>
+                                    <h6 class="fw-semibold mb-0" style="font-size: 15px;">
+                                        {{ __('Product Description') }}
+                                    </h6>
+                                </div>
+                                <p class="text-muted mb-0" style="font-size: 13px; line-height: 1.5;">
+                                    {{ __('Provide a detailed description of your product, including features, specifications, and important information.') }}
+                                </p>
                             </div>
-                            <div id="dropPreview" class="{{ $product->image ? '' : 'd-none' }}">
-                                @if ($product->image)
-                                    <img id="previewImg" src="{{ asset('storage/' . $product->image) }}" alt="Preview">
-                                @else
-                                    <img id="previewImg" src="" alt="Preview">
-                                @endif
-                                <p class="mb-0 mt-2 small text-muted" id="fileName">{{ $product->image ? basename($product->image) : '' }}</p>
-                                <p class="text-muted mb-0" style="font-size: 10px;">{{ __('Click or drop to replace') }}</p>
+                            <div class="section-card-body">
+                                <textarea name="description" id="productDescription" rows="3"
+                                          class="form-control form-control-sm @error('description') is-invalid @enderror"
+                                          placeholder="{{ __('Write your product description...') }}">{{ old('description', $product->description) }}</textarea>
+                                @error('description') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                @include('admin.partials.rich-editor', ['editorId' => 'productDescription'])
                             </div>
                         </div>
-                        <div class="form-text small">{{ __('Leave empty to keep current image.') }}</div>
-                        @error('image') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                    </div>
+
+                    {{-- ═══════════════════ Product Images Section ═══════════════════ --}}
+                    <div class="col-12">
+                        <div class="section-card">
+                            <div class="section-card-header">
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <i class="bi bi-image text-success fs-5"></i>
+                                    <h6 class="fw-semibold mb-0" style="font-size: 15px;">
+                                        {{ __('Product Images') }}
+                                    </h6>
+                                </div>
+                                <p class="text-muted mb-0" style="font-size: 13px; line-height: 1.5;">
+                                    {{ __('Upload product images (PNG or JPG, maximum 4MB each).') }}
+                                </p>
+                            </div>
+                            <div class="section-card-body">
+                                <div class="drop-zone {{ $product->image ? 'has-image' : '' }}" id="dropZone">
+                                    <input type="file" name="image" id="imageInput" accept="image/*" hidden>
+                                    <div id="dropContent" class="{{ $product->image ? 'd-none' : '' }}">
+                                        <i class="bi bi-cloud-arrow-up text-success" style="font-size: 2.4rem;"></i>
+                                        <p class="mb-0 mt-3 fw-semibold" style="font-size: 14px;">
+                                            {{ __('Drop image here or click to browse') }}
+                                        </p>
+                                        <p class="text-muted mb-0 mt-1" style="font-size: 12px;">
+                                            {{ __('PNG, JPG up to 4MB') }}
+                                        </p>
+                                    </div>
+                                    <div id="dropPreview" class="{{ $product->image ? '' : 'd-none' }}">
+                                        @if ($product->image)
+                                            <img id="previewImg" src="{{ asset('storage/' . $product->image) }}" alt="Preview">
+                                        @else
+                                            <img id="previewImg" src="" alt="Preview">
+                                        @endif
+                                        <p class="mb-0 mt-2 text-muted" id="fileName" style="font-size: 13px;">{{ $product->image ? basename($product->image) : '' }}</p>
+                                        <p class="text-muted mb-0 mt-1" style="font-size: 11px;">
+                                            {{ __('Click or drop to replace') }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="form-text small mt-2">{{ __('Leave empty to keep current image.') }}</div>
+                                @error('image') <div class="text-danger small mt-2">{{ $message }}</div> @enderror
+                            </div>
+                        </div>
                     </div>
 
                     <div class="col-sm-4">
