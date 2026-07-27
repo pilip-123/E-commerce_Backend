@@ -17,7 +17,7 @@
                         <label class="form-label fw-semibold small">{{ __('Category Name') }}</label>
                         <input type="text" name="name" value="{{ old('name') }}"
                                class="form-control @error('name') is-invalid @enderror" required
-                               placeholder="e.g. Electronics">
+                               placeholder="e.g. Electronics" style="min-height: 48px;">
                         @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     <div class="col-12">

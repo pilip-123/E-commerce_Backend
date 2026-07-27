@@ -172,11 +172,11 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold small">{{ __('Title') }}</label>
-                        <input type="text" name="title" class="form-control" placeholder="{{ __('e.g. New Season Sale') }} required maxlength="255">
+                        <input type="text" name="title" class="form-control" required maxlength="255">
                     </div>
                     <div class="mb-2">
                         <label class="form-label fw-semibold small">{{ __('Message') }}</label>
-                        <textarea name="message" class="form-control" rows="4" placeholder="{{ __('Write your announcement...') }} required maxlength="5000"></textarea>
+                        <textarea name="message" class="form-control" rows="4" required maxlength="5000"></textarea>
                     </div>
                     <div id="announcementFeedback" class="form-success d-none"></div>
                 </div>

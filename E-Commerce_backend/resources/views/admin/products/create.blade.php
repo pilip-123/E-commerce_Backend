@@ -17,10 +17,10 @@
 
                     <div class="row g-3">
                         <div class="col-12">
-                            <label class="form-label fw-semibold small mb-2">{{ __('Product Name') }}</label>
+                            <label class="form-label fw-semibold small mb-1">{{ __('Product Name') }}</label>
                             <input type="text" name="name" value="{{ old('name') }}"
-                                class="form-control form-control-sm @error('name') is-invalid @enderror" required
-                                placeholder="Product Name" style="height: 48px;">
+                                class="form-control @error('name') is-invalid @enderror" required
+                                placeholder="Product Name" style="min-height: 48px;">
                             @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
