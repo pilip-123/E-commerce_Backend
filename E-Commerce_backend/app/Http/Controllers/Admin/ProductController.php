@@ -187,7 +187,7 @@ class ProductController extends Controller
             'category_id' => $validated['category_id'],
             'name' => $validated['name'],
             'slug' => $slug,
-            'description' => $validated['description'] ?? null,
+            'description' => $validated['description'] ? strip_tags($validated['description']) : null,
             'price' => $validated['price'],
             'stock' => $validated['stock'],
             'status' => $request->boolean('status'),

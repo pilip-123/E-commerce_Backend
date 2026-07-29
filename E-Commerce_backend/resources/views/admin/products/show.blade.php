@@ -153,7 +153,7 @@
                             <label class="form-label fw-semibold small text-muted mb-1">
                                 <i class="bi bi-card-text me-1"></i>{{ __('Description') }}
                             </label>
-                            <p class="mb-0 bg-light rounded-3 p-3">{{ $product->description ?? __('No description provided.') }}</p>
+                            <p class="mb-0 bg-light rounded-3 p-3">{{ $product->description ? strip_tags($product->description) : __('No description provided.') }}</p>
                         </div>
                     </div>
 
