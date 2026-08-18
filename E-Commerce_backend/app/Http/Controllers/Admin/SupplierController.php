@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseReturn;
 use App\Models\Supplier;
+use App\Services\TelegramService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -63,6 +64,12 @@ class SupplierController extends Controller
         $data['image'] = $this->storeImage($request);
 
         $supplier = Supplier::create($data);
+
+        try {
+            app(TelegramService::class)->sendSupplierNotification($supplier, auth()->user()->name);
+        } catch (\Throwable $e) {
+            // Telegram failure should not block supplier creation
+        }
 
         return redirect()->route('admin.suppliers.show', $supplier)
             ->with('status', "<strong>{$supplier->name}</strong> has been added successfully.");

@@ -9,6 +9,7 @@ use App\Models\PurchaseReturn;
 use App\Models\PurchaseReturnItem;
 use App\Models\Supplier;
 use App\Services\PurchaseService;
+use App\Services\TelegramService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -234,6 +235,12 @@ class PurchaseReturnController extends Controller
 
             return $return;
         });
+
+        try {
+            app(TelegramService::class)->sendPurchaseReturnNotification($purchaseReturn, auth()->user()->name);
+        } catch (\Throwable $e) {
+            // Telegram failure should not block return creation
+        }
 
         return redirect()->route('admin.purchase-returns.show', $purchaseReturn)
             ->with('status', "Purchase return <strong>{$purchaseReturn->return_number}</strong> created (pending).");

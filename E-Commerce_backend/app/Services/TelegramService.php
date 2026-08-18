@@ -57,6 +57,70 @@ class TelegramService
         return $this->sendMessage($message);
     }
 
+    public function sendSupplierNotification(\App\Models\Supplier $supplier, ?string $createdBy = null): bool
+    {
+        $status = $supplier->status ? 'Active' : 'Inactive';
+
+        $message = "<b>🏭 New Supplier Created</b>\n"
+            . "─────────────────────\n"
+            . "<b>Name:</b> {$supplier->name}\n"
+            . ($supplier->company ? "<b>Company:</b> {$supplier->company}\n" : '')
+            . ($supplier->contact_person ? "<b>Contact Person:</b> {$supplier->contact_person}\n" : '')
+            . ($supplier->phone ? "<b>Phone:</b> {$supplier->phone}\n" : '')
+            . ($supplier->email ? "<b>Email:</b> {$supplier->email}\n" : '')
+            . ($supplier->address ? "<b>Address:</b> {$supplier->address}\n" : '')
+            . "<b>Status:</b> {$status}\n"
+            . "─────────────────────\n"
+            . "<b>Created by:</b> " . ($createdBy ?? 'N/A');
+
+        return $this->sendMessage($message);
+    }
+
+    public function sendPurchaseOrderNotification(\App\Models\PurchaseOrder $purchaseOrder, ?string $createdBy = null): bool
+    {
+        $items = $purchaseOrder->items->map(fn ($item) =>
+            "• " . ($item->product->name ?? 'Deleted Product') . " x{$item->quantity} — \$" . number_format((float) $item->total, 2)
+        )->implode("\n");
+
+        $message = "<b>📦 New Purchase Order</b>\n"
+            . "─────────────────────\n"
+            . "<b>PO Number:</b> {$purchaseOrder->po_number}\n"
+            . "<b>Supplier:</b> " . ($purchaseOrder->supplier->name ?? 'N/A') . "\n"
+            . "<b>Order Date:</b> " . ($purchaseOrder->order_date?->format('Y-m-d') ?? 'N/A') . "\n"
+            . "<b>Status:</b> " . ucwords(str_replace('_', ' ', $purchaseOrder->status)) . "\n"
+            . "<b>Payment:</b> " . ucfirst($purchaseOrder->payment_status) . "\n"
+            . "─────────────────────\n"
+            . "<b>Items:</b>\n{$items}\n"
+            . "─────────────────────\n"
+            . "<b>Total:</b> \$" . number_format((float) $purchaseOrder->grand_total, 2) . "\n"
+            . "<b>Created by:</b> " . ($createdBy ?? 'N/A');
+
+        return $this->sendMessage($message);
+    }
+
+    public function sendPurchaseReturnNotification(\App\Models\PurchaseReturn $purchaseReturn, ?string $createdBy = null): bool
+    {
+        $items = $purchaseReturn->items->map(fn ($item) =>
+            "• " . ($item->product->name ?? 'Deleted Product') . " x{$item->quantity} — \$" . number_format((float) $item->total, 2)
+        )->implode("\n");
+
+        $message = "<b>↩️ New Purchase Return</b>\n"
+            . "─────────────────────\n"
+            . "<b>Return Number:</b> {$purchaseReturn->return_number}\n"
+            . "<b>Purchase Order:</b> " . ($purchaseReturn->purchaseOrder->po_number ?? 'N/A') . "\n"
+            . "<b>Supplier:</b> " . ($purchaseReturn->supplier->name ?? 'N/A') . "\n"
+            . "<b>Return Date:</b> " . ($purchaseReturn->return_date?->format('Y-m-d') ?? 'N/A') . "\n"
+            . "<b>Status:</b> " . ucwords(str_replace('_', ' ', $purchaseReturn->status)) . "\n"
+            . ($purchaseReturn->reason ? "<b>Reason:</b> {$purchaseReturn->reason}\n" : '')
+            . "─────────────────────\n"
+            . "<b>Items:</b>\n{$items}\n"
+            . "─────────────────────\n"
+            . "<b>Total:</b> \$" . number_format((float) $purchaseReturn->total_amount, 2) . "\n"
+            . "<b>Created by:</b> " . ($createdBy ?? 'N/A');
+
+        return $this->sendMessage($message);
+    }
+
     public function sendLowStockAlert(\App\Models\Product $product): bool
     {
         $message = "<b>⚠️ Low Stock Alert</b>\n"

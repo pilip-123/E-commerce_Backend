@@ -8,6 +8,7 @@ use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use App\Models\Supplier;
 use App\Services\PurchaseService;
+use App\Services\TelegramService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -120,6 +121,12 @@ class PurchaseOrderController extends Controller
 
             return $purchaseOrder;
         });
+
+        try {
+            app(TelegramService::class)->sendPurchaseOrderNotification($purchaseOrder, auth()->user()->name);
+        } catch (\Throwable $e) {
+            // Telegram failure should not block order creation
+        }
 
         return redirect()->route('admin.purchases.show', $purchaseOrder)
             ->with('status', "Purchase order <strong>{$purchaseOrder->po_number}</strong> created as draft.");
