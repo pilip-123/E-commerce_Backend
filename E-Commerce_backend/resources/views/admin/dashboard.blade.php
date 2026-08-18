@@ -232,7 +232,7 @@
                     style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); min-height: 160px;">
                     <div class="card-body d-flex flex-column">
                         <p class="small text-uppercase fw-bold opacity-75 mb-0" style="font-size: 11px; letter-spacing: .08em;">{{ __('Purchase Orders') }}</p>
-                        <p class="fw-bold mb-0" style="font-size: 38px; line-height: 1.15; margin-top: 4px;" id="purchaseStatOrders">{{ number_format($purchaseStats['totalPurchaseOrders']) }}</p>
+                        <p class="fw-bold mb-0" style="font-size: 38px; line-height: 1.15; margin-top: 4px;" id="purchaseStatOrders">{{ number_format($purchaseStats['purchaseOrders']) }}</p>
                     </div>
                     <div class="position-absolute top-0 end-0 d-flex align-items-center justify-content-center rounded-circle"
                         style="width: 44px; height: 44px; margin: 18px; background: rgba(255,255,255,.25);">

@@ -61,22 +61,26 @@ class DashboardController extends Controller
             ->get()
             ->keyBy('month');
 
-        // ── Purchasing stats ──
+        // ── Purchasing stats (net of completed returns) ──
+        $totalCompletedReturns = (float) PurchaseReturn::where('status', PurchaseReturn::STATUS_COMPLETED)->sum('total_amount');
+        $grossPurchaseTotal = PurchaseOrder::where('status', '!=', PurchaseOrder::STATUS_CANCELLED)->sum('grand_total');
+        $grossPendingPayments = PurchaseOrder::whereIn('status', [
+            PurchaseOrder::STATUS_APPROVED,
+            PurchaseOrder::STATUS_ORDERED,
+            PurchaseOrder::STATUS_PARTIALLY_RECEIVED,
+            PurchaseOrder::STATUS_RECEIVED,
+        ])->where('payment_status', '!=', PurchaseOrder::PAYMENT_PAID)->sum('grand_total');
+
         $purchaseStats = [
             'totalSuppliers' => Supplier::count(),
-            'totalPurchaseOrders' => PurchaseOrder::count(),
+            'purchaseOrders' => PurchaseOrder::count(),
             'pendingPurchaseOrders' => PurchaseOrder::where('status', PurchaseOrder::STATUS_PENDING)->count(),
-            'totalPurchaseAmount' => PurchaseOrder::where('status', '!=', PurchaseOrder::STATUS_CANCELLED)->sum('grand_total'),
-            'pendingPayments' => PurchaseOrder::whereIn('status', [
-                PurchaseOrder::STATUS_APPROVED,
-                PurchaseOrder::STATUS_ORDERED,
-                PurchaseOrder::STATUS_PARTIALLY_RECEIVED,
-                PurchaseOrder::STATUS_RECEIVED,
-            ])->where('payment_status', '!=', PurchaseOrder::PAYMENT_PAID)->sum('grand_total'),
+            'totalPurchaseAmount' => max(0, $grossPurchaseTotal - $totalCompletedReturns),
+            'pendingPayments' => max(0, $grossPendingPayments - $totalCompletedReturns),
             'purchaseReturns' => PurchaseReturn::count(),
         ];
 
-        $recentPurchases = PurchaseOrder::with('supplier')->latest()->take(5)->get();
+        $recentPurchases = PurchaseOrder::with('supplier')->latest()->take(3)->get();
 
         $monthlyPurchases = PurchaseOrder::selectRaw("DATE_FORMAT(order_date, '%Y-%m') as month, COUNT(*) as count, SUM(grand_total) as total")
             ->where('order_date', '>=', Carbon::now()->subMonths(5)->startOfMonth())
@@ -191,22 +195,28 @@ class DashboardController extends Controller
             $cursor->addMonth();
         }
 
-        // ── Purchasing stats (period-scoped) ──
+        // ── Purchasing stats (period-scoped, net of completed returns) ──
         $purchaseQuery = PurchaseOrder::whereBetween('order_date', [$dateFrom, $dateTo]);
+        $grossPurchaseTotal = (float) (clone $purchaseQuery)->where('status', '!=', PurchaseOrder::STATUS_CANCELLED)->sum('grand_total');
+        $grossPendingPayments = (float) (clone $purchaseQuery)
+            ->whereIn('status', [
+                PurchaseOrder::STATUS_APPROVED,
+                PurchaseOrder::STATUS_ORDERED,
+                PurchaseOrder::STATUS_PARTIALLY_RECEIVED,
+                PurchaseOrder::STATUS_RECEIVED,
+            ])
+            ->where('payment_status', '!=', PurchaseOrder::PAYMENT_PAID)
+            ->sum('grand_total');
+        $completedReturns = (float) PurchaseReturn::where('status', PurchaseReturn::STATUS_COMPLETED)
+            ->whereBetween('return_date', [$dateFrom, $dateTo])
+            ->sum('total_amount');
 
         $purchaseStats = [
             'totalSuppliers' => Supplier::count(),
             'purchaseOrders' => (clone $purchaseQuery)->count(),
             'pendingPurchaseOrders' => (clone $purchaseQuery)->where('status', PurchaseOrder::STATUS_PENDING)->count(),
-            'pendingPayments' => (float) (clone $purchaseQuery)
-                ->whereIn('status', [
-                    PurchaseOrder::STATUS_APPROVED,
-                    PurchaseOrder::STATUS_ORDERED,
-                    PurchaseOrder::STATUS_PARTIALLY_RECEIVED,
-                    PurchaseOrder::STATUS_RECEIVED,
-                ])
-                ->where('payment_status', '!=', PurchaseOrder::PAYMENT_PAID)
-                ->sum('grand_total'),
+            'totalPurchaseAmount' => max(0, $grossPurchaseTotal - $completedReturns),
+            'pendingPayments' => max(0, $grossPendingPayments - $completedReturns),
         ];
 
         // ── Purchases chart (period-bucketed) ──

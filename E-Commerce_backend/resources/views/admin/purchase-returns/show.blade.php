@@ -131,6 +131,17 @@
                         <span class="text-muted small">{{ __('Created At') }}</span>
                         <span class="fw-semibold small">{{ $purchaseReturn->created_at?->format('M d, Y H:i') }}</span>
                     </div>
+                    @if ($purchaseReturn->status === 'completed')
+                        <hr>
+                        <div class="d-flex justify-content-between py-1">
+                            <span class="text-muted small">{{ __('Units Returned') }}</span>
+                            <span class="fw-semibold small">{{ number_format($purchaseReturn->total_returned ?? 0) }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-1">
+                            <span class="text-muted small">{{ __('Credited At') }}</span>
+                            <span class="fw-semibold small text-success">{{ $purchaseReturn->credited_at?->format('M d, Y H:i') ?? '—' }}</span>
+                        </div>
+                    @endif
                     @if ($purchaseReturn->reason)
                         <hr>
                         <small class="text-muted d-block mb-1 fw-bold">{{ __('Reason') }}</small>

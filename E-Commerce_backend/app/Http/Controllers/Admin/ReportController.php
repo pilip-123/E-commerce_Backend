@@ -110,16 +110,22 @@ class ReportController extends Controller
             $poQuery->where('supplier_id', $request->integer('purchase_supplier'));
         }
 
+        $grossPurchaseTotal = (float) (clone $poQuery)->where('status', '!=', PurchaseOrder::STATUS_CANCELLED)->sum('grand_total');
+        $grossPendingPayments = (float) (clone $poQuery)->whereIn('status', [
+            PurchaseOrder::STATUS_APPROVED,
+            PurchaseOrder::STATUS_ORDERED,
+            PurchaseOrder::STATUS_PARTIALLY_RECEIVED,
+            PurchaseOrder::STATUS_RECEIVED,
+        ])->where('payment_status', '!=', PurchaseOrder::PAYMENT_PAID)->sum('grand_total');
+        $completedReturnAmount = (float) PurchaseReturn::whereBetween('return_date', [$purchaseFrom, $purchaseTo])
+            ->where('status', PurchaseReturn::STATUS_COMPLETED)
+            ->sum('total_amount');
+
         $purchaseStats = [
             'totalOrders' => (clone $poQuery)->count(),
-            'totalAmount' => (float) (clone $poQuery)->where('status', '!=', PurchaseOrder::STATUS_CANCELLED)->sum('grand_total'),
+            'totalAmount' => max(0, $grossPurchaseTotal - $completedReturnAmount),
             'pendingOrders' => (clone $poQuery)->where('status', PurchaseOrder::STATUS_PENDING)->count(),
-            'pendingPayments' => (float) (clone $poQuery)->whereIn('status', [
-                PurchaseOrder::STATUS_APPROVED,
-                PurchaseOrder::STATUS_ORDERED,
-                PurchaseOrder::STATUS_PARTIALLY_RECEIVED,
-                PurchaseOrder::STATUS_RECEIVED,
-            ])->where('payment_status', '!=', PurchaseOrder::PAYMENT_PAID)->sum('grand_total'),
+            'pendingPayments' => max(0, $grossPendingPayments - $completedReturnAmount),
         ];
 
         $purchaseOrders = (clone $poQuery)->latest('order_date')->take(10)->get();
@@ -279,6 +285,22 @@ class ReportController extends Controller
             $q->whereBetween('return_date', [$from, $to])
                 ->where('status', '!=', PurchaseReturn::STATUS_CANCELLED);
         })->sum('quantity');
+        $completedReturnAmount = (float) PurchaseReturn::whereBetween('return_date', [$from, $to])
+            ->where('status', PurchaseReturn::STATUS_COMPLETED)
+            ->sum('total_amount');
+        $netSpending = max(0, $totalPurchaseAmount - $completedReturnAmount);
+
+        // ── Income vs Purchases (money spent on purchases vs money earned) ──
+        $totalIncome = (float) Order::whereBetween('created_at', [$from, $to])->sum('total_amount');
+        $netIncome = $totalIncome - $netSpending;
+        $netMargin = $totalIncome > 0 ? round(($netIncome / $totalIncome) * 100, 1) : 0;
+
+        $monthlyIncome = Order::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as count, SUM(total_amount) as total")
+            ->whereBetween('created_at', [$from, $to])
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get()
+            ->keyBy('month');
 
         // ── Monthly purchases & returns ──
         $monthlyPurchases = PurchaseOrder::selectRaw("DATE_FORMAT(order_date, '%Y-%m') as month, COUNT(*) as count, SUM(grand_total) as total")
@@ -300,12 +322,14 @@ class ReportController extends Controller
         $chartMonths = collect();
         $purchaseTotals = collect();
         $returnTotals = collect();
+        $incomeTotals = collect();
         $cursor = $from->copy()->startOfMonth();
         while ($cursor->lte($to)) {
             $key = $cursor->format('Y-m');
             $chartMonths->push($cursor->format('M y'));
             $purchaseTotals->push((float) ($monthlyPurchases->get($key)->total ?? 0));
             $returnTotals->push((float) ($monthlyReturns->get($key)->total ?? 0));
+            $incomeTotals->push((float) ($monthlyIncome->get($key)->total ?? 0));
             $cursor->addMonth();
         }
 
@@ -340,7 +364,8 @@ class ReportController extends Controller
 
         return view('admin.reports.purchasing', compact(
             'from', 'to', 'totalPurchaseAmount', 'totalPurchaseOrders', 'totalReturnedAmount', 'totalReturnedUnits',
-            'chartMonths', 'purchaseTotals', 'returnTotals', 'spendBySupplier', 'statusBreakdown', 'topSuppliers', 'maxSpend'
+            'netSpending', 'totalIncome', 'netIncome', 'netMargin',
+            'chartMonths', 'purchaseTotals', 'returnTotals', 'incomeTotals', 'spendBySupplier', 'statusBreakdown', 'topSuppliers', 'maxSpend'
         ));
     }
 

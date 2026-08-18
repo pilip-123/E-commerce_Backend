@@ -160,7 +160,11 @@ class PurchaseService
                 app(ProductAlertService::class)->checkOutOfStock($product->fresh());
             }
 
-            $purchaseReturn->update(['status' => PurchaseReturn::STATUS_COMPLETED]);
+            $purchaseReturn->update([
+                'status' => PurchaseReturn::STATUS_COMPLETED,
+                'total_returned' => $totalReturned,
+                'credited_at' => now(),
+            ]);
         });
 
         return [

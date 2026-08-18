@@ -21,13 +21,16 @@ class PurchaseReturn extends Model
         'reason',
         'status',
         'total_amount',
+        'total_returned',
         'notes',
+        'credited_at',
         'created_by',
     ];
 
     protected $casts = [
         'return_date' => 'date',
         'total_amount' => 'decimal:2',
+        'credited_at' => 'datetime',
     ];
 
     public function purchaseOrder(): BelongsTo
