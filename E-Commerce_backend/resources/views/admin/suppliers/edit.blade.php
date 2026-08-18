@@ -15,7 +15,7 @@
             </a>
         </div>
         <div class="card-body">
-            <form action="{{ route('admin.suppliers.update', $supplier) }}" method="POST">
+            <form action="{{ route('admin.suppliers.update', $supplier) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 <div class="row g-3">
@@ -28,6 +28,33 @@
                         <label class="form-label fw-semibold small mb-1">{{ __('Company') }}</label>
                         <input type="text" name="company" value="{{ old('company', $supplier->company) }}" class="form-control @error('company') is-invalid @enderror">
                         @error('company') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold small mb-1">{{ __('Logo') }}</label>
+                        <div class="drop-zone {{ $supplier->image ? 'has-image' : '' }}" id="dropZone">
+                            <input type="file" name="image" id="imageInput" accept="image/*" hidden>
+                            <div id="dropContent" class="{{ $supplier->image ? 'd-none' : '' }}">
+                                <i class="bi bi-cloud-arrow-up text-success" style="font-size: 2.4rem;"></i>
+                                <p class="mb-0 mt-3 fw-semibold" style="font-size: 14px;">
+                                    {{ __('Drop image here or click to browse') }}
+                                </p>
+                                <p class="text-muted mb-0 mt-1" style="font-size: 12px;">
+                                    {{ __('PNG, JPG up to 4MB') }}
+                                </p>
+                            </div>
+                            <div id="dropPreview" class="{{ $supplier->image ? '' : 'd-none' }}">
+                                @if ($supplier->image)
+                                    <img id="previewImg" src="{{ asset('storage/' . $supplier->image) }}" alt="Preview">
+                                @else
+                                    <img id="previewImg" src="" alt="Preview">
+                                @endif
+                                <p class="mb-0 mt-2 text-muted" id="fileName" style="font-size: 13px;">{{ $supplier->image ? basename($supplier->image) : '' }}</p>
+                                <p class="text-muted mb-0 mt-1" style="font-size: 11px;">
+                                    {{ __('Click or drop to replace') }}
+                                </p>
+                            </div>
+                        </div>
+                        @error('image') <div class="text-danger small mt-2">{{ $message }}</div> @enderror
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold small mb-1">{{ __('Contact Person') }}</label>

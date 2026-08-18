@@ -8,6 +8,7 @@ use App\Models\PurchaseReturn;
 use App\Models\Supplier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class SupplierController extends Controller
@@ -59,6 +60,7 @@ class SupplierController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $this->validateSupplier($request);
+        $data['image'] = $this->storeImage($request);
 
         $supplier = Supplier::create($data);
 
@@ -129,6 +131,12 @@ class SupplierController extends Controller
     public function update(Request $request, Supplier $supplier): RedirectResponse
     {
         $data = $this->validateSupplier($request);
+        $image = $this->storeImage($request);
+
+        if ($image) {
+            $this->deleteImage($supplier->image);
+            $data['image'] = $image;
+        }
 
         $supplier->update($data);
 
@@ -142,6 +150,7 @@ class SupplierController extends Controller
             return back()->withErrors(['supplier' => 'Cannot delete a supplier that has purchase orders. You can deactivate it instead.']);
         }
 
+        $this->deleteImage($supplier->image);
         $supplier->delete();
 
         return redirect()->route('admin.suppliers.index')
@@ -157,6 +166,7 @@ class SupplierController extends Controller
             'email' => ['nullable', 'email', 'max:255'],
             'address' => ['nullable', 'string', 'max:1000'],
             'company' => ['nullable', 'string', 'max:255'],
+            'image' => ['nullable', 'image', 'max:4096'],
             'status' => ['nullable', 'boolean'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ]);
@@ -164,5 +174,21 @@ class SupplierController extends Controller
         $validated['status'] = $request->boolean('status');
 
         return $validated;
+    }
+
+    private function storeImage(Request $request): ?string
+    {
+        if (! $request->hasFile('image')) {
+            return null;
+        }
+
+        return $request->file('image')->store('suppliers', 'public');
+    }
+
+    private function deleteImage(?string $path): void
+    {
+        if ($path) {
+            Storage::disk('public')->delete($path);
+        }
     }
 }

@@ -103,9 +103,13 @@
                                 <td class="px-4 py-3 fw-semibold text-muted small">#{{ $supplier->id }}</td>
                                 <td class="px-4 py-3">
                                     <div class="d-flex align-items-center gap-2">
-                                        <div class="d-flex align-items-center justify-content-center rounded-circle text-white fw-bold flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px; background: var(--admin-primary);">
-                                            {{ strtoupper(substr($supplier->name, 0, 1)) }}
-                                        </div>
+                                        @if ($supplier->image)
+                                            <img src="{{ asset('storage/' . $supplier->image) }}" alt="{{ $supplier->name }}" class="rounded-circle object-fit-cover flex-shrink-0" style="width: 36px; height: 36px;">
+                                        @else
+                                            <div class="d-flex align-items-center justify-content-center rounded-circle text-white fw-bold flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px; background: var(--admin-primary);">
+                                                {{ strtoupper(substr($supplier->name, 0, 1)) }}
+                                            </div>
+                                        @endif
                                         <div>
                                             <a href="{{ route('admin.suppliers.show', $supplier) }}" class="fw-semibold small text-decoration-none">{{ $supplier->name }}</a>
                                             <div class="text-muted" style="font-size: 11px;">{{ $supplier->email ?: '—' }}</div>

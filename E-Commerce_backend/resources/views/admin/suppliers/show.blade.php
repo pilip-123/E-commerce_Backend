@@ -8,9 +8,13 @@
     {{-- Header --}}
     <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
         <div class="d-flex align-items-center gap-3">
-            <div class="d-flex align-items-center justify-content-center rounded-3 text-white fw-bold flex-shrink-0" style="width: 56px; height: 56px; font-size: 22px; background: var(--admin-primary);">
-                {{ strtoupper(substr($supplier->name, 0, 1)) }}
-            </div>
+            @if ($supplier->image)
+                <img src="{{ asset('storage/' . $supplier->image) }}" alt="{{ $supplier->name }}" class="rounded-circle object-fit-cover flex-shrink-0" style="width: 56px; height: 56px;">
+            @else
+                <div class="d-flex align-items-center justify-content-center rounded-3 text-white fw-bold flex-shrink-0" style="width: 56px; height: 56px; font-size: 22px; background: var(--admin-primary);">
+                    {{ strtoupper(substr($supplier->name, 0, 1)) }}
+                </div>
+            @endif
             <div>
                 <h4 class="fw-bold mb-1">{{ $supplier->name }}</h4>
                 <p class="text-muted small mb-0">{{ $supplier->company ?: __('Supplier') }} · {{ $supplier->email ?: '—' }}</p>
