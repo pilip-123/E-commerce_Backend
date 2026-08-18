@@ -7,6 +7,9 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\PurchaseOrder;
+use App\Models\PurchaseReturn;
+use App\Models\Supplier;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -58,6 +61,42 @@ class DashboardController extends Controller
             ->get()
             ->keyBy('month');
 
+        // ── Purchasing stats ──
+        $purchaseStats = [
+            'totalSuppliers' => Supplier::count(),
+            'totalPurchaseOrders' => PurchaseOrder::count(),
+            'pendingPurchaseOrders' => PurchaseOrder::where('status', PurchaseOrder::STATUS_PENDING)->count(),
+            'totalPurchaseAmount' => PurchaseOrder::where('status', '!=', PurchaseOrder::STATUS_CANCELLED)->sum('grand_total'),
+            'pendingPayments' => PurchaseOrder::whereIn('status', [
+                PurchaseOrder::STATUS_APPROVED,
+                PurchaseOrder::STATUS_ORDERED,
+                PurchaseOrder::STATUS_PARTIALLY_RECEIVED,
+                PurchaseOrder::STATUS_RECEIVED,
+            ])->where('payment_status', '!=', PurchaseOrder::PAYMENT_PAID)->sum('grand_total'),
+            'purchaseReturns' => PurchaseReturn::count(),
+        ];
+
+        $recentPurchases = PurchaseOrder::with('supplier')->latest()->take(5)->get();
+
+        $monthlyPurchases = PurchaseOrder::selectRaw("DATE_FORMAT(order_date, '%Y-%m') as month, COUNT(*) as count, SUM(grand_total) as total")
+            ->where('order_date', '>=', Carbon::now()->subMonths(5)->startOfMonth())
+            ->where('status', '!=', PurchaseOrder::STATUS_CANCELLED)
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get()
+            ->keyBy('month');
+
+        $purchaseChartMonths = collect();
+        $purchaseChartTotals = collect();
+        $purchaseChartCounts = collect();
+        for ($i = 5; $i >= 0; $i--) {
+            $month = Carbon::now()->subMonths($i)->format('Y-m');
+            $purchaseChartMonths->push(Carbon::now()->subMonths($i)->format('M'));
+            $data = $monthlyPurchases->get($month);
+            $purchaseChartTotals->push($data ? (float) $data->total : 0);
+            $purchaseChartCounts->push($data ? (int) $data->count : 0);
+        }
+
         $chartMonths = collect();
         $chartOrders = collect();
         $chartRevenue = collect();
@@ -81,6 +120,11 @@ class DashboardController extends Controller
             'pendingCount' => $stats['pendingOrders'],
             'totalSold' => $totalSold,
             'totalCost' => $totalCost,
+            'purchaseStats' => $purchaseStats,
+            'recentPurchases' => $recentPurchases,
+            'purchaseChartMonths' => $purchaseChartMonths,
+            'purchaseChartTotals' => $purchaseChartTotals,
+            'purchaseChartCounts' => $purchaseChartCounts,
         ]);
     }
 
@@ -147,6 +191,51 @@ class DashboardController extends Controller
             $cursor->addMonth();
         }
 
+        // ── Purchasing stats (period-scoped) ──
+        $purchaseQuery = PurchaseOrder::whereBetween('order_date', [$dateFrom, $dateTo]);
+
+        $purchaseStats = [
+            'totalSuppliers' => Supplier::count(),
+            'purchaseOrders' => (clone $purchaseQuery)->count(),
+            'pendingPurchaseOrders' => (clone $purchaseQuery)->where('status', PurchaseOrder::STATUS_PENDING)->count(),
+            'pendingPayments' => (float) (clone $purchaseQuery)
+                ->whereIn('status', [
+                    PurchaseOrder::STATUS_APPROVED,
+                    PurchaseOrder::STATUS_ORDERED,
+                    PurchaseOrder::STATUS_PARTIALLY_RECEIVED,
+                    PurchaseOrder::STATUS_RECEIVED,
+                ])
+                ->where('payment_status', '!=', PurchaseOrder::PAYMENT_PAID)
+                ->sum('grand_total'),
+        ];
+
+        // ── Purchases chart (period-bucketed) ──
+        $chartFrom = match ($period) {
+            'day' => $now->copy()->subDays(6)->startOfDay(),
+            default => $dateFrom,
+        };
+        $granularity = $period === 'annual' ? 'month' : 'day';
+        $dateFormat = $granularity === 'month' ? '%Y-%m' : '%Y-%m-%d';
+
+        $periodPurchases = PurchaseOrder::selectRaw("DATE_FORMAT(order_date, '{$dateFormat}') as bucket, SUM(grand_total) as total")
+            ->whereBetween('order_date', [$chartFrom, $dateTo])
+            ->where('status', '!=', PurchaseOrder::STATUS_CANCELLED)
+            ->groupBy('bucket')
+            ->orderBy('bucket')
+            ->get()
+            ->keyBy('bucket');
+
+        $purchaseChartLabels = [];
+        $purchaseChartTotals = [];
+        $cursor = $chartFrom->copy();
+        while ($cursor <= $dateTo) {
+            $key = $cursor->format($granularity === 'month' ? 'Y-m' : 'Y-m-d');
+            $purchaseChartLabels[] = $cursor->format($granularity === 'month' ? 'M' : 'M d');
+            $data = $periodPurchases->get($key);
+            $purchaseChartTotals[] = $data ? (float) $data->total : 0;
+            $granularity === 'month' ? $cursor->addMonth() : $cursor->addDay();
+        }
+
         $label = match ($period) {
             'day' => 'today',
             'week' => 'this week',
@@ -177,6 +266,11 @@ class DashboardController extends Controller
                 'months' => $chartMonths,
                 'orders' => $chartOrders,
                 'revenue' => $chartRevenue,
+            ],
+            'purchaseStats' => $purchaseStats,
+            'purchaseChart' => [
+                'labels' => $purchaseChartLabels,
+                'totals' => $purchaseChartTotals,
             ],
             'label' => $label,
         ]);

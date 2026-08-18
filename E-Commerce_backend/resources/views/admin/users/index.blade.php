@@ -67,12 +67,12 @@
                                 <td class="px-4 py-3">
                                     @php
                                         $roleColors = [
-                                            'admin' => ['bg' => '#dcfce7', 'text' => '#15803d'],
-                                            'manager' => ['bg' => '#dbeafe', 'text' => '#1d4ed8'],
-                                            'staff' => ['bg' => '#fef3c7', 'text' => '#b45309'],
-                                            'customer' => ['bg' => '#f1f5f9', 'text' => '#475569'],
+                                            'admin' => ['bg' => 'var(--badge-green-bg)', 'text' => 'var(--badge-green-text)'],
+                                            'manager' => ['bg' => 'var(--badge-blue-bg)', 'text' => 'var(--badge-blue-text)'],
+                                            'staff' => ['bg' => 'var(--badge-amber-bg)', 'text' => 'var(--badge-amber-text)'],
+                                            'customer' => ['bg' => 'var(--badge-gray-bg)', 'text' => 'var(--badge-gray-text)'],
                                         ];
-                                        $color = $roleColors[$user->role] ?? ['bg' => '#f1f5f9', 'text' => '#475569'];
+                                        $color = $roleColors[$user->role] ?? ['bg' => 'var(--badge-gray-bg)', 'text' => 'var(--badge-gray-text)'];
                                     @endphp
                                     <span class="badge rounded-pill px-3 py-2 fw-semibold"
                                         style="background: {{ $color['bg'] }}; color: {{ $color['text'] }};">{{ ucfirst($user->role) }}</span>

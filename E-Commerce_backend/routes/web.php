@@ -13,6 +13,9 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\ReviewController;
+use App\Http\Controllers\Admin\SupplierController;
+use App\Http\Controllers\Admin\PurchaseOrderController;
+use App\Http\Controllers\Admin\PurchaseReturnController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Middleware\AdminMiddleware;
@@ -79,6 +82,18 @@ Route::prefix('admin')
         Route::resource('products', ProductController::class);
         Route::resource('promotions', PromotionController::class);
         Route::resource('reviews', ReviewController::class)->only(['index', 'destroy']);
+        Route::resource('suppliers', SupplierController::class);
+        Route::resource('purchases', PurchaseOrderController::class)->parameters(['purchases' => 'purchaseOrder']);
+        Route::post('purchases/{purchaseOrder}/approve', [PurchaseOrderController::class, 'approve'])->name('purchases.approve');
+        Route::post('purchases/{purchaseOrder}/ordered', [PurchaseOrderController::class, 'markOrdered'])->name('purchases.ordered');
+        Route::get('purchases/{purchaseOrder}/receive', [PurchaseOrderController::class, 'receiveForm'])->name('purchases.receive');
+        Route::post('purchases/{purchaseOrder}/receive', [PurchaseOrderController::class, 'receive'])->name('purchases.receive.store');
+        Route::post('purchases/{purchaseOrder}/cancel', [PurchaseOrderController::class, 'cancel'])->name('purchases.cancel');
+        Route::put('purchases/{purchaseOrder}/payment', [PurchaseOrderController::class, 'updatePayment'])->name('purchases.payment');
+        Route::resource('purchase-returns', PurchaseReturnController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
+        Route::post('purchase-returns/{purchaseReturn}/approve', [PurchaseReturnController::class, 'approve'])->name('purchase-returns.approve');
+        Route::post('purchase-returns/{purchaseReturn}/complete', [PurchaseReturnController::class, 'complete'])->name('purchase-returns.complete');
+        Route::post('purchase-returns/{purchaseReturn}/cancel', [PurchaseReturnController::class, 'cancel'])->name('purchase-returns.cancel');
         Route::resource('orders', OrderController::class)->except(['show', 'create', 'store']);
         Route::get('orders/{order}/receipt', [OrderController::class, 'receipt'])->name('orders.receipt');
         Route::resource('users', UserController::class)->except(['create', 'store']);
@@ -97,6 +112,12 @@ Route::prefix('admin')
             Route::get('customers', [ExportController::class, 'customers'])->name('customers');
             Route::get('vip-codes', [ExportController::class, 'vipCodes'])->name('vip-codes');
             Route::get('inventory-history', [ExportController::class, 'inventoryHistory'])->name('inventory-history');
+            Route::get('suppliers', [ExportController::class, 'suppliers'])->name('suppliers');
+            Route::get('purchase-orders', [ExportController::class, 'purchaseOrders'])->name('purchase-orders');
+            Route::get('purchase-returns', [ExportController::class, 'purchaseReturns'])->name('purchase-returns');
+            Route::get('purchase-report', [ExportController::class, 'purchaseReport'])->name('purchase-report');
+            Route::get('supplier-purchase-report', [ExportController::class, 'supplierPurchaseReport'])->name('supplier-purchase-report');
+            Route::get('purchase-spending', [ExportController::class, 'purchaseSpending'])->name('purchase-spending');
         });
 
         Route::prefix('inventory')->name('inventory.')->group(function () {
@@ -123,6 +144,7 @@ Route::prefix('admin')
             ->middleware(AdminMiddleware::class);
 
         Route::get('reports', [ReportController::class, 'index'])->name('reports');
+        Route::get('reports/purchasing', [ReportController::class, 'purchasing'])->name('reports.purchasing');
         Route::get('reports/data/daily-sales', [ReportController::class, 'dailySales'])->name('reports.daily-sales');
         Route::get('reports/data/monthly-sales', [ReportController::class, 'monthlySales'])->name('reports.monthly-sales');
         Route::get('reports/data/revenue', [ReportController::class, 'revenue'])->name('reports.revenue');

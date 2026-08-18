@@ -9,9 +9,14 @@ use App\Models\InventoryTransaction;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Promotion;
+use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderItem;
+use App\Models\PurchaseReturn;
 use App\Models\Review;
+use App\Models\Supplier;
 use App\Models\User;
 use App\Services\ExportService;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -308,6 +313,222 @@ class ExportController extends Controller
 
         return app(ExportService::class)->export('Inventory_History', [
             'Date', 'Type', 'Product', 'Quantity', 'Stock Before', 'Stock After', 'Reference', 'By', 'Notes',
+        ], $rows->toArray(), $this->getFormat($request));
+    }
+
+    public function suppliers(Request $request): BinaryFileResponse
+    {
+        $query = Supplier::withCount('purchaseOrders');
+
+        if ($search = $request->get('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('company', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->has('status') && $request->input('status') !== '') {
+            $status = filter_var($request->input('status'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            if ($status !== null) {
+                $query->where('status', $status);
+            }
+        }
+
+        $suppliers = $query->latest()->get();
+
+        $rows = $suppliers->map(fn (Supplier $s) => [
+            $s->id,
+            $s->name,
+            $s->company ?? '',
+            $s->contact_person ?? '',
+            $s->phone ?? '',
+            $s->email ?? '',
+            $s->address ?? '',
+            $s->status ? 'Active' : 'Inactive',
+            (new \NumberFormatter('en', \NumberFormatter::DECIMAL))->format($s->purchase_orders_count ?? 0),
+            $s->created_at->format('M d, Y'),
+        ]);
+
+        return app(ExportService::class)->export('Suppliers', [
+            'ID', 'Name', 'Company', 'Contact Person', 'Phone', 'Email', 'Address', 'Status', 'Orders', 'Created',
+        ], $rows->toArray(), $this->getFormat($request));
+    }
+
+    public function purchaseOrders(Request $request): BinaryFileResponse
+    {
+        $query = PurchaseOrder::with('supplier', 'items');
+
+        if ($search = $request->get('search')) {
+            $query->search($search);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        if ($request->filled('supplier_id')) {
+            $query->where('supplier_id', $request->integer('supplier_id'));
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('order_date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('order_date', '<=', $request->date_to);
+        }
+
+        $orders = $query->latest()->get();
+
+        $rows = $orders->map(fn (PurchaseOrder $po) => [
+            $po->po_number,
+            $po->supplier->name ?? 'Deleted',
+            $po->order_date->format('M d, Y'),
+            $po->expected_delivery_date?->format('M d, Y') ?? '',
+            (new \NumberFormatter('en', \NumberFormatter::DECIMAL))->format($po->items->sum('quantity')),
+            '$' . number_format($po->subtotal, 2),
+            '$' . number_format($po->discount, 2),
+            '$' . number_format($po->tax, 2),
+            '$' . number_format($po->grand_total, 2),
+            ucwords(str_replace('_', ' ', $po->status)),
+            ucfirst($po->payment_status),
+            $po->notes ?? '',
+        ]);
+
+        return app(ExportService::class)->export('Purchase_Orders', [
+            'PO Number', 'Supplier', 'Order Date', 'Expected Delivery', 'Items', 'Subtotal', 'Discount', 'Tax', 'Grand Total', 'Status', 'Payment', 'Notes',
+        ], $rows->toArray(), $this->getFormat($request));
+    }
+
+    public function purchaseReturns(Request $request): BinaryFileResponse
+    {
+        $query = PurchaseReturn::with('supplier', 'purchaseOrder', 'items');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        if ($request->filled('supplier_id')) {
+            $query->where('supplier_id', $request->integer('supplier_id'));
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('return_date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('return_date', '<=', $request->date_to);
+        }
+
+        $returns = $query->latest()->get();
+
+        $rows = $returns->map(fn (PurchaseReturn $r) => [
+            $r->return_number,
+            $r->purchaseOrder->po_number ?? '',
+            $r->supplier->name ?? 'Deleted',
+            $r->return_date->format('M d, Y'),
+            (new \NumberFormatter('en', \NumberFormatter::DECIMAL))->format($r->items->sum('quantity')),
+            '$' . number_format($r->total_amount, 2),
+            ucfirst($r->status),
+            $r->reason ?? '',
+            $r->notes ?? '',
+        ]);
+
+        return app(ExportService::class)->export('Purchase_Returns', [
+            'Return Number', 'Purchase Order', 'Supplier', 'Return Date', 'Items', 'Total Amount', 'Status', 'Reason', 'Notes',
+        ], $rows->toArray(), $this->getFormat($request));
+    }
+
+    public function purchaseReport(Request $request): BinaryFileResponse
+    {
+        $query = PurchaseOrderItem::with('product', 'purchaseOrder');
+
+        if ($request->filled('purchase_from')) {
+            $query->whereHas('purchaseOrder', fn ($q) => $q->whereDate('order_date', '>=', $request->input('purchase_from')));
+        }
+
+        if ($request->filled('purchase_to')) {
+            $query->whereHas('purchaseOrder', fn ($q) => $q->whereDate('order_date', '<=', $request->input('purchase_to')));
+        }
+
+        if ($request->filled('purchase_supplier')) {
+            $query->whereHas('purchaseOrder', fn ($q) => $q->where('supplier_id', $request->integer('purchase_supplier')));
+        }
+
+        if ($request->filled('purchase_status')) {
+            $query->whereHas('purchaseOrder', fn ($q) => $q->where('status', $request->input('purchase_status')));
+        }
+
+        $items = $query->latest()->get();
+
+        $rows = $items->map(fn (PurchaseOrderItem $item) => [
+            $item->purchaseOrder->po_number ?? '',
+            $item->product->name ?? 'Deleted',
+            $item->product->sku ?? '',
+            (new \NumberFormatter('en', \NumberFormatter::DECIMAL))->format($item->quantity),
+            (new \NumberFormatter('en', \NumberFormatter::DECIMAL))->format($item->received_quantity),
+            '$' . number_format($item->unit_cost, 2),
+            '$' . number_format($item->discount, 2),
+            '$' . number_format($item->tax, 2),
+            '$' . number_format($item->total, 2),
+        ]);
+
+        return app(ExportService::class)->export('Purchase_Report', [
+            'PO Number', 'Product', 'SKU', 'Quantity', 'Received', 'Unit Cost', 'Discount', 'Tax', 'Total',
+        ], $rows->toArray(), $this->getFormat($request));
+    }
+
+    public function supplierPurchaseReport(Request $request): BinaryFileResponse
+    {
+        $query = Supplier::withCount(['purchaseOrders as po_count' => function ($q) {
+            $q->where('status', '!=', PurchaseOrder::STATUS_CANCELLED);
+        }])
+            ->withSum(['purchaseOrders as po_total' => function ($q) {
+                $q->where('status', '!=', PurchaseOrder::STATUS_CANCELLED);
+            }], 'grand_total');
+
+        if ($request->filled('purchase_from')) {
+            $query->whereHas('purchaseOrders', fn ($q) => $q->whereDate('order_date', '>=', $request->input('purchase_from')));
+        }
+
+        if ($request->filled('purchase_to')) {
+            $query->whereHas('purchaseOrders', fn ($q) => $q->whereDate('order_date', '<=', $request->input('purchase_to')));
+        }
+
+        $suppliers = $query->latest()->get();
+
+        $rows = $suppliers->map(fn (Supplier $s) => [
+            $s->id,
+            $s->name,
+            $s->company ?? '',
+            $s->phone ?? '',
+            $s->email ?? '',
+            (new \NumberFormatter('en', \NumberFormatter::DECIMAL))->format($s->po_count ?? 0),
+            '$' . number_format($s->po_total ?? 0, 2),
+        ]);
+
+        return app(ExportService::class)->export('Supplier_Purchase_Report', [
+            'ID', 'Supplier', 'Company', 'Phone', 'Email', 'Orders', 'Total Purchases',
+        ], $rows->toArray(), $this->getFormat($request));
+    }
+
+    public function purchaseSpending(Request $request): BinaryFileResponse
+    {
+        $monthly = PurchaseOrder::where('status', '!=', PurchaseOrder::STATUS_CANCELLED)
+            ->selectRaw("DATE_FORMAT(order_date, '%Y-%m') as month, COUNT(*) as count, SUM(grand_total) as total")
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        $rows = $monthly->map(fn ($row) => [
+            Carbon::parse($row->month . '-01')->format('F Y'),
+            (new \NumberFormatter('en', \NumberFormatter::DECIMAL))->format($row->count),
+            '$' . number_format($row->total, 2),
+        ]);
+
+        return app(ExportService::class)->export('Purchase_Spending', [
+            'Month', 'Purchase Orders', 'Total Spent',
         ], $rows->toArray(), $this->getFormat($request));
     }
 

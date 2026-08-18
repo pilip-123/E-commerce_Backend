@@ -149,5 +149,5 @@
 
 <style>
     .table tbody tr { cursor: pointer; transition: background 0.15s; }
-    .table tbody tr:hover { background: #f0fdf4 !important; }
+    .table tbody tr:hover { background: var(--admin-primary-light) !important; }
 </style>

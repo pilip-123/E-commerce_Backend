@@ -79,28 +79,32 @@
         {{-- ───── TABS ───── --}}
         <div class="d-flex flex-wrap gap-1 mb-4" id="reportTabs" role="tablist">
             <button class="rpt-tab active" data-target="daily-pane" role="tab"
-                style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:2px solid #e2e8f0;border-radius:10px;background:#fff;color:#64748b;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;">
+                style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:2px solid var(--admin-border);border-radius:10px;background:var(--admin-surface);color:var(--admin-text-muted);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;">
                 <i class="bi bi-calendar"></i> {{ __('Daily Sales') }}
             </button>
             <button class="rpt-tab" data-target="monthly-pane" role="tab"
-                style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:2px solid #e2e8f0;border-radius:10px;background:#fff;color:#64748b;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;">
+                style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:2px solid var(--admin-border);border-radius:10px;background:var(--admin-surface);color:var(--admin-text-muted);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;">
                 <i class="bi bi-bar-chart"></i> {{ __('Monthly Sales') }}
             </button>
             <button class="rpt-tab" data-target="revenue-pane" role="tab"
-                style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:2px solid #e2e8f0;border-radius:10px;background:#fff;color:#64748b;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;">
+                style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:2px solid var(--admin-border);border-radius:10px;background:var(--admin-surface);color:var(--admin-text-muted);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;">
                 <i class="bi bi-cash-stack"></i> {{ __('Revenue') }}
             </button>
             <button class="rpt-tab" data-target="customers-pane" role="tab"
-                style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:2px solid #e2e8f0;border-radius:10px;background:#fff;color:#64748b;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;">
+                style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:2px solid var(--admin-border);border-radius:10px;background:var(--admin-surface);color:var(--admin-text-muted);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;">
                 <i class="bi bi-people"></i> {{ __('Top Customers') }}
             </button>
             <button class="rpt-tab" data-target="sellers-pane" role="tab"
-                style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:2px solid #e2e8f0;border-radius:10px;background:#fff;color:#64748b;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;">
+                style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:2px solid var(--admin-border);border-radius:10px;background:var(--admin-surface);color:var(--admin-text-muted);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;">
                 <i class="bi bi-graph-up"></i> {{ __('Best Sellers') }}
             </button>
             <button class="rpt-tab" data-target="promotions-pane" role="tab"
-                style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:2px solid #e2e8f0;border-radius:10px;background:#fff;color:#64748b;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;">
+                style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:2px solid var(--admin-border);border-radius:10px;background:var(--admin-surface);color:var(--admin-text-muted);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;">
                 <i class="bi bi-percent"></i> {{ __('Promotions') }}
+            </button>
+            <button class="rpt-tab" data-target="purchases-pane" role="tab"
+                style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:2px solid var(--admin-border);border-radius:10px;background:var(--admin-surface);color:var(--admin-text-muted);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;">
+                <i class="bi bi-truck"></i> {{ __('Purchasing') }}
             </button>
         </div>
 
@@ -171,7 +175,7 @@
                         <span class="badge bg-success-subtle text-success rounded-pill small fw-bold"
                             id="dailyChartMeta">{{ $today->format('M d, Y') }}</span>
                     </div>
-                    <div class="card-body py-4 px-4" style="background:#ecfdf5;">
+                    <div class="card-body py-4 px-4" style="background:var(--badge-success-bg);">
                         <div id="dailyHourlyChart" class="w-100" style="height:220px;position:relative;"></div>
                     </div>
                 </div>
@@ -255,7 +259,7 @@
                         <span class="badge bg-success-subtle text-success rounded-pill small fw-bold"
                             id="monthlyChartMeta">{{ $currentMonth->format('F Y') }}</span>
                     </div>
-                    <div class="card-body py-4 px-4" style="background:#ecfdf5;">
+                    <div class="card-body py-4 px-4" style="background:var(--badge-success-bg);">
                         <div id="monthlyDailyChart" class="w-100" style="height:200px;position:relative;"></div>
                     </div>
                 </div>
@@ -351,7 +355,7 @@
                                 <h5 class="fw-bold mb-0"><i
                                         class="bi bi-bar-chart text-success me-2"></i>{{ __('Revenue by Month') }}</h5>
                             </div>
-                            <div class="card-body py-4 px-4" style="background:#ecfdf5;">
+                            <div class="card-body py-4 px-4" style="background:var(--badge-success-bg);">
                                 <div id="revMonthlyChart" class="w-100" style="height:220px;position:relative;"></div>
                             </div>
                         </div>
@@ -363,7 +367,7 @@
                                 <h5 class="fw-bold mb-0"><i
                                         class="bi bi-pie-chart text-success me-2"></i>{{ __('Revenue by Category') }}</h5>
                             </div>
-                            <div class="card-body py-4 px-4 d-flex align-items-center" style="background:#ecfdf5;">
+                            <div class="card-body py-4 px-4 d-flex align-items-center" style="background:var(--badge-success-bg);">
                                 <div id="revCategoryBars" class="w-100"></div>
                             </div>
                         </div>
@@ -526,7 +530,7 @@
                         <h5 class="fw-bold mb-0"><i
                                 class="bi bi-graph-up text-success me-2"></i>{{ __('Best Sellers Chart') }}</h5>
                     </div>
-                    <div class="card-body py-4 px-4" style="background:#ecfdf5;">
+                    <div class="card-body py-4 px-4" style="background:var(--badge-success-bg);">
                         <div id="sellersBarChart" class="w-100" style="height:220px;position:relative;"></div>
                     </div>
                 </div>
@@ -787,6 +791,257 @@
                 </div>
             </div>
 
+            {{-- ════════════ PURCHASING ════════════ --}}
+            <div class="tab-pane" id="purchases-pane" role="tabpanel" style="display:none;">
+                <div class="d-flex flex-wrap align-items-center gap-2 bg-white border rounded-3 p-3 mb-4 shadow-sm">
+                    <form method="GET" class="row g-2 align-items-end w-100">
+                        <input type="hidden" name="tab" value="purchases">
+                        <div class="col-auto">
+                            <label class="fw-semibold small text-uppercase mb-0 d-block">{{ __('From') }}:</label>
+                            <input type="date" name="purchase_from" class="form-control form-control-sm" style="max-width: 160px;" value="{{ $purchaseFrom->format('Y-m-d') }}">
+                        </div>
+                        <div class="col-auto">
+                            <label class="fw-semibold small text-uppercase mb-0 d-block">{{ __('To') }}:</label>
+                            <input type="date" name="purchase_to" class="form-control form-control-sm" style="max-width: 160px;" value="{{ $purchaseTo->format('Y-m-d') }}">
+                        </div>
+                        <div class="col-auto">
+                            <label class="fw-semibold small text-uppercase mb-0 d-block">{{ __('Supplier') }}:</label>
+                            <select name="purchase_supplier" class="form-select form-select-sm" style="max-width: 180px;">
+                                <option value="">{{ __('All Suppliers') }}</option>
+                                @foreach ($purchaseSuppliers as $supplier)
+                                    <option value="{{ $supplier->id }}" {{ request('purchase_supplier') == $supplier->id ? 'selected' : '' }}>{{ $supplier->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <label class="fw-semibold small text-uppercase mb-0 d-block">{{ __('Status') }}:</label>
+                            <select name="purchase_status" class="form-select form-select-sm" style="max-width: 170px;">
+                                <option value="">{{ __('All Statuses') }}</option>
+                                @foreach (['draft', 'pending', 'approved', 'ordered', 'partially_received', 'received', 'cancelled'] as $status)
+                                    <option value="{{ $status }}" {{ request('purchase_status') === $status ? 'selected' : '' }}>{{ ucwords(str_replace('_', ' ', $status)) }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-sm btn-success"><i class="bi bi-funnel me-1"></i>{{ __('Apply') }}</button>
+                            <a href="{{ route('admin.reports', ['tab' => 'purchases']) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-x-circle"></i></a>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card border-0 shadow-sm rounded-4">
+                            <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
+                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-info-subtle flex-shrink-0" style="width: 48px; height: 48px;">
+                                    <i class="bi bi-receipt text-info fs-5"></i>
+                                </div>
+                                <div>
+                                    <p class="text-muted small mb-0">{{ __('Purchase Orders') }}</p>
+                                    <h5 class="fw-bold mb-0">{{ number_format($purchaseStats['totalOrders']) }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card border-0 shadow-sm rounded-4">
+                            <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
+                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-success-subtle flex-shrink-0" style="width: 48px; height: 48px;">
+                                    <i class="bi bi-cash-stack text-success fs-5"></i>
+                                </div>
+                                <div>
+                                    <p class="text-muted small mb-0">{{ __('Total Purchase Amount') }}</p>
+                                    <h5 class="fw-bold mb-0">${{ number_format($purchaseStats['totalAmount'], 2) }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card border-0 shadow-sm rounded-4">
+                            <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
+                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-warning-subtle flex-shrink-0" style="width: 48px; height: 48px;">
+                                    <i class="bi bi-hourglass-split text-warning fs-5"></i>
+                                </div>
+                                <div>
+                                    <p class="text-muted small mb-0">{{ __('Pending Payments') }}</p>
+                                    <h5 class="fw-bold mb-0">${{ number_format($purchaseStats['pendingPayments'], 2) }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card border-0 shadow-sm rounded-4">
+                            <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
+                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-danger-subtle flex-shrink-0" style="width: 48px; height: 48px;">
+                                    <i class="bi bi-arrow-return-left text-danger fs-5"></i>
+                                </div>
+                                <div>
+                                    <p class="text-muted small mb-0">{{ __('Purchase Returns') }}</p>
+                                    <h5 class="fw-bold mb-0">{{ number_format($purchaseReturnStats['count']) }} <span class="text-muted" style="font-size: 12px;">(${{ number_format($purchaseReturnStats['totalAmount'], 2) }})</span></h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white py-3 rounded-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-bar-chart text-success me-2"></i>{{ __('Purchases Over Time') }}</h5>
+                        @include('admin.partials.export-dropdown', ['exportRoute' => route('admin.export.purchase-spending')])
+                    </div>
+                    <div class="card-body py-4 px-4" style="background: var(--badge-success-bg);">
+                        @php $maxPurchase = max($purchaseChartTotals->max() ?? 0, 1); @endphp
+                        <div class="d-flex align-items-end gap-2" style="height: 200px;">
+                            @foreach ($purchaseChartTotals as $i => $total)
+                                <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-end h-100" style="min-width: 0;">
+                                    <div class="w-100" style="height: {{ $total > 0 ? max(($total / $maxPurchase) * 100, 2) : 2 }}%; border-radius: 6px 6px 0 0; background: linear-gradient(180deg, #34d399, #059669);" title="${{ number_format($total, 2) }}"></div>
+                                </div>
+                            @endforeach
+                        </div>
+                        <div class="d-flex justify-content-between small text-muted mt-2 px-1">
+                            @foreach ($purchaseChartMonths as $month)
+                                <span style="font-size: 10px;">{{ $month }}</span>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-7">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-header bg-white py-3 rounded-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                                <h5 class="fw-bold mb-0"><i class="bi bi-receipt text-success me-2"></i>{{ __('Purchase Orders') }}</h5>
+                                @include('admin.partials.export-dropdown', ['exportRoute' => route('admin.export.purchase-report')])
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('PO') }}</th>
+                                                <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Supplier') }}</th>
+                                                <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Date') }}</th>
+                                                <th class="px-4 py-3 small fw-bold text-uppercase text-end">{{ __('Total') }}</th>
+                                                <th class="px-4 py-3 small fw-bold text-uppercase text-center">{{ __('Status') }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse ($purchaseOrders as $po)
+                                                <tr>
+                                                    <td class="px-4 py-3"><a href="{{ route('admin.purchases.show', $po) }}" class="font-monospace fw-bold small text-decoration-none">{{ $po->po_number }}</a></td>
+                                                    <td class="px-4 py-3 fw-semibold small">{{ $po->supplier->name ?? __('Deleted') }}</td>
+                                                    <td class="px-4 py-3 text-muted small">{{ $po->order_date?->format('M d, Y') }}</td>
+                                                    <td class="px-4 py-3 text-end fw-bold">${{ number_format($po->grand_total, 2) }}</td>
+                                                    <td class="px-4 py-3 text-center">
+                                                        @php
+                                                            $badge = match ($po->status) {
+                                                                'pending' => ['var(--badge-warning-bg)', 'var(--badge-warning-text)'],
+                                                                'approved', 'ordered' => ['var(--badge-info-bg)', 'var(--badge-info-text)'],
+                                                                'partially_received' => ['var(--badge-warning-bg)', 'var(--badge-warning-text)'],
+                                                                'received' => ['var(--badge-success-bg)', 'var(--badge-success-text)'],
+                                                                'cancelled' => ['var(--badge-red-bg)', 'var(--badge-red-text)'],
+                                                                default => ['var(--badge-gray-bg)', 'var(--badge-gray-text)'],
+                                                            };
+                                                        @endphp
+                                                        <span class="badge rounded-pill text-uppercase" style="font-size: 9px; background: {{ $badge[0] }}; color: {{ $badge[1] }};">{{ str_replace('_', ' ', $po->status) }}</span>
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="5" class="text-center text-muted py-4">{{ __('No purchase orders found.') }}</td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-5">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-header bg-white py-3 rounded-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                                <h5 class="fw-bold mb-0"><i class="bi bi-arrow-return-left text-danger me-2"></i>{{ __('Purchase Returns') }}</h5>
+                                @include('admin.partials.export-dropdown', ['exportRoute' => route('admin.export.purchase-returns')])
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Return') }}</th>
+                                                <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Supplier') }}</th>
+                                                <th class="px-4 py-3 small fw-bold text-uppercase text-end">{{ __('Total') }}</th>
+                                                <th class="px-4 py-3 small fw-bold text-uppercase text-center">{{ __('Status') }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse ($purchaseReturns as $return)
+                                                <tr>
+                                                    <td class="px-4 py-3"><a href="{{ route('admin.purchase-returns.show', $return) }}" class="font-monospace fw-bold small text-decoration-none">{{ $return->return_number }}</a></td>
+                                                    <td class="px-4 py-3 fw-semibold small">{{ $return->supplier->name ?? __('Deleted') }}</td>
+                                                    <td class="px-4 py-3 text-end fw-bold">${{ number_format($return->total_amount, 2) }}</td>
+                                                    <td class="px-4 py-3 text-center">
+                                                        @php
+                                                            $badge = match ($return->status) {
+                                                                'pending' => ['var(--badge-warning-bg)', 'var(--badge-warning-text)'],
+                                                                'approved' => ['var(--badge-info-bg)', 'var(--badge-info-text)'],
+                                                                'completed' => ['var(--badge-success-bg)', 'var(--badge-success-text)'],
+                                                                'cancelled' => ['var(--badge-red-bg)', 'var(--badge-red-text)'],
+                                                                default => ['var(--badge-gray-bg)', 'var(--badge-gray-text)'],
+                                                            };
+                                                        @endphp
+                                                        <span class="badge rounded-pill text-uppercase" style="font-size: 9px; background: {{ $badge[0] }}; color: {{ $badge[1] }};">{{ $return->status }}</span>
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="4" class="text-center text-muted py-4">{{ __('No purchase returns found.') }}</td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-header bg-white py-3 rounded-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-truck text-success me-2"></i>{{ __('Supplier Purchase Summary') }}</h5>
+                        @include('admin.partials.export-dropdown', ['exportRoute' => route('admin.export.supplier-purchase-report')])
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="px-4 py-3 small fw-bold text-uppercase">#</th>
+                                        <th class="px-4 py-3 small fw-bold text-uppercase">{{ __('Supplier') }}</th>
+                                        <th class="px-4 py-3 small fw-bold text-uppercase text-center">{{ __('Orders') }}</th>
+                                        <th class="px-4 py-3 small fw-bold text-uppercase text-end">{{ __('Total Spent') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($supplierSpending as $i => $supplier)
+                                        <tr>
+                                            <td class="px-4 py-3 fw-bold text-muted">{{ $i + 1 }}</td>
+                                            <td class="px-4 py-3 fw-semibold small">{{ $supplier->name }}</td>
+                                            <td class="px-4 py-3 text-center"><span class="badge bg-light text-dark rounded-pill">{{ $supplier->po_count }}</span></td>
+                                            <td class="px-4 py-3 text-end fw-bold">${{ number_format($supplier->po_total ?? 0, 2) }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted py-4">{{ __('No supplier data found.') }}</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 @endsection
@@ -985,7 +1240,7 @@
                 for (var g = 1; g <= 4; g++) {
                     var y = (g / 5) * 100;
                     html += '<div style="position:absolute;left:0;right:0;top:' + (100 - y) +
-                        '%;border-bottom:1px dashed #d1fae5;"></div>';
+                        '%;border-bottom:1px dashed var(--grid-line);"></div>';
                 }
                 html +=
                     '</div><div style="display:flex;align-items:flex-end;gap:4px;height:100%;position:relative;z-index:1;padding:0 4px;">';
@@ -1474,13 +1729,13 @@
                         var target = panes[id];
                         if (!target) return;
                         tabs.forEach(function(x) {
-                            x.style.borderColor = '#e2e8f0';
-                            x.style.background = '#fff';
-                            x.style.color = '#64748b';
+                            x.style.borderColor = 'var(--admin-border)';
+                            x.style.background = 'var(--admin-surface)';
+                            x.style.color = 'var(--admin-text-muted)';
                         });
-                        this.style.borderColor = '#059669';
-                        this.style.background = '#ecfdf5';
-                        this.style.color = '#047857';
+                        this.style.borderColor = 'var(--admin-primary)';
+                        this.style.background = 'var(--admin-primary-light)';
+                        this.style.color = 'var(--admin-primary-dark)';
                         Object.keys(panes).forEach(function(k) {
                             panes[k].style.display = 'none';
                             panes[k].classList.remove('show', 'active');
@@ -1491,9 +1746,16 @@
                         if (loader) setTimeout(loader, 50);
                     });
                 });
-                // Set initial active tab
+                // Set initial active tab (honour ?tab=... query param)
+                var requestedTab = new URLSearchParams(window.location.search).get('tab');
+                var initialTab = tabs[0];
+                if (requestedTab) {
+                    tabs.forEach(function(t) {
+                        if (t.getAttribute('data-target') === requestedTab + '-pane') initialTab = t;
+                    });
+                }
                 if (tabs.length) {
-                    tabs[0].click();
+                    initialTab.click();
                 }
                 window.loadDailySales();
                 window.loadMonthlySales();

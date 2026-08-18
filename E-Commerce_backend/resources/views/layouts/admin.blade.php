@@ -6,6 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@yield('title', 'Admin Panel') - {{ config('app.name', 'Laravel') }}</title>
 
+    {{-- Apply the saved theme before first paint to avoid a flash of the wrong theme --}}
+    <script>
+        (function() {
+            try {
+                var theme = localStorage.getItem('admin_theme');
+                if (!theme) {
+                    theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                }
+                var html = document.documentElement;
+                html.setAttribute('data-bs-theme', theme);
+                html.setAttribute('data-theme', theme);
+            } catch (e) {}
+        })();
+    </script>
+    <style>
+        html { background: #f0fdf4; }
+        html[data-theme="dark"] { background: #0f172a; }
+    </style>
+
     @include('partials.assets')
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -19,6 +38,7 @@
         }
 
         :root {
+            color-scheme: light;
             --admin-primary: #059669;
             --admin-primary-light: #ecfdf5;
             --admin-primary-dark: #047857;
@@ -29,9 +49,47 @@
             --admin-border: #e5e7eb;
             --sidebar-width: 250px;
             --navbar-height: 76px;
+
+            /* Subtle badge / status colors (used across admin pages) */
+            --badge-green-bg: #dcfce7;
+            --badge-green-text: #15803d;
+            --badge-blue-bg: #dbeafe;
+            --badge-blue-text: #1d4ed8;
+            --badge-amber-bg: #fef3c7;
+            --badge-amber-text: #b45309;
+            --badge-gray-bg: #f1f5f9;
+            --badge-gray-text: #475569;
+            --badge-purple-bg: #f5f3ff;
+            --badge-purple-text: #7c3aed;
+            --badge-red-bg: #fee2e2;
+            --badge-red-text: #dc2626;
+            --badge-success-bg: #d1fae5;
+            --badge-success-text: #059669;
+            --badge-warning-bg: #fef3c7;
+            --badge-warning-text: #d97706;
+            --badge-info-bg: #dbeafe;
+            --badge-info-text: #2563eb;
+            --grid-line: #d1fae5;
+            --card-muted-bg: #fafafa;
+
+            /* Toast colors */
+            --toast-success-bg: #ecfdf5;
+            --toast-success-border: #10b981;
+            --toast-success-color: #059669;
+            --toast-error-bg: #fef2f2;
+            --toast-error-border: #ef4444;
+            --toast-error-color: #dc2626;
+            --toast-warning-bg: #fffbeb;
+            --toast-warning-border: #f59e0b;
+            --toast-warning-color: #d97706;
+            --toast-info-bg: #eff6ff;
+            --toast-info-border: #3b82f6;
+            --toast-info-color: #2563eb;
+            --toast-text: #1f2937;
         }
 
         [data-theme="dark"] {
+            color-scheme: dark;
             --admin-primary: #34d399;
             --admin-primary-light: #064e3b;
             --admin-primary-dark: #6ee7b7;
@@ -40,6 +98,43 @@
             --admin-text: #f1f5f9;
             --admin-text-muted: #94a3b8;
             --admin-border: #334155;
+
+            /* Subtle badge / status colors (used across admin pages) */
+            --badge-green-bg: rgba(22, 163, 74, .18);
+            --badge-green-text: #4ade80;
+            --badge-blue-bg: rgba(37, 99, 235, .18);
+            --badge-blue-text: #60a5fa;
+            --badge-amber-bg: rgba(180, 83, 9, .18);
+            --badge-amber-text: #fbbf24;
+            --badge-gray-bg: rgba(100, 116, 139, .18);
+            --badge-gray-text: #94a3b8;
+            --badge-purple-bg: rgba(124, 58, 237, .18);
+            --badge-purple-text: #a78bfa;
+            --badge-red-bg: rgba(220, 38, 38, .18);
+            --badge-red-text: #f87171;
+            --badge-success-bg: rgba(5, 150, 105, .18);
+            --badge-success-text: #34d399;
+            --badge-warning-bg: rgba(217, 119, 6, .18);
+            --badge-warning-text: #fbbf24;
+            --badge-info-bg: rgba(37, 99, 235, .18);
+            --badge-info-text: #60a5fa;
+            --grid-line: rgba(52, 211, 153, .25);
+            --card-muted-bg: #16223a;
+
+            /* Toast colors */
+            --toast-success-bg: rgba(16, 185, 129, .15);
+            --toast-success-border: #10b981;
+            --toast-success-color: #34d399;
+            --toast-error-bg: rgba(239, 68, 68, .15);
+            --toast-error-border: #ef4444;
+            --toast-error-color: #f87171;
+            --toast-warning-bg: rgba(245, 158, 11, .15);
+            --toast-warning-border: #f59e0b;
+            --toast-warning-color: #fbbf24;
+            --toast-info-bg: rgba(59, 130, 246, .15);
+            --toast-info-border: #3b82f6;
+            --toast-info-color: #60a5fa;
+            --toast-text: #f1f5f9;
         }
 
         body {
@@ -333,6 +428,29 @@
             --bs-table-hover-bg: var(--admin-primary-light);
         }
 
+        /* ─── Smooth theme switch ─── */
+        #themeToggle i {
+            transition: transform .35s ease;
+        }
+
+        #themeToggle i.theme-switch-anim {
+            transform: rotate(180deg) scale(1.2);
+        }
+
+        .theme-transition,
+        .theme-transition * {
+            transition: background-color .25s ease, border-color .25s ease, color .25s ease, fill .25s ease, stroke .25s ease !important;
+        }
+
+        [data-theme="dark"] .navbar-light .navbar-toggler {
+            color: var(--admin-text);
+            border-color: var(--admin-border);
+        }
+
+        [data-theme="dark"] .navbar-light .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28241, 245, 249, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
         @media (max-width: 991.98px) {
             .sidebar {
                 display: none !important;
@@ -521,10 +639,38 @@
                     </a>
                 @endif
 
+                @if (auth()->user()->hasPermission('suppliers.view'))
+                    <a href="{{ route('admin.suppliers.index') }}"
+                        class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.suppliers.*') ? 'active' : '' }}">
+                        <i class="bi bi-truck"></i> {{ __('Suppliers') }}
+                    </a>
+                @endif
+
+                @if (auth()->user()->hasPermission('purchases.view'))
+                    <a href="{{ route('admin.purchases.index') }}"
+                        class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.purchases.*') ? 'active' : '' }}">
+                        <i class="bi bi-receipt-cutoff"></i> {{ __('Purchase Orders') }}
+                    </a>
+                @endif
+
+                @if (auth()->user()->hasPermission('purchase_returns.view'))
+                    <a href="{{ route('admin.purchase-returns.index') }}"
+                        class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.purchase-returns.*') ? 'active' : '' }}">
+                        <i class="bi bi-arrow-return-left"></i> {{ __('Purchase Returns') }}
+                    </a>
+                @endif
+
                 <a href="{{ route('admin.reports') }}"
-                    class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.reports*') ? 'active' : '' }}">
+                    class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.reports') ? 'active' : '' }}">
                     <i class="bi bi-graph-up-arrow"></i> {{ __('Reports') }}
                 </a>
+
+                @if (auth()->user()->hasPermission('reports.view') || auth()->user()->isAdmin())
+                    <a href="{{ route('admin.reports.purchasing') }}"
+                        class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.reports.purchasing') ? 'active' : '' }}">
+                        <i class="bi bi-cart-check"></i> {{ __('Purchasing Report') }}
+                    </a>
+                @endif
 
                 <hr class="my-2">
 
@@ -552,11 +698,11 @@
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
         @php
             $toastTypes = [
-                'status' => ['icon' => 'bi-check-circle-fill', 'color' => '#059669', 'bg' => '#ecfdf5', 'border' => '#10b981'],
-                'success' => ['icon' => 'bi-check-circle-fill', 'color' => '#059669', 'bg' => '#ecfdf5', 'border' => '#10b981'],
-                'error' => ['icon' => 'bi-exclamation-circle-fill', 'color' => '#dc2626', 'bg' => '#fef2f2', 'border' => '#ef4444'],
-                'warning' => ['icon' => 'bi-exclamation-triangle-fill', 'color' => '#d97706', 'bg' => '#fffbeb', 'border' => '#f59e0b'],
-                'info' => ['icon' => 'bi-info-circle-fill', 'color' => '#2563eb', 'bg' => '#eff6ff', 'border' => '#3b82f6'],
+                'status' => ['icon' => 'bi-check-circle-fill', 'color' => 'var(--toast-success-color)', 'bg' => 'var(--toast-success-bg)', 'border' => 'var(--toast-success-border)'],
+                'success' => ['icon' => 'bi-check-circle-fill', 'color' => 'var(--toast-success-color)', 'bg' => 'var(--toast-success-bg)', 'border' => 'var(--toast-success-border)'],
+                'error' => ['icon' => 'bi-exclamation-circle-fill', 'color' => 'var(--toast-error-color)', 'bg' => 'var(--toast-error-bg)', 'border' => 'var(--toast-error-border)'],
+                'warning' => ['icon' => 'bi-exclamation-triangle-fill', 'color' => 'var(--toast-warning-color)', 'bg' => 'var(--toast-warning-bg)', 'border' => 'var(--toast-warning-border)'],
+                'info' => ['icon' => 'bi-info-circle-fill', 'color' => 'var(--toast-info-color)', 'bg' => 'var(--toast-info-bg)', 'border' => 'var(--toast-info-border)'],
             ];
         @endphp
         @foreach ($toastTypes as $key => $cfg)
@@ -565,7 +711,7 @@
                     aria-atomic="true" data-bs-delay="5000" data-bs-autohide="true"
                     style="border-left: 4px solid {{ $cfg['border'] }} !important; min-width: 320px;">
                     <div class="d-flex align-items-center" style="background: {{ $cfg['bg'] }};">
-                        <div class="toast-body d-flex align-items-start gap-3 py-3 px-3 fw-semibold" style="color: #1f2937;">
+                        <div class="toast-body d-flex align-items-start gap-3 py-3 px-3 fw-semibold" style="color: var(--toast-text);">
                             <i class="bi {{ $cfg['icon'] }} fs-5 flex-shrink-0 mt-0" style="color: {{ $cfg['color'] }};"></i>
                             <div class="small">{!! session($key) !!}</div>
                         </div>
@@ -644,34 +790,34 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     @stack('scripts')
     <script>
-        (function() {
-            var theme = localStorage.getItem('admin_theme');
-            if (!theme) {
-                theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-            }
-            document.documentElement.setAttribute('data-bs-theme', theme);
-            document.documentElement.setAttribute('data-theme', theme);
-
-            var icon = document.getElementById('themeIcon');
-            if (icon) {
-                icon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
-            }
-        })();
-    </script>
-    <script>
         document.addEventListener('DOMContentLoaded', function() {
             var themeToggle = document.getElementById('themeToggle');
             if (themeToggle) {
+                // Keep the icon in sync with whatever theme is currently applied
+                var currentIcon = document.documentElement.getAttribute('data-theme');
+                var themeIcon = document.getElementById('themeIcon');
+                if (themeIcon) {
+                    themeIcon.className = currentIcon === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+                }
+
                 themeToggle.addEventListener('click', function() {
                     var html = document.documentElement;
                     var current = html.getAttribute('data-theme');
                     var next = current === 'dark' ? 'light' : 'dark';
+
+                    // Smoothly transition all colors while switching
+                    html.classList.add('theme-transition');
+                    setTimeout(function() { html.classList.remove('theme-transition'); }, 400);
+
                     html.setAttribute('data-bs-theme', next);
                     html.setAttribute('data-theme', next);
                     localStorage.setItem('admin_theme', next);
+
                     var icon = document.getElementById('themeIcon');
                     if (icon) {
-                        icon.className = next === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+                        icon.classList.add('theme-switch-anim');
+                        icon.className = next === 'dark' ? 'bi bi-sun-fill theme-switch-anim' : 'bi bi-moon-fill theme-switch-anim';
+                        setTimeout(function() { icon.classList.remove('theme-switch-anim'); }, 400);
                     }
                 });
             }
@@ -774,13 +920,13 @@
                             var message = n.data.message || '';
                             var url = n.data.url || '#';
                             var isUnread = n.read_at === null;
-                            var bg = isUnread ? 'background:#f0fdf4;' : '';
+                            var bg = isUnread ? 'background: var(--admin-primary-light);' : '';
                             html += '<a href="' + url + '" class="dropdown-item d-flex gap-2 px-3 py-2 border-bottom" style="' + bg + 'font-size: 13px;" data-id="' + n.id + '">';
-                            html += '    <div><i class="' + icon + '" style="color:#059669;"></i></div>';
+                            html += '    <div><i class="' + icon + '" style="color: var(--admin-primary);"></i></div>';
                             html += '    <div class="flex-grow-1 min-w-0">';
                             html += '        <div class="fw-semibold text-dark">' + title + '</div>';
                             html += '        <div class="text-muted text-truncate">' + message + '</div>';
-                            html += '        <div style="font-size: 11px; color: #94a3b8;">' + n.created_at + '</div>';
+                            html += '        <div style="font-size: 11px; color: var(--admin-text-muted);">' + n.created_at + '</div>';
                             html += '    </div>';
                             if (isUnread) {
                                 html += '    <div><span class="badge bg-success rounded-pill" style="width: 8px; height: 8px; padding: 0; display: inline-block;"></span></div>';

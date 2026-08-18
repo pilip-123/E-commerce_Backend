@@ -804,6 +804,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.theme-option').forEach(function(btn) {
       btn.classList.toggle('active', btn.querySelector('strong')?.textContent.toLowerCase() === theme);
     });
+    // Smoothly transition all colors while switching
+    document.documentElement.classList.add('theme-transition');
+    setTimeout(function() { document.documentElement.classList.remove('theme-transition'); }, 400);
     document.documentElement.setAttribute('data-bs-theme', theme);
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('admin_theme', theme);

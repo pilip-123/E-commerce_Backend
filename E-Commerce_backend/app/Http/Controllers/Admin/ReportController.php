@@ -8,10 +8,15 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Promotion;
+use App\Models\PurchaseOrder;
+use App\Models\PurchaseReturn;
+use App\Models\PurchaseReturnItem;
+use App\Models\Supplier;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class ReportController extends Controller
 {
@@ -84,6 +89,89 @@ class ReportController extends Controller
         $totalDiscountCodes = DiscountCode::count();
         $totalCodeUses = (int) DiscountCode::sum('used_count');
 
+        // ── Purchasing report data ──
+        $request = request();
+
+        $purchaseFrom = $request->filled('purchase_from')
+            ? Carbon::parse($request->input('purchase_from'))->startOfDay()
+            : Carbon::now()->startOfYear();
+        $purchaseTo = $request->filled('purchase_to')
+            ? Carbon::parse($request->input('purchase_to'))->endOfDay()
+            : Carbon::now()->endOfDay();
+
+        $poQuery = PurchaseOrder::with('supplier')
+            ->whereBetween('order_date', [$purchaseFrom, $purchaseTo]);
+
+        if ($request->filled('purchase_status')) {
+            $poQuery->where('status', $request->input('purchase_status'));
+        }
+
+        if ($request->filled('purchase_supplier')) {
+            $poQuery->where('supplier_id', $request->integer('purchase_supplier'));
+        }
+
+        $purchaseStats = [
+            'totalOrders' => (clone $poQuery)->count(),
+            'totalAmount' => (float) (clone $poQuery)->where('status', '!=', PurchaseOrder::STATUS_CANCELLED)->sum('grand_total'),
+            'pendingOrders' => (clone $poQuery)->where('status', PurchaseOrder::STATUS_PENDING)->count(),
+            'pendingPayments' => (float) (clone $poQuery)->whereIn('status', [
+                PurchaseOrder::STATUS_APPROVED,
+                PurchaseOrder::STATUS_ORDERED,
+                PurchaseOrder::STATUS_PARTIALLY_RECEIVED,
+                PurchaseOrder::STATUS_RECEIVED,
+            ])->where('payment_status', '!=', PurchaseOrder::PAYMENT_PAID)->sum('grand_total'),
+        ];
+
+        $purchaseOrders = (clone $poQuery)->latest('order_date')->take(10)->get();
+
+        $purchaseMonthly = PurchaseOrder::whereBetween('order_date', [$purchaseFrom, $purchaseTo])
+            ->where('status', '!=', PurchaseOrder::STATUS_CANCELLED)
+            ->selectRaw("DATE_FORMAT(order_date, '%Y-%m') as month, COUNT(*) as count, SUM(grand_total) as total")
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get()
+            ->keyBy('month');
+
+        $purchaseChartMonths = collect();
+        $purchaseChartTotals = collect();
+        for ($i = 11; $i >= 0; $i--) {
+            $month = Carbon::now()->subMonths($i)->format('Y-m');
+            $purchaseChartMonths->push(Carbon::now()->subMonths($i)->format('M y'));
+            $data = $purchaseMonthly->get($month);
+            $purchaseChartTotals->push($data ? (float) $data->total : 0);
+        }
+
+        $returnQuery = PurchaseReturn::with('supplier', 'purchaseOrder')
+            ->whereBetween('return_date', [$purchaseFrom, $purchaseTo]);
+
+        if ($request->filled('purchase_status')) {
+            $returnQuery->where('status', $request->input('purchase_status'));
+        }
+
+        if ($request->filled('purchase_supplier')) {
+            $returnQuery->where('supplier_id', $request->integer('purchase_supplier'));
+        }
+
+        $purchaseReturns = (clone $returnQuery)->latest('return_date')->take(10)->get();
+        $purchaseReturnStats = [
+            'count' => (clone $returnQuery)->count(),
+            'totalAmount' => (float) (clone $returnQuery)->sum('total_amount'),
+        ];
+
+        $supplierSpending = Supplier::withCount(['purchaseOrders as po_count' => function ($q) use ($purchaseFrom, $purchaseTo) {
+                $q->whereBetween('order_date', [$purchaseFrom, $purchaseTo])
+                    ->where('status', '!=', PurchaseOrder::STATUS_CANCELLED);
+            }])
+            ->withSum(['purchaseOrders as po_total' => function ($q) use ($purchaseFrom, $purchaseTo) {
+                $q->whereBetween('order_date', [$purchaseFrom, $purchaseTo])
+                    ->where('status', '!=', PurchaseOrder::STATUS_CANCELLED);
+            }], 'grand_total')
+            ->orderByDesc('po_total')
+            ->take(10)
+            ->get();
+
+        $purchaseSuppliers = Supplier::orderBy('name')->get();
+
         return view('admin.reports', compact(
             'today', 'currentMonth', 'threeMonthsAgo', 'now',
             'dailyTotalSales', 'dailyTotalRevenue',
@@ -92,6 +180,9 @@ class ReportController extends Controller
             'topCustomers', 'bestSellers',
             'totalPromotions', 'promoThisWeek', 'promoThisMonth', 'promoThisYear', 'activePromotions',
             'totalDiscountCodes', 'totalCodeUses',
+            'purchaseFrom', 'purchaseTo',
+            'purchaseStats', 'purchaseOrders', 'purchaseReturns', 'purchaseReturnStats',
+            'purchaseChartMonths', 'purchaseChartTotals', 'supplierSpending', 'purchaseSuppliers',
         ));
     }
 
@@ -163,6 +254,94 @@ class ReportController extends Controller
                 'total_code_uses'    => (int) DiscountCode::sum('used_count'),
             ],
         ]);
+    }
+
+    public function purchasing(Request $request): View
+    {
+        $now = Carbon::now()->endOfDay();
+
+        $from = $request->filled('from') ? Carbon::parse($request->input('from'))->startOfDay() : Carbon::now()->subMonths(11)->startOfMonth();
+        $to = $request->filled('to') ? Carbon::parse($request->input('to'))->endOfDay() : $now;
+
+        if ($from->gt($to)) {
+            [$from, $to] = [$to, $from];
+        }
+
+        // ── Summary stats ──
+        $totalPurchaseAmount = (float) PurchaseOrder::whereBetween('order_date', [$from, $to])
+            ->where('status', '!=', PurchaseOrder::STATUS_CANCELLED)
+            ->sum('grand_total');
+        $totalPurchaseOrders = PurchaseOrder::whereBetween('order_date', [$from, $to])->count();
+        $totalReturnedAmount = (float) PurchaseReturn::whereBetween('return_date', [$from, $to])
+            ->where('status', '!=', PurchaseReturn::STATUS_CANCELLED)
+            ->sum('total_amount');
+        $totalReturnedUnits = (int) PurchaseReturnItem::whereHas('purchaseReturn', function ($q) use ($from, $to) {
+            $q->whereBetween('return_date', [$from, $to])
+                ->where('status', '!=', PurchaseReturn::STATUS_CANCELLED);
+        })->sum('quantity');
+
+        // ── Monthly purchases & returns ──
+        $monthlyPurchases = PurchaseOrder::selectRaw("DATE_FORMAT(order_date, '%Y-%m') as month, COUNT(*) as count, SUM(grand_total) as total")
+            ->whereBetween('order_date', [$from, $to])
+            ->where('status', '!=', PurchaseOrder::STATUS_CANCELLED)
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get()
+            ->keyBy('month');
+
+        $monthlyReturns = PurchaseReturn::selectRaw("DATE_FORMAT(return_date, '%Y-%m') as month, COUNT(*) as count, SUM(total_amount) as total")
+            ->whereBetween('return_date', [$from, $to])
+            ->where('status', '!=', PurchaseReturn::STATUS_CANCELLED)
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get()
+            ->keyBy('month');
+
+        $chartMonths = collect();
+        $purchaseTotals = collect();
+        $returnTotals = collect();
+        $cursor = $from->copy()->startOfMonth();
+        while ($cursor->lte($to)) {
+            $key = $cursor->format('Y-m');
+            $chartMonths->push($cursor->format('M y'));
+            $purchaseTotals->push((float) ($monthlyPurchases->get($key)->total ?? 0));
+            $returnTotals->push((float) ($monthlyReturns->get($key)->total ?? 0));
+            $cursor->addMonth();
+        }
+
+        // ── Spend by supplier (top 6) ──
+        $spendBySupplier = PurchaseOrder::with('supplier')
+            ->selectRaw('supplier_id, COUNT(*) as order_count, SUM(grand_total) as total')
+            ->whereBetween('order_date', [$from, $to])
+            ->where('status', '!=', PurchaseOrder::STATUS_CANCELLED)
+            ->groupBy('supplier_id')
+            ->orderByDesc('total')
+            ->take(6)
+            ->get();
+        $maxSpend = max((float) $spendBySupplier->max('total'), 1);
+
+        // ── Status breakdown ──
+        $statusBreakdown = PurchaseOrder::whereBetween('order_date', [$from, $to])
+            ->selectRaw('status, COUNT(*) as count')
+            ->groupBy('status')
+            ->orderByDesc('count')
+            ->get()
+            ->map(fn ($row) => ['status' => $row->status, 'count' => (int) $row->count]);
+
+        // ── Top suppliers (top 10) ──
+        $topSuppliers = PurchaseOrder::with('supplier')
+            ->selectRaw('supplier_id, COUNT(*) as order_count, SUM(grand_total) as total')
+            ->whereBetween('order_date', [$from, $to])
+            ->where('status', '!=', PurchaseOrder::STATUS_CANCELLED)
+            ->groupBy('supplier_id')
+            ->orderByDesc('total')
+            ->take(10)
+            ->get();
+
+        return view('admin.reports.purchasing', compact(
+            'from', 'to', 'totalPurchaseAmount', 'totalPurchaseOrders', 'totalReturnedAmount', 'totalReturnedUnits',
+            'chartMonths', 'purchaseTotals', 'returnTotals', 'spendBySupplier', 'statusBreakdown', 'topSuppliers', 'maxSpend'
+        ));
     }
 
     public function dailySales(Request $request): JsonResponse
