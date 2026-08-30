@@ -59,7 +59,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th class="px-3 py-2 small fw-bold text-uppercase" style="min-width: 200px;">{{ __('Product') }}</th>
-                                    <th class="px-3 py-2 small fw-bold text-uppercase text-center" style="width: 90px;">{{ __('Unit Cost') }}</th>
+                                    <th class="px-3 py-2 small fw-bold text-uppercase text-center" style="min-width: 140px;">{{ __('Unit Cost') }}</th>
                                     <th class="px-3 py-2 small fw-bold text-uppercase text-center" style="width: 110px;">{{ __('Available') }}</th>
                                     <th class="px-3 py-2 small fw-bold text-uppercase text-center" style="width: 110px;">{{ __('Quantity') }}</th>
                                     <th class="px-3 py-2 small fw-bold text-uppercase" style="min-width: 140px;">{{ __('Reason') }}</th>
@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
             tr.innerHTML =
                 '<td class="px-3 py-2"><span class="fw-semibold small">' + item.name + '</span>' +
                 '<input type="hidden" name="items[' + i + '][purchase_order_item_id]" value="' + item.id + '"></td>' +
-                '<td class="px-3 py-2 text-center"><span class="return-cost">$' + item.unit_cost.toFixed(2) + '</span></td>' +
+                '<td class="px-3 py-2 text-center"><span class="return-cost fw-semibold small">$' + item.unit_cost.toFixed(2) + '</span></td>' +
                 '<td class="px-3 py-2 text-center"><span class="badge rounded-pill" style="background: var(--badge-info-bg); color: var(--badge-info-text);">' + item.available + '</span></td>' +
                 '<td class="px-3 py-2 text-center"><input type="number" name="items[' + i + '][quantity]" class="form-control form-control-sm return-qty text-center" value="' + item.available + '" min="1" max="' + item.available + '" required></td>' +
                 '<td class="px-3 py-2"><input type="text" name="items[' + i + '][reason]" class="form-control form-control-sm" placeholder="{{ __('Reason') }}"></td>' +
