@@ -73,7 +73,7 @@ class AdminPageController extends Controller
             'email' => $validated['email'],
             'phone' => $validated['phone'] ?? $user->phone,
             'address' => $validated['address'] ?? $user->address,
-            'password' => $validated['password'] ? Hash::make($validated['password']) : $user->password,
+            'password' => $validated['password'] ?: $user->password,
         ];
 
         if ($request->hasFile('image')) {

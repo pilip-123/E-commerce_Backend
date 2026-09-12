@@ -27,8 +27,9 @@ class ResetPassword extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
+        $frontendUrl = config('app.frontend_url', 'http://localhost:5173');
+
         if ($notifiable instanceof User && $notifiable->role === User::ROLE_CUSTOMER) {
-            $frontendUrl = config('app.frontend_url', 'http://localhost:5173');
             $url = $frontendUrl . '/#/reset-password?token=' . $this->token . '&email=' . urlencode($this->email);
         } else {
             $url = route('password.reset', ['token' => $this->token, 'email' => $this->email]);
@@ -39,7 +40,7 @@ class ResetPassword extends Notification
             ->greeting('Hello!')
             ->line('You are receiving this email because we received a password reset request for your account.')
             ->action('Reset Password', $url)
-            ->line('This password reset link will expire in 60 minutes.')
+            ->line('This password reset link will expire in ' . \App\Services\PasswordResetService::EXPIRY_MINUTES . ' minutes.')
             ->line('If you did not request a password reset, no further action is required.');
     }
 }

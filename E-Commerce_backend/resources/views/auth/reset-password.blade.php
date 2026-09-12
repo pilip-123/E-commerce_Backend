@@ -44,7 +44,7 @@
                                     <path d="M22 4L12 13 2 4" />
                                 </svg>
                             </span>
-                            <input type="email" name="email" value="{{ request('email') }}" required readonly
+                            <input type="email" name="email" value="{{ $email ?? '' }}" required readonly
                                 placeholder="Email address"
                                 class="w-full h-[55px] pl-12 pr-4 border border-gray-200 rounded-[14px] text-[#1E293B] placeholder-gray-400 outline-none transition-all duration-300 focus:border-[#22c55e] focus:ring-4 focus:ring-[#22c55e]/10 bg-gray-50 text-[15px] cursor-not-allowed">
                         </div>

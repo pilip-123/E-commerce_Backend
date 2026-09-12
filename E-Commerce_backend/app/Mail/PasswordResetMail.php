@@ -40,13 +40,9 @@ class PasswordResetMail extends Mailable
 
     private function buildResetUrl(): string
     {
-        $frontendUrl = config('app.frontend_url', 'http://localhost:5173');
-        $role = $this->user->role;
-
-        if ($role === User::ROLE_CUSTOMER) {
-            return $frontendUrl . '/#/reset-password?token=' . $this->token . '&email=' . urlencode($this->user->email);
-        }
-
-        return $frontendUrl . '/#/admin/reset-password?token=' . $this->token . '&email=' . urlencode($this->user->email);
+        return route('password.reset', [
+            'token' => $this->token,
+            'email' => $this->user->email,
+        ]);
     }
 }

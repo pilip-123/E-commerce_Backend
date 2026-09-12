@@ -13,18 +13,23 @@ class PasswordResetService
 {
     public const EXPIRY_MINUTES = 30;
 
-    public function sendResetLink(string $email, ?string $role = null): void
+    /**
+     * Create a reset token for the given email.
+     *
+     * @return array{user: User, token: string}|null
+     */
+    public function createToken(string $email, ?string $role = null): ?array
     {
-        $user = User::where('email', $email);
+        $query = User::where('email', $email);
 
         if ($role) {
-            $user->where('role', $role);
+            $query->where('role', $role);
         }
 
-        $user = $user->first();
+        $user = $query->first();
 
         if (!$user) {
-            return;
+            return null;
         }
 
         $plainToken = Str::random(64);
@@ -38,7 +43,20 @@ class PasswordResetService
             'expires_at' => now()->addMinutes(self::EXPIRY_MINUTES),
         ]);
 
-        Mail::to($user->email)->send(new PasswordResetMail($user, $plainToken));
+        return ['user' => $user, 'token' => $plainToken];
+    }
+
+    public function sendResetLink(string $email, ?string $role = null): void
+    {
+        $result = $this->createToken($email, $role);
+
+        if (!$result) {
+            return;
+        }
+
+        Mail::to($result['user']->email)->send(
+            new PasswordResetMail($result['user'], $result['token'])
+        );
     }
 
     public function resetPassword(string $email, string $plainToken, string $newPassword): array
@@ -59,7 +77,7 @@ class PasswordResetService
         }
 
         $user = $record->user;
-        $user->update(['password' => Hash::make($newPassword)]);
+        $user->update(['password' => $newPassword]);
 
         $record->delete();
 

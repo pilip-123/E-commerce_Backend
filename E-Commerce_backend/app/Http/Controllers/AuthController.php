@@ -2,21 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\PasswordResetMail;
 use App\Models\User;
 use App\Notifications\NewUserNotification;
-use App\Notifications\ResetPassword;
+use App\Services\PasswordResetService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
 class AuthController extends Controller
 {
+    public function __construct(
+        private readonly PasswordResetService $passwordResetService
+    ) {}
     public function showLogin(): View|RedirectResponse
     {
         if (auth()->check()) {
@@ -88,7 +90,7 @@ class AuthController extends Controller
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
+            'password' => $validated['password'],
             'role' => $validated['role'],
             'phone' => $validated['phone'] ?? null,
             'address' => $validated['address'] ?? null,
@@ -111,29 +113,23 @@ class AuthController extends Controller
     {
         $request->validate(['email' => ['required', 'email', 'exists:users,email']]);
 
-        $token = Str::random(64);
+        $result = $this->passwordResetService->createToken($request->email);
 
-        DB::table('password_reset_tokens')->updateOrInsert(
-            ['email' => $request->email],
-            ['token' => $token, 'created_at' => now()]
-        );
-
-        $user = User::where('email', $request->email)->first();
-
-        if ($user) {
-            $user->notify(new ResetPassword($token, $request->email));
+        if ($result) {
+            Mail::to($result['user']->email)->send(
+                new PasswordResetMail($result['user'], $result['token'])
+            );
         }
 
-        $resetUrl = route('password.reset', ['token' => $token, 'email' => $request->email]);
-
-        return back()
-            ->with('status', 'We have emailed your password reset link!')
-            ->with('reset_url', $resetUrl);
+        return back()->with('status', 'We have emailed your password reset link!');
     }
 
-    public function showResetForm(string $token): View|RedirectResponse
+    public function showResetForm(Request $request, string $token): View|RedirectResponse
     {
-        return view('auth.reset-password', ['token' => $token]);
+        return view('auth.reset-password', [
+            'token' => $token,
+            'email' => $request->query('email', ''),
+        ]);
     }
 
     public function reset(Request $request): RedirectResponse
@@ -144,34 +140,23 @@ class AuthController extends Controller
             'password' => ['required', 'confirmed', Password::min(8)],
         ]);
 
-        $record = DB::table('password_reset_tokens')
-            ->where('email', $request->email)
-            ->where('token', $request->token)
-            ->first();
+        $result = $this->passwordResetService->resetPassword(
+            $request->email,
+            $request->token,
+            $request->password
+        );
 
-        if (! $record) {
+        if (! $result['success']) {
             return back()
-                ->withErrors(['email' => 'Invalid or expired password reset token.'])
-                ->onlyInput('email');
-        }
-
-        if (Carbon::parse($record->created_at)->addMinutes(60)->isPast()) {
-            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
-
-            return back()
-                ->withErrors(['email' => 'This password reset link has expired.'])
+                ->withErrors(['email' => $result['message']])
                 ->onlyInput('email');
         }
 
         $user = User::where('email', $request->email)->first();
-        $user->update(['password' => Hash::make($request->password)]);
+        $loginRoute = ($user && $user->hasPermission('dashboard.view')) ? 'admin.login' : 'login';
 
-        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
-
-        Auth::login($user);
-        $request->session()->regenerate();
-
-        return redirect()->route('dashboard');
+        return redirect()->route($loginRoute)
+            ->with('status', 'Your password has been reset successfully. Please log in with your new password.');
     }
 
     public function logout(Request $request): RedirectResponse
