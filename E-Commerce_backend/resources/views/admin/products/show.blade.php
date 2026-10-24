@@ -158,14 +158,18 @@
                     </div>
 
                     <div class="d-flex gap-2 mt-4 pt-3 border-top">
-                        <a href="{{ route('admin.products.edit', $product->id) }}" class="btn btn-success btn-sm px-4">
-                            <i class="bi bi-pencil me-1"></i>{{ __('Edit') }}
-                        </a>
-                        <button type="button" class="btn btn-danger btn-sm px-4"
-                                data-bs-toggle="modal" data-bs-target="#deleteModal"
-                                data-url="{{ route('admin.products.destroy', $product->id) }}">
-                            <i class="bi bi-trash me-1"></i>{{ __('Delete') }}
-                        </button>
+                        @if (auth()->user()->hasPermission('products.edit'))
+                            <a href="{{ route('admin.products.edit', $product->id) }}" class="btn btn-success btn-sm px-4">
+                                <i class="bi bi-pencil me-1"></i>{{ __('Edit') }}
+                            </a>
+                        @endif
+                        @if (auth()->user()->hasPermission('products.delete'))
+                            <button type="button" class="btn btn-danger btn-sm px-4"
+                                    data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                    data-url="{{ route('admin.products.destroy', $product->id) }}">
+                                <i class="bi bi-trash me-1"></i>{{ __('Delete') }}
+                            </button>
+                        @endif
                         <a href="{{ route('admin.products.index') }}" class="btn btn-outline-secondary btn-sm px-4">
                             <i class="bi bi-arrow-left me-1"></i>{{ __('Back') }}
                         </a>

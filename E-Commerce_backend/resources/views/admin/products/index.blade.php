@@ -12,9 +12,11 @@
             </div>
             <div class="d-flex gap-2">
                 @include('admin.partials.export-dropdown', ['exportRoute' => route('admin.export.products')])
-                <a href="{{ route('admin.products.create') }}" class="btn btn-success btn-sm">
-                    <i class="bi bi-plus-lg me-1"></i>{{ __('New Product') }}
-                </a>
+                @if (auth()->user()->hasPermission('products.create'))
+                    <a href="{{ route('admin.products.create') }}" class="btn btn-success btn-sm">
+                        <i class="bi bi-plus-lg me-1"></i>{{ __('New Product') }}
+                    </a>
+                @endif
             </div>
         </div>
         <div class="card-body border-bottom px-3 py-3">
@@ -98,15 +100,19 @@
                                            class="btn btn-sm btn-outline-info" title="{{ __('View') }}">
                                              <i class="bi bi-eye"></i>
                                          </a>
-                                         <a href="{{ route('admin.products.edit', $product->id) }}"
-                                            class="btn btn-sm btn-outline-success" title="{{ __('Edit') }}">
-                                             <i class="bi bi-pencil"></i>
-                                         </a>
-                                         <button type="button" class="btn btn-sm btn-outline-danger"
-                                                 data-bs-toggle="modal" data-bs-target="#deleteModal"
-                                                 data-url="{{ route('admin.products.destroy', $product->id) }}" title="{{ __('Delete') }}">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
+                                         @if (auth()->user()->hasPermission('products.edit'))
+                                             <a href="{{ route('admin.products.edit', $product->id) }}"
+                                                class="btn btn-sm btn-outline-success" title="{{ __('Edit') }}">
+                                                 <i class="bi bi-pencil"></i>
+                                             </a>
+                                         @endif
+                                         @if (auth()->user()->hasPermission('products.delete'))
+                                             <button type="button" class="btn btn-sm btn-outline-danger"
+                                                     data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                                     data-url="{{ route('admin.products.destroy', $product->id) }}" title="{{ __('Delete') }}">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                         @endif
                                     </div>
                                 </td>
                             </tr>
