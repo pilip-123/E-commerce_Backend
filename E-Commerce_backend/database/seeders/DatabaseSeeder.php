@@ -32,6 +32,17 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        $manager = User::updateOrCreate(
+            ['email' => 'manager@example.com'],
+            [
+                'name' => 'Manager User',
+                'password' => Hash::make('password123'),
+                'role' => 'manager',
+                'phone' => '+855 222 222',
+                'address' => 'Siem Reap',
+            ]
+        );
+
         $customer = User::updateOrCreate(
             ['email' => 'customer@example.com'],
             [
