@@ -14,6 +14,7 @@ use App\Services\TelegramService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CheckoutController extends Controller
 {
@@ -128,9 +129,17 @@ class CheckoutController extends Controller
         }
 
         try {
-            app(TelegramService::class)->sendOrderNotification($order);
+            if (!app(TelegramService::class)->sendOrderNotification($order)) {
+                Log::warning('Order was placed, but its Telegram notification was not delivered.', [
+                    'order_id' => $order->id,
+                ]);
+            }
         } catch (\Throwable $e) {
-            // Telegram failure should not block order
+            Log::error('Order was placed, but building its Telegram notification failed.', [
+                'order_id' => $order->id,
+                'exception' => $e::class,
+                'message' => $e->getMessage(),
+            ]);
         }
 
         return response()->json([

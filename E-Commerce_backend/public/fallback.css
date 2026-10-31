@@ -61,6 +61,7 @@ button { cursor: pointer; }
 .text-slate-700 { color: #334155; }
 .text-slate-600 { color: #475569; }
 .text-slate-500 { color: #64748b; }
+.text-emerald-50 {color:#d1fae5}
 .text-emerald-600 { color: #059669; }
 .text-emerald-700 { color: #047857; }
 .text-white { color: #fff; }

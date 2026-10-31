@@ -5,6 +5,10 @@
 @section('content')
     <div class="container-fluid p-0">
 
+        @php
+            $dayfalse = 0 ;
+        @endphp
+
         {{-- TOP ACTION BAR --}}
         <div
             class="d-flex flex-wrap align-items-center justify-content-between bg-white border rounded-3 p-3 mb-4 shadow-sm">
@@ -36,7 +40,11 @@
                     </div>
                 </form>
             </div>
+
             <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2 ms-2">
+                    <span class="font-bold text-emerald-50">{{ now()->format('F , j , Y') }}</span>
+                </div>
                 <div class="dropdown">
                     <button class="btn btn-light btn-sm position-relative border" title="{{ __('Notifications') }}"
                         data-bs-toggle="dropdown" aria-expanded="false" id="notifBell">
@@ -117,9 +125,11 @@
                         <p class="fw-bold mb-0" style="font-size: 38px; line-height: 1.15; margin-top: 4px;"
                             id="statOrders">
                             {{ number_format($stats['orders']) }}</p>
+                        @if($dayfalse)
                         <p class="small opacity-75 mb-0" style="font-size: 11px; margin-top: 3px;" id="trendOrders">
                             {{ $trends['orders'] >= 0 ? '+' : '' }}{{ number_format($trends['orders'], 2) }}% (30 days)
                         </p>
+                        @endif
                     </div>
                     <div class="position-absolute top-0 end-0 d-flex align-items-center justify-content-center rounded-circle"
                         style="width: 44px; height: 44px; margin: 18px; background: rgba(255,255,255,.25);">
@@ -141,10 +151,12 @@
                         <p class="fw-bold mb-0" style="font-size: 38px; line-height: 1.15; margin-top: 4px;"
                             id="statRevenue">
                             ${{ number_format($stats['revenue'], 2) }}</p>
+                        @if($dayfalse)
                         <p class="small opacity-75 mb-0" style="font-size: 11px; margin-top: 3px;" id="trendRevenue">
                             {{ $trends['revenue'] >= 0 ? __('Increased') : __('Decreased') }} by
                             {{ number_format(abs($trends['revenue']), 2) }}%
                         </p>
+                        @endif
                     </div>
                     <div class="position-absolute top-0 end-0 d-flex align-items-center justify-content-center rounded-circle"
                         style="width: 44px; height: 44px; margin: 18px; background: rgba(255,255,255,.25);">
@@ -165,9 +177,11 @@
                         <p class="fw-bold mb-0" style="font-size: 38px; line-height: 1.15; margin-top: 4px;"
                             id="statPending">
                             {{ number_format($stats['pendingOrders']) }}</p>
+                        @if($dayfalse)
                         <p class="small opacity-75 mb-0" style="font-size: 11px; margin-top: 3px;" id="trendLabel">
                             {{ $trends['orders'] >= 0 ? '+' : '' }}{{ number_format($trends['orders'], 2) }}% (30 days)
                         </p>
+                        @endif
                     </div>
                     <div class="position-absolute top-0 end-0 d-flex align-items-center justify-content-center rounded-circle"
                         style="width: 44px; height: 44px; margin: 18px; background: rgba(255,255,255,.25);">
@@ -190,9 +204,11 @@
                         <p class="fw-bold mb-0" style="font-size: 38px; line-height: 1.15; margin-top: 4px;"
                             id="statUsers">
                             {{ number_format($stats['users']) }}</p>
+                        @if($dayfalse)
                         <p class="small opacity-75 mb-0" style="font-size: 11px; margin-top: 3px;" id="trendUsers">
                             {{ $trends['users'] >= 0 ? '+' : '' }}{{ number_format($trends['users'], 2) }}% (30 days)
                         </p>
+                        @endif
                     </div>
                     <div class="position-absolute top-0 end-0 d-flex align-items-center justify-content-center rounded-circle"
                         style="width: 44px; height: 44px; margin: 18px; background: rgba(255,255,255,.25);">

@@ -23,18 +23,32 @@ class TelegramService
             return false;
         }
 
-        $response = Http::timeout(5)->post("https://api.telegram.org/bot{$this->botToken}/sendMessage", [
-            'chat_id' => $this->chatId,
-            'text' => $message,
-            'parse_mode' => 'HTML',
-        ]);
+        try {
+            $response = Http::timeout(15)->post("https://api.telegram.org/bot{$this->botToken}/sendMessage", [
+                'chat_id' => $this->chatId,
+                'text' => $message,
+                'parse_mode' => 'HTML',
+            ]);
 
-        if ($response->failed()) {
-            Log::error('Telegram notification failed: ' . $response->body());
+            if ($response->failed() || !$response->json('ok')) {
+                // Do not log the request URL; it contains the bot token.
+                Log::error('Telegram notification rejected.', [
+                    'status' => $response->status(),
+                    'description' => $response->json('description'),
+                ]);
+                return false;
+            }
+
+            return true;
+        } catch (\Throwable $e) {
+            // HTTP connection failures (including timeouts) should be visible
+            // in the Laravel log without preventing the order from succeeding.
+            Log::error('Telegram notification could not be delivered.', [
+                'exception' => $e::class,
+                'message' => str_replace($this->botToken, '[REDACTED]', $e->getMessage()),
+            ]);
             return false;
         }
-
-        return true;
     }
 
     public function sendOrderNotification(\App\Models\Order $order): bool
