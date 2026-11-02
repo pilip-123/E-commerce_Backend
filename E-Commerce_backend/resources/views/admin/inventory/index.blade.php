@@ -250,7 +250,7 @@
                                 <td class="px-4 py-3 text-center">
                                     @if ($product->stock <= 0)
                                         <span class="badge bg-danger-subtle text-danger-emphasis px-3 py-2">{{ __('Out of Stock') }}</span>
-                                    @elseif ($product->stock <= 3)
+                                    @elseif ($product->stock <= 10)
                                         <span class="badge bg-warning-subtle text-warning-emphasis px-3 py-2">{{ __('Low Stock') }}</span>
                                     @else
                                         <span class="badge bg-success-subtle text-success-emphasis px-3 py-2">{{ __('In Stock') }}</span>

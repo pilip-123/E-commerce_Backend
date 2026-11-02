@@ -55,7 +55,7 @@
                     <div>
                         <p class="text-muted small mb-0">{{ __('Returned Value') }}</p>
                         <h5 class="fw-bold mb-0">${{ number_format($returnStats['totalAmount'], 2) }}</h5>
-                        <p class="text-muted mb-0" style="font-size: 11px;">{{ number_format($returnStats['totalUnits']) }} {{ __('units') }}</p>
+                        {{-- <p class="text-muted mb-0" style="font-size: 11px;">{{ number_format($returnStats['totalUnits']) }} {{ __('units') }}</p> --}}
                     </div>
                 </div>
             </div>

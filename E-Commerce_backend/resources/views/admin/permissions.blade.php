@@ -7,7 +7,7 @@
     <div class="d-flex align-items-center justify-content-between mb-4">
         <div>
             <h4 class="fw-bold mb-1">{{ __('Permissions Management') }}</h4>
-            <p class="text-muted small mb-0">{{ __('Configure role-based permissions for all users.') }}</p>
+            {{-- <p class="text-muted small mb-0">{{ __('Configure role-based permissions for all users.') }}</p> --}}
         </div>
     </div>
 

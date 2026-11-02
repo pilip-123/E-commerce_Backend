@@ -9,7 +9,7 @@
     <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
         <div>
             <h4 class="fw-bold mb-1">{{ __('Purchasing Report') }}</h4>
-            <p class="text-muted small mb-0">{{ __('Purchase orders, returns and supplier spending for the selected period') }}</p>
+            {{-- <p class="text-muted small mb-0">{{ __('Purchase orders, returns and supplier spending for the selected period') }}</p>  --}}
         </div>
         <form method="GET" class="d-flex gap-2 align-items-end flex-wrap">
             <div>
@@ -49,7 +49,10 @@
                     <div>
                         <p class="text-muted small mb-0">{{ __('Net Spending') }}</p>
                         <h5 class="fw-bold mb-0">${{ number_format($netSpending, 2) }}</h5>
+                        @php $hiden = false ; @endphp
+                        @if($hiden)
                         <p class="text-muted mb-0" style="font-size: 11px;">{{ __('Purchases after returns') }}</p>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -63,7 +66,9 @@
                     <div>
                         <p class="text-muted small mb-0">{{ __('Net Income') }}</p>
                         <h5 class="fw-bold mb-0 {{ $netIncome >= 0 ? 'text-success' : 'text-danger' }}">${{ number_format($netIncome, 2) }}</h5>
+                        @if($hiden)
                         <p class="text-muted mb-0" style="font-size: 11px;">{{ __('Income after purchase spending') }}</p>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -77,7 +82,9 @@
                     <div>
                         <p class="text-muted small mb-0">{{ __('Net Margin') }}</p>
                         <h5 class="fw-bold mb-0">{{ number_format($netMargin, 1) }}%</h5>
+                        @if($hiden)
                         <p class="text-muted mb-0" style="font-size: 11px;">{{ __('Net income share of income') }}</p>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -95,7 +102,9 @@
                     <div>
                         <p class="text-muted small mb-0">{{ __('Total Purchases') }}</p>
                         <h5 class="fw-bold mb-0">${{ number_format($netSpending, 2) }}</h5>
+                        @if($hiden)
                         <p class="text-muted mb-0" style="font-size: 11px;">{{ __('After returns applied') }}</p>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -145,7 +154,9 @@
     <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-body">
             <h5 class="card-title fw-bold mb-1" style="font-size: 15px;">{{ __('Income vs Purchases') }}</h5>
+            @if($hiden)
             <p class="text-muted small mb-3">{{ __('Sales income compared to purchase spending per month') }}</p>
+            @endif
             @php $maxValue = max(max($incomeTotals->max() ?? 0, $purchaseTotals->max() ?? 0), 1); @endphp
             <div class="d-flex align-items-end gap-2" style="height: 200px;">
                 @foreach ($chartMonths as $i => $month)

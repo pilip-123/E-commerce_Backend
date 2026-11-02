@@ -25,7 +25,7 @@
         <div class="card-header bg-white py-3 rounded-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
             <div>
                 <h5 class="fw-bold mb-0">{{ __('VIP Discount Codes') }}</h5>
-                <small class="text-muted">{{ __('Generate special discount codes for your best customers') }}</small>
+                {{-- <small class="text-muted">{{ __('Generate special discount codes for your best customers') }}</small> --}}
             </div>
         </div>
         <div class="card-body">
@@ -98,7 +98,7 @@
                                     <div class="text-center py-5 text-muted border rounded-3">
                                         <i class="bi bi-people fs-1 d-block mb-2"></i>
                                         <p class="mb-0">{{ __('No qualifying customers yet.') }}</p>
-                                        <small>{{ __('Customers need at least $100 total spent across all orders.') }}</small>
+                                        {{-- <small>{{ __('Customers need at least $100 total spent across all orders.') }}</small> --}}
                                     </div>
                                 @endif
                             </div>
@@ -168,7 +168,7 @@
                 <div class="text-center py-5 text-muted">
                     <i class="bi bi-ticket fs-1 d-block mb-2"></i>
                     <p class="mb-0">{{ __('No codes generated yet.') }}</p>
-                    <small>{{ __('Use the form above to generate your first VIP discount code.') }}</small>
+                    {{-- <small>{{ __('Use the form above to generate your first VIP discount code.') }}</small> --}}
                 </div>
             @endif
         </div>
