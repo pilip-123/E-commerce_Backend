@@ -2,6 +2,18 @@
 
 @section('title', __('Admin Dashboard'))
 
+@push('styles')
+<style>
+    html[data-theme="light"] .dashboard-date {
+        color: #dc3545;
+    }
+
+    html[data-theme="dark"] .dashboard-date {
+        color: #ecfdf5;
+    }
+</style>
+@endpush
+
 @section('content')
     <div class="container-fluid p-0">
 
@@ -43,7 +55,7 @@
 
             <div class="d-flex align-items-center gap-2">
                 <div class="d-flex align-items-center gap-2 ms-2">
-                    <span class="font-bold text-emerald-50">{{ now()->format('F , j , Y') }}</span>
+                    <span class="dashboard-date font-bold">{{ now()->format('F , j , Y') }}</span>
                 </div>
                 <div class="dropdown">
                     <button class="btn btn-light btn-sm position-relative border" title="{{ __('Notifications') }}"
@@ -768,5 +780,6 @@
             }
 
         });
+
     </script>
 @endpush
