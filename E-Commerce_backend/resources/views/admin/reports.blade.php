@@ -350,13 +350,16 @@
                 <div class="row g-4">
                     <div class="col-lg-6">
                         <div class="card border-0 shadow-sm rounded-4 h-100">
-                            <div
-                                class="card-header bg-white py-3 rounded-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
-                                <h5 class="fw-bold mb-0"><i
-                                        class="bi bi-bar-chart text-success me-2"></i>{{ __('Revenue by Month') }}</h5>
+                            <div class="card-header bg-white border-0 pt-4 px-4 rounded-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                                <div>
+                                    <h5 class="fw-bold mb-1"><i class="bi bi-graph-up-arrow text-success me-2"></i>{{ __('Revenue by Month') }}</h5>
+                                </div>
+                                    <span class="badge bg-success-subtle text-success rounded-pill small fw-bold" id="revMonthlyChartMeta">
+                                        {{ $threeMonthsAgo->format('M d, Y') }} - {{ $now->format('M d, Y') }}
+                                </span>
                             </div>
-                            <div class="card-body py-4 px-4" style="background:var(--badge-success-bg);">
-                                <div id="revMonthlyChart" class="w-100" style="height:220px;position:relative;"></div>
+                            <div class="card-body py-4 px-4 d-flex align-items-center" style="background:var(--badge-success-bg);"">
+                                <div id="revMonthlyChart" class="w-100" style="height:250px;position:relative;box-sizing:border-box;padding:14px 16px 10px;border:1px solid rgba(5,150,105,.12);border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(236,253,245,.72));box-shadow:inset 0 1px 3px rgba(15,23,42,.04);"></div>
                             </div>
                         </div>
                     </div>
@@ -797,15 +800,12 @@
                     <form method="GET" class="row g-2 align-items-end w-100">
                         <input type="hidden" name="tab" value="purchases">
                         <div class="col-auto">
-                            <label class="fw-semibold small text-uppercase mb-0 d-block">{{ __('From') }}:</label>
                             <input type="date" name="purchase_from" class="form-control form-control-sm" style="max-width: 160px;" value="{{ $purchaseFrom->format('Y-m-d') }}">
                         </div>
                         <div class="col-auto">
-                            <label class="fw-semibold small text-uppercase mb-0 d-block">{{ __('To') }}:</label>
                             <input type="date" name="purchase_to" class="form-control form-control-sm" style="max-width: 160px;" value="{{ $purchaseTo->format('Y-m-d') }}">
                         </div>
                         <div class="col-auto">
-                            <label class="fw-semibold small text-uppercase mb-0 d-block">{{ __('Supplier') }}:</label>
                             <select name="purchase_supplier" class="form-select form-select-sm" style="max-width: 180px;">
                                 <option value="">{{ __('All Suppliers') }}</option>
                                 @foreach ($purchaseSuppliers as $supplier)
@@ -814,7 +814,6 @@
                             </select>
                         </div>
                         <div class="col-auto">
-                            <label class="fw-semibold small text-uppercase mb-0 d-block">{{ __('Status') }}:</label>
                             <select name="purchase_status" class="form-select form-select-sm" style="max-width: 170px;">
                                 <option value="">{{ __('All Statuses') }}</option>
                                 @foreach (['draft', 'pending', 'approved', 'ordered', 'partially_received', 'received', 'cancelled'] as $status)
@@ -1136,7 +1135,13 @@
                     return it[vk] || 0;
                 });
                 var labels = items.map(function(it) {
-                    return it[lk] != null ? String(it[lk]).substring(0, 8) : '';
+                    if (it[lk] == null) return '';
+                    var label = String(it[lk]);
+                    if (id === 'revMonthlyChart' && /^\d{4}-\d{2}$/.test(label)) {
+                        var monthDate = new Date(label + '-01T12:00:00');
+                        return monthDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                    }
+                    return label.substring(0, 8);
                 });
                 var w = 600,
                     h = 200;
@@ -1167,11 +1172,14 @@
                     '</svg>';
 
                 var tooltipId = 'lcTooltip_' + id;
-                var labelsHtml = '<div class="d-flex justify-content-between small text-muted mt-1 px-1">' +
+                var labelsHtml = '<div class="d-flex justify-content-between align-items-center small mt-2 px-1" style="gap:6px;">' +
                     items.map(function(it, i) {
                         var show = (items.length <= 8 || i % Math.ceil(items.length / 6) === 0 || i === items
                             .length - 1);
-                        return show ? '<span>' + labels[i] + '</span>' : '';
+                        if (!show) return '';
+                        return id === 'revMonthlyChart'
+                            ? '<span style="display:inline-block;padding:4px 9px;border:1px solid rgba(5,150,105,.14);border-radius:999px;background:#fff;color:#047857;font-size:.7rem;font-weight:700;line-height:1.2;white-space:nowrap;box-shadow:0 1px 3px rgba(15,23,42,.05);">' + labels[i] + '</span>'
+                            : '<span>' + labels[i] + '</span>';
                     }).join('') +
                     '</div>';
 
@@ -1359,7 +1367,7 @@
                     tt = document.createElement('div');
                 tt.id = 'dnttip';
                 tt.style.cssText =
-                    'position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:8px 18px;border-radius:10px;font-size:.85rem;font-weight:700;pointer-events:none;opacity:0;transition:opacity .2s;z-index:99;white-space:nowrap;box-shadow:0 6px 20px rgba(0,0,0,.25);';
+                    'position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#f59e0b;color:#fff;padding:8px 18px;border-radius:10px;font-size:.85rem;font-weight:700;pointer-events:none;opacity:0;transition:opacity .2s;z-index:99;white-space:nowrap;box-shadow:0 6px 20px rgba(0,0,0,.25);';
                 items.forEach(function(c, i) {
                     var pct = c.total / total,
                         sliceAngle = pct * 2 * Math.PI;
@@ -1378,12 +1386,12 @@
                 var svg = '<svg viewBox="0 0 260 260" width="100%" style="max-width:250px;height:auto;">';
                 slices.forEach(function(s) {
                     svg += '<path d="' + s.path + '" fill="' + s.color +
-                        '" stroke="#fff" stroke-width="3" style="cursor:pointer;transition:transform .15s,opacity .15s;" onmouseover="var t=document.getElementById(\'dnttip\');t.style.opacity=\'1\';t.textContent=\'' +
+                        '" stroke="#f59e0b" stroke-width="3" style="cursor:pointer;transition:transform .15s,opacity .15s;" onmouseover="var t=document.getElementById(\'dnttip\');t.style.opacity=\'1\';t.textContent=\'' +
                         s.category + ': ' + fm(s.value) + ' (' + (s.pct * 100).toFixed(1) +
                         '%)\';this.style.opacity=\'.85\';this.setAttribute(\'transform\',\'translate(-4,-4)\');" onmouseout="var t=document.getElementById(\'dnttip\');t.style.opacity=\'0\';this.style.opacity=\'1\';this.setAttribute(\'transform\',\'translate(0,0)\');"></path>';
                 });
                 svg += '<circle cx="' + cx + '" cy="' + cy + '" r="' + ir +
-                    '" fill="#fff" stroke="#e2e8f0" stroke-width="2"/></svg>';
+                    '" fill="#fff" stroke="#f59e0b" stroke-width="2"/></svg>';
                 var html =
                     '<div style="position:relative;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:24px;padding:4px 0;">' +
                     '<div style="position:relative;flex-shrink:0;">' + svg + tt.outerHTML +
