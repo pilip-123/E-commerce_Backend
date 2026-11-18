@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\PurchaseOrderController;
 use App\Http\Controllers\Admin\PurchaseReturnController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\SaveController;
 use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -137,6 +138,13 @@ Route::prefix('admin')
             Route::delete('history/clear', [InventoryController::class, 'clearHistory'])->name('history.clear');
             Route::get('valuation', [InventoryController::class, 'valuation'])->name('valuation');
         });
+
+        Route::get('saving', [SaveController::class, 'saving'])
+            ->middleware('permission:saving.view')
+            ->name('saving.index');
+        Route::put('saving/state', [SaveController::class, 'saveState'])
+            ->middleware('permission:saving.view')
+            ->name('saving.state');
 
         Route::get('permissions', [AdminPageController::class, 'permissions'])->name('permissions')
             ->middleware(AdminMiddleware::class);

@@ -1684,9 +1684,9 @@
                                 var y2 = cy + r2 * Math.sin(angle);
                                 var large = sliceAngle > Math.PI ? 1 : 0;
                                 var d = 'M' + cx + ',' + cy + ' L' + x1 + ',' + y1 + ' A' + r2 + ',' + r2 + ' 0 ' + large + ' 1 ' + x2 + ',' + y2 + ' Z';
-                                svg += '<path d="' + d + '" fill="' + colors[i % colors.length] + '" stroke="#fff" stroke-width="3"/>';
+                                svg += '<path d="' + d + '" fill="' + colors[i % colors.length] + '" stroke="#d97706" stroke-width="3"/>';
                             });
-                            svg += '<circle cx="' + cx + '" cy="' + cy + '" r="' + ir + '" fill="#fff" stroke="#e2e8f0" stroke-width="2"/>';
+                            svg += '<circle cx="' + cx + '" cy="' + cy + '" r="' + ir + '" fill="#059669" stroke="#e2e" stroke-width="2"/>';
                             svg += '</svg>';
                             var legend = '<div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:8px;">';
                             tb.forEach(function(t, i) {

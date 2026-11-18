@@ -672,6 +672,13 @@
                     </a>
                 @endif
 
+                @if (auth()->user()->hasPermission('saving.view'))
+                    <a href="{{ route('admin.saving.index') }}"
+                        class="nav-link d-flex align-items-center gap-2 px-3 py-2 {{ request()->routeIs('admin.saving.*') ? 'active' : '' }}">
+                        <i class="bi bi-piggy-bank"></i> {{ __('Saving tracker') }}
+                    </a>
+                @endif
+
                 <hr class="my-2">
 
                 @if (auth()->user()->isAdmin())

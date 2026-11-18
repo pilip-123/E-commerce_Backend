@@ -83,6 +83,8 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'vipcodes.delete', 'display_name' => 'Delete VIP Codes', 'group' => 'VIP Codes'],
 
             ['name' => 'alerts.view', 'display_name' => 'View Alerts', 'group' => 'Alerts'],
+
+            ['name' => 'saving.view', 'display_name' => 'View Saving Tracker', 'group' => 'Saving Tracker'],
         ];
 
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
