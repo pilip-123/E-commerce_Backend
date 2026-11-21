@@ -56,6 +56,8 @@ return [
     'telegram' => [
         'bot_token' => env('TELEGRAM_BOT_TOKEN'),
         'chat_id' => env('TELEGRAM_CHAT_ID'),
+        // Optional path to a CA certificate bundle. Leave empty to auto-detect.
+        'ca_bundle' => env('TELEGRAM_CA_BUNDLE'),
     ],
 
 ];

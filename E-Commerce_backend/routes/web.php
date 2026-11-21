@@ -70,6 +70,7 @@ Route::prefix('admin')
     ->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::get('/dashboard/data', [AdminDashboardController::class, 'getData'])->name('dashboard.data');
+        Route::get('/dashboard/live', [AdminDashboardController::class, 'liveChart'])->name('dashboard.live');
 
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
         Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');

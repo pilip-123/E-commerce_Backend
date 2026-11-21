@@ -286,6 +286,62 @@ class DashboardController extends Controller
         ]);
     }
 
+    /**
+     * Orders + revenue series for the live Summary chart.
+     * Polled by the dashboard every few seconds; buckets are built in PHP so it
+     * works on any database (MySQL in the app, SQLite in tests).
+     */
+    public function liveChart(Request $request): JsonResponse
+    {
+        $range = in_array($request->input('range'), ['24h', '7d', '30d', '12m'], true) ? $request->input('range') : '30d';
+        $now = Carbon::now();
+
+        [$from, $unit, $count, $keyFormat, $labelFormat] = match ($range) {
+            '24h' => [$now->copy()->subHours(23)->startOfHour(), 'hour', 24, 'Y-m-d H', 'H:00'],
+            '7d' => [$now->copy()->subDays(6)->startOfDay(), 'day', 7, 'Y-m-d', 'D d'],
+            '12m' => [$now->copy()->subMonths(11)->startOfMonth(), 'month', 12, 'Y-m', 'M Y'],
+            default => [$now->copy()->subDays(29)->startOfDay(), 'day', 30, 'Y-m-d', 'M d'],
+        };
+
+        $buckets = [];
+        $cursor = $from->copy();
+        for ($i = 0; $i < $count; $i++) {
+            $buckets[$cursor->format($keyFormat)] = ['label' => $cursor->translatedFormat($labelFormat), 'orders' => 0, 'revenue' => 0.0];
+            $cursor->addUnit($unit);
+        }
+
+        Order::where('created_at', '>=', $from)
+            ->get(['created_at', 'total_amount'])
+            ->each(function ($order) use (&$buckets, $keyFormat) {
+                $key = $order->created_at->format($keyFormat);
+                if (isset($buckets[$key])) {
+                    $buckets[$key]['orders']++;
+                    $buckets[$key]['revenue'] += (float) $order->total_amount;
+                }
+            });
+
+        // Same-length window just before this one, for the "vs previous" chips.
+        $previous = Order::whereBetween('created_at', [$from->copy()->subUnit($unit, $count), $from->copy()->subSecond()]);
+        $series = array_values($buckets);
+
+        return response()->json([
+            'range' => $range,
+            'labels' => array_column($series, 'label'),
+            'orders' => array_column($series, 'orders'),
+            'revenue' => array_map(fn ($b) => round($b['revenue'], 2), $series),
+            'totals' => [
+                'orders' => array_sum(array_column($series, 'orders')),
+                'revenue' => round(array_sum(array_column($series, 'revenue')), 2),
+            ],
+            'previous' => [
+                'orders' => (clone $previous)->count(),
+                'revenue' => round((float) (clone $previous)->sum('total_amount'), 2),
+            ],
+            'latestOrderAt' => optional(Order::latest()->value('created_at'))->toIso8601String(),
+            'updatedAt' => $now->toIso8601String(),
+        ]);
+    }
+
     private function attachRating($product)
     {
         $avg = $product->reviews->avg('rating');

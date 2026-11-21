@@ -97,7 +97,8 @@ class AuthController extends Controller
     {
         $this->passwordResetService->sendResetLink(
             $request->input('email'),
-            $request->input('role')
+            $request->input('role'),
+            $request->is('api/admin/*') ? 'admin-frontend' : 'frontend'
         );
 
         return response()->json([

@@ -88,6 +88,40 @@ class SavingTrackerPersistenceTest extends TestCase
         $this->assertDatabaseMissing('saving_entries', ['user_id' => $user->id]);
     }
 
+    public function test_each_entry_keeps_the_currency_it_was_entered_in(): void
+    {
+        $user = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $state = [
+            'entries' => [
+                ['id' => 'riel-1', 'kind' => 'saved', 'amount' => 41000, 'currency' => 'KHR', 'category' => 'General', 'date' => '2026-11-20', 'note' => '', 'source' => 'manual'],
+                ['id' => 'usd-1', 'kind' => 'spent', 'amount' => 3.75, 'currency' => 'USD', 'category' => 'Food', 'date' => '2026-11-20', 'note' => '', 'source' => 'manual'],
+            ],
+            'plans' => [
+                ['id' => 'plan-1', 'name' => 'Helmet', 'type' => 'Other', 'price' => 0.0049, 'saved' => 0, 'deadline' => '2026-12-31'],
+            ],
+            'monthlyTargets' => ['2026-11' => 97.5609756],
+            'yearlyTargets' => [],
+            'notes' => [],
+            'currency' => 'KHR',
+            'amountBase' => 'USD',
+        ];
+
+        $this->actingAs($user)
+            ->putJson(route('admin.saving.state'), ['data' => $state])
+            ->assertOk();
+
+        $this->assertDatabaseHas('saving_entries', ['client_id' => 'riel-1', 'amount' => 41000, 'currency' => 'KHR']);
+        $this->assertDatabaseHas('saving_entries', ['client_id' => 'usd-1', 'amount' => 3.75, 'currency' => 'USD']);
+        $stored = json_decode(\DB::table('saving_tracker_states')->where('user_id', $user->id)->value('data'), true);
+        $this->assertSame('USD', $stored['amountBase']);
+
+        $this->actingAs($user)
+            ->get(route('admin.saving.index'))
+            ->assertOk()
+            ->assertSee('"currency":"KHR"', false)
+            ->assertSee('1 USD = 4,100 KHR');
+    }
+
     public function test_save_route_returns_json_validation_errors_instead_of_redirecting(): void
     {
         $user = User::factory()->create(['role' => User::ROLE_ADMIN]);

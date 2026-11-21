@@ -6,45 +6,33 @@
 <div class="container-fluid p-0">
 
     {{-- Stats --}}
+    @php
+        $activeShare = $supplierCount > 0 ? $activeCount / $supplierCount * 100 : 0;
+        $spend = collect($monthlySpend);
+        $spendChange = $spend->count() > 1 && $spend[$spend->count() - 2] > 0 ? ($spend->last() - $spend[$spend->count() - 2]) / $spend[$spend->count() - 2] * 100 : null;
+        $topShare = $topSupplier && $totalSpend > 0 ? $topSupplier->spend / $totalSpend * 100 : 0;
+    @endphp
     <div class="row g-3 mb-4">
-        <div class="col-sm-6 col-xl-4">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                    <div class="d-flex align-items-center justify-content-center rounded-3 bg-success-subtle flex-shrink-0" style="width: 48px; height: 48px;">
-                        <i class="bi bi-truck text-success fs-5"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted small mb-0">{{ __('Total Suppliers') }}</p>
-                        <h5 class="fw-bold mb-0">{{ $suppliers->total() }}</h5>
-                    </div>
-                </div>
-            </div>
+        <div class="col-6 col-xl-3">
+            <x-admin.kpi color="green" icon="bi-truck" :label="__('Total Suppliers')" :value="number_format($supplierCount)"
+                :chip="number_format($activeCount) . ' ' . __('active')" :chip-tone="$activeShare >= 80 ? 'good' : ($activeShare > 0 ? 'warn' : '')" chip-icon="bi-check-circle"
+                :caption="number_format($activeShare) . '% ' . __('active') . ' · ' . ($supplierCount - $activeCount) . ' ' . __('inactive')" :meter="$activeShare" />
         </div>
-        <div class="col-sm-6 col-xl-4">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                    <div class="d-flex align-items-center justify-content-center rounded-3 bg-info-subtle flex-shrink-0" style="width: 48px; height: 48px;">
-                        <i class="bi bi-receipt text-info fs-5"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted small mb-0">{{ __('Purchase Orders') }}</p>
-                        <h5 class="fw-bold mb-0">{{ $totalOrders }}</h5>
-                    </div>
-                </div>
-            </div>
+        <div class="col-6 col-xl-3">
+            <x-admin.kpi color="sky" icon="bi-receipt" :label="__('Purchase Orders')" :value="number_format($totalOrders)"
+                :chip="$supplierCount ? number_format($totalOrders / $supplierCount, 1) . ' ' . __('each') : null" chip-icon="bi-diagram-3" :chip-title="__('Purchase orders per supplier')"
+                :caption="$openOrders . ' ' . __('still open (not yet received)')" :meter="$totalOrders ? $openOrders / $totalOrders * 100 : 0" />
         </div>
-        <div class="col-sm-6 col-xl-4">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                    <div class="d-flex align-items-center justify-content-center rounded-3 bg-warning-subtle flex-shrink-0" style="width: 48px; height: 48px;">
-                        <i class="bi bi-cash-coin text-warning fs-5"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted small mb-0">{{ __('Total Purchases') }}</p>
-                        <h5 class="fw-bold mb-0">${{ number_format($totalSpend, 2) }}</h5>
-                    </div>
-                </div>
-            </div>
+        <div class="col-6 col-xl-3">
+            <x-admin.kpi color="amber" icon="bi-cash-coin" :label="__('Total Purchases')" :value="'$' . number_format($totalSpend, 2)"
+                :trend="$spendChange" :higher-is-good="false" :spark="$monthlySpend"
+                :caption="__('Avg') . ' $' . number_format($totalOrders ? $totalSpend / $totalOrders : 0, 2) . ' / ' . __('order')" />
+        </div>
+        <div class="col-6 col-xl-3">
+            <x-admin.kpi color="violet" icon="bi-trophy" :label="__('Top Supplier')" :value="$topSupplier ? \Illuminate\Support\Str::limit($topSupplier->name, 18) : '—'"
+                :href="$topSupplier ? route('admin.suppliers.show', $topSupplier) : null"
+                :chip="$topSupplier ? number_format($topShare) . '%' : null" :chip-tone="$topShare >= 50 ? 'warn' : ''" :chip-title="__('Share of total purchases')"
+                :caption="$topSupplier ? '$' . number_format($topSupplier->spend, 2) . ' ' . __('purchased') : __('No purchases yet')" :meter="$topSupplier ? $topShare : null" />
         </div>
     </div>
 

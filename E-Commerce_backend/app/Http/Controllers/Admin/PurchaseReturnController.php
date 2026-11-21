@@ -71,6 +71,11 @@ class PurchaseReturnController extends Controller
             'completed' => PurchaseReturn::where('status', PurchaseReturn::STATUS_COMPLETED)->count(),
             'totalAmount' => (float) PurchaseReturn::where('status', '!=', PurchaseReturn::STATUS_CANCELLED)->sum('total_amount'),
             'totalUnits' => (int) PurchaseReturnItem::whereHas('purchaseReturn', fn ($q) => $q->where('status', '!=', PurchaseReturn::STATUS_CANCELLED))->sum('quantity'),
+            'approved' => PurchaseReturn::where('status', PurchaseReturn::STATUS_APPROVED)->count(),
+            'cancelled' => PurchaseReturn::where('status', PurchaseReturn::STATUS_CANCELLED)->count(),
+            'pendingAmount' => (float) PurchaseReturn::whereIn('status', [PurchaseReturn::STATUS_PENDING, PurchaseReturn::STATUS_APPROVED])->sum('total_amount'),
+            // Used for the return-rate chip: share of all (non-cancelled) purchases sent back.
+            'purchaseAmount' => (float) PurchaseOrder::where('status', '!=', PurchaseOrder::STATUS_CANCELLED)->sum('grand_total'),
         ];
 
         $monthlyReturns = PurchaseReturn::selectRaw("DATE_FORMAT(return_date, '%Y-%m') as month, COUNT(*) as count, SUM(total_amount) as total")

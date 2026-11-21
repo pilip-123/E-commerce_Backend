@@ -70,7 +70,28 @@ class PurchaseOrderController extends Controller
             'pending' => PurchaseOrder::where('status', PurchaseOrder::STATUS_PENDING)->count(),
             'received' => PurchaseOrder::where('status', PurchaseOrder::STATUS_RECEIVED)->count(),
             'cancelled' => PurchaseOrder::where('status', PurchaseOrder::STATUS_CANCELLED)->count(),
+            'totalValue' => (float) PurchaseOrder::where('status', '!=', PurchaseOrder::STATUS_CANCELLED)->sum('grand_total'),
+            'pendingValue' => (float) PurchaseOrder::where('status', PurchaseOrder::STATUS_PENDING)->sum('grand_total'),
+            'cancelledValue' => (float) PurchaseOrder::where('status', PurchaseOrder::STATUS_CANCELLED)->sum('grand_total'),
+            'receivedValue' => (float) PurchaseOrder::where('status', PurchaseOrder::STATUS_RECEIVED)->sum('grand_total'),
+            // On the way: approved/ordered/partially received.
+            'inTransit' => PurchaseOrder::whereIn('status', [PurchaseOrder::STATUS_APPROVED, PurchaseOrder::STATUS_ORDERED, PurchaseOrder::STATUS_PARTIALLY_RECEIVED])->count(),
+            'overdue' => PurchaseOrder::whereIn('status', [PurchaseOrder::STATUS_APPROVED, PurchaseOrder::STATUS_ORDERED, PurchaseOrder::STATUS_PARTIALLY_RECEIVED])
+                ->whereNotNull('expected_delivery_date')->whereDate('expected_delivery_date', '<', now()->toDateString())->count(),
+            'unpaidValue' => (float) PurchaseOrder::where('status', '!=', PurchaseOrder::STATUS_CANCELLED)
+                ->where('payment_status', '!=', PurchaseOrder::PAYMENT_PAID)->sum('grand_total'),
         ];
+
+        // Purchase orders created per month (last 6 months) for the KPI sparkline.
+        $monthlyCounts = collect(range(5, 0))->mapWithKeys(fn ($i) => [now()->subMonths($i)->format('Y-m') => 0])->all();
+        PurchaseOrder::where('order_date', '>=', now()->subMonths(5)->startOfMonth())->get(['order_date'])
+            ->each(function ($po) use (&$monthlyCounts) {
+                $key = $po->order_date?->format('Y-m');
+                if ($key && array_key_exists($key, $monthlyCounts)) {
+                    $monthlyCounts[$key]++;
+                }
+            });
+        $poStats['monthlyCounts'] = array_values($monthlyCounts);
 
         return view('admin.purchases.index', [
             'purchaseOrders' => $purchaseOrders,

@@ -36,7 +36,7 @@ class InventoryController extends Controller
             match ($request->input('stock_status')) {
                 'low' => $query->where('stock', '<=', 10)->where('stock', '>', 0),
                 'out' => $query->where('stock', '<=', 0),
-                'in' => $query->where('stock', '>', 3),
+                'in' => $query->where('stock', '>', 10),
                 default => null,
             };
         }
@@ -49,10 +49,11 @@ class InventoryController extends Controller
         $lowStockCount = Product::where('stock', '<=', 10)->where('stock', '>', 0)->count();
         $outOfStockCount = Product::where('stock', '<=', 0)->count();
         $totalProducts = Product::count();
+        $totalUnits = (int) Product::where('stock', '>', 0)->sum('stock');
         $totalValue = Product::select(DB::raw('SUM(stock * COALESCE(unit_cost, price)) as total'))->value('total') ?? 0;
 
         return view('admin.inventory.index', compact(
-            'products', 'lowStockCount', 'outOfStockCount', 'totalProducts', 'totalValue'
+            'products', 'lowStockCount', 'outOfStockCount', 'totalProducts', 'totalValue', 'totalUnits'
         ))->with('categories', \App\Models\Category::orderBy('name')->get());
     }
 

@@ -46,7 +46,11 @@ class PasswordResetService
         return ['user' => $user, 'token' => $plainToken];
     }
 
-    public function sendResetLink(string $email, ?string $role = null): void
+    /**
+     * @param  string|null  $linkTarget  'frontend' (Vue shop), 'admin-frontend' (Vue admin page)
+     *                                   or null for the backend Blade reset page.
+     */
+    public function sendResetLink(string $email, ?string $role = null, ?string $linkTarget = null): void
     {
         $result = $this->createToken($email, $role);
 
@@ -55,8 +59,34 @@ class PasswordResetService
         }
 
         Mail::to($result['user']->email)->send(
-            new PasswordResetMail($result['user'], $result['token'])
+            new PasswordResetMail(
+                $result['user'],
+                $result['token'],
+                $this->resetUrlFor($linkTarget, $result['user']->email, $result['token'])
+            )
         );
+    }
+
+    /**
+     * Build the link that matches the app the user asked from. The Vue app uses
+     * hash routing, so its pages live under "/#/".
+     */
+    public function resetUrlFor(?string $linkTarget, string $email, string $token): ?string
+    {
+        $path = match ($linkTarget) {
+            'frontend' => '/#/reset-password',
+            'admin-frontend' => '/#/admin/reset-password',
+            default => null,
+        };
+
+        if (!$path) {
+            return null;
+        }
+
+        return rtrim((string) config('app.frontend_url'), '/') . $path . '?' . http_build_query([
+            'token' => $token,
+            'email' => $email,
+        ]);
     }
 
     public function resetPassword(string $email, string $plainToken, string $newPassword): array

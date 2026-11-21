@@ -10,6 +10,9 @@ use Illuminate\View\View;
 
 class SaveController extends Controller
 {
+    /** Fixed exchange rate used to show tracker amounts in the chosen currency. */
+    public const KHR_PER_USD = 4100;
+
     /** Show the signed-in user's saving tracker and load its database state. */
     public function saving(): View
     {
@@ -27,6 +30,7 @@ class SaveController extends Controller
                 'id' => $entry->client_id,
                 'kind' => $entry->kind,
                 'amount' => (float) $entry->amount,
+                'currency' => $entry->currency,
                 'category' => $entry->category,
                 'date' => $entry->date,
                 'note' => $entry->note,
@@ -37,7 +41,8 @@ class SaveController extends Controller
         return view('admin.saveing.index', [
             'categories' => ['General', 'Emergency fund', 'Food', 'Transport', 'Bills', 'Shopping', 'Health', 'Travel', 'Other'],
             'planTypes' => ['Car', 'Motorcycle', 'Bike', 'Clothes', 'Trip', 'Other'],
-            'currencies' => ['USD' => 'US Dollar ($)', 'KHR' => 'Cambodian Riel (៛)', 'EUR' => 'Euro (€)', 'GBP' => 'British Pound (£)', 'THB' => 'Thai Baht (฿)', 'VND' => 'Vietnamese Dong (₫)', 'JPY' => 'Japanese Yen (¥)', 'AUD' => 'Australian Dollar (A$)', 'CAD' => 'Canadian Dollar (C$)'],
+            'currencies' => ['USD' => 'US Dollar ($)', 'KHR' => 'Cambodian Riel (៛)'],
+            'exchangeRates' => ['USD' => 1, 'KHR' => self::KHR_PER_USD],
             'trackerState' => $storedData || $trackerState['entries'] ? $trackerState : null,
         ]);
     }
@@ -51,6 +56,7 @@ class SaveController extends Controller
             'data.entries.*.id' => ['required', 'string', 'max:100'],
             'data.entries.*.kind' => ['required', 'in:saved,spent'],
             'data.entries.*.amount' => ['required', 'numeric', 'min:0.01'],
+            'data.entries.*.currency' => ['nullable', 'in:USD,KHR'],
             'data.entries.*.category' => ['required', 'string', 'max:100'],
             'data.entries.*.date' => ['required', 'date'],
             'data.entries.*.note' => ['nullable', 'string', 'max:1000'],
@@ -60,7 +66,7 @@ class SaveController extends Controller
             'data.plans.*.id' => ['required', 'string', 'max:100'],
             'data.plans.*.name' => ['required', 'string', 'max:70'],
             'data.plans.*.type' => ['required', 'in:Car,Motorcycle,Bike,Clothes,Trip,Other'],
-            'data.plans.*.price' => ['required', 'numeric', 'min:0.01'],
+            'data.plans.*.price' => ['required', 'numeric', 'gt:0'],
             'data.plans.*.saved' => ['required', 'numeric', 'min:0'],
             'data.plans.*.deadline' => ['required', 'date'],
             'data.monthlyTargets' => ['present', 'array'],
@@ -77,7 +83,8 @@ class SaveController extends Controller
             'data.notes.*.revisions.*.title' => ['required', 'string', 'max:100'],
             'data.notes.*.revisions.*.content' => ['nullable', 'string', 'max:100000'],
             'data.notes.*.revisions.*.savedAt' => ['required', 'date'],
-            'data.currency' => ['required', 'in:USD,KHR,EUR,GBP,THB,VND,JPY,AUD,CAD'],
+            'data.currency' => ['required', 'in:USD,KHR'],
+            'data.amountBase' => ['nullable', 'in:USD'],
         ]);
 
         $entries = $validated['data']['entries'];
@@ -109,6 +116,7 @@ class SaveController extends Controller
                     [
                         'kind' => $entry['kind'],
                         'amount' => $entry['amount'],
+                        'currency' => $entry['currency'] ?? 'USD',
                         'category' => $entry['category'],
                         'date' => $entry['date'],
                         'note' => $entry['note'] ?? null,

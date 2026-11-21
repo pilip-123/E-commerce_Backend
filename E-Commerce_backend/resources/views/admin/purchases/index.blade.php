@@ -6,58 +6,44 @@
 <div class="container-fluid p-0">
 
     {{-- Stats --}}
+    @php
+        $ps = $poStats;
+        $share = fn ($n) => $ps['total'] > 0 ? $n / $ps['total'] * 100 : 0;
+        $counts = collect($ps['monthlyCounts']);
+        $countChange = $counts->count() > 1 && $counts[$counts->count() - 2] > 0 ? ($counts->last() - $counts[$counts->count() - 2]) / $counts[$counts->count() - 2] * 100 : null;
+        $other = max(0, $ps['total'] - $ps['pending'] - $ps['received'] - $ps['cancelled'] - $ps['inTransit']);
+    @endphp
     <div class="row g-3 mb-4">
-        <div class="col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                    <div class="d-flex align-items-center justify-content-center rounded-3 bg-info-subtle flex-shrink-0" style="width: 48px; height: 48px;">
-                        <i class="bi bi-receipt text-info fs-5"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted small mb-0">{{ __('Total Purchase Orders') }}</p>
-                        <h5 class="fw-bold mb-0">{{ $poStats['total'] }}</h5>
-                    </div>
+        <div class="col-6 col-xl-3">
+            <x-admin.kpi color="violet" icon="bi-receipt" :label="__('Total Orders')" :value="number_format($ps['total'])"
+                :trend="$countChange" :trend-title="__('POs this month vs last month')" :spark="$ps['monthlyCounts']">
+                {{ __('Worth') }} ${{ number_format($ps['totalValue'], 2) }}
+                <div class="app-kpi-meter" role="img" aria-label="{{ __('Purchase orders by status') }}">
+                    @if ($ps['received'])<span style="width:{{ $share($ps['received']) }}%;background:#10b981" title="{{ __('Received') }}: {{ $ps['received'] }}"></span>@endif
+                    @if ($ps['inTransit'])<span style="width:{{ $share($ps['inTransit']) }}%;background:#3b82f6" title="{{ __('In transit') }}: {{ $ps['inTransit'] }}"></span>@endif
+                    @if ($ps['pending'])<span style="width:{{ $share($ps['pending']) }}%;background:#f59e0b" title="{{ __('Pending') }}: {{ $ps['pending'] }}"></span>@endif
+                    @if ($other)<span style="width:{{ $share($other) }}%;background:#94a3b8" title="{{ __('Draft') }}: {{ $other }}"></span>@endif
+                    @if ($ps['cancelled'])<span style="width:{{ $share($ps['cancelled']) }}%;background:#ef4444" title="{{ __('Cancelled') }}: {{ $ps['cancelled'] }}"></span>@endif
                 </div>
-            </div>
+            </x-admin.kpi>
         </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                    <div class="d-flex align-items-center justify-content-center rounded-3 bg-warning-subtle flex-shrink-0" style="width: 48px; height: 48px;">
-                        <i class="bi bi-clock-history text-warning fs-5"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted small mb-0">{{ __('Pending') }}</p>
-                        <h5 class="fw-bold mb-0">{{ $poStats['pending'] }}</h5>
-                    </div>
-                </div>
-            </div>
+        <div class="col-6 col-xl-3">
+            <x-admin.kpi color="amber" icon="bi-hourglass-split" :label="__('Pending')" :value="number_format($ps['pending'])"
+                :href="route('admin.purchases.index', ['status' => 'pending'])"
+                :chip="$ps['pending'] ? number_format($share($ps['pending'])) . '%' : __('Clear')" :chip-tone="$ps['pending'] ? 'warn' : 'good'" :chip-title="__('Share of all purchase orders')"
+                :caption="$ps['pending'] ? '$' . number_format($ps['pendingValue'], 2) . ' ' . __('awaiting approval') : __('Nothing waiting for approval')" :meter="$share($ps['pending'])" />
         </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                    <div class="d-flex align-items-center justify-content-center rounded-3 bg-success-subtle flex-shrink-0" style="width: 48px; height: 48px;">
-                        <i class="bi bi-box-seam text-success fs-5"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted small mb-0">{{ __('Received') }}</p>
-                        <h5 class="fw-bold mb-0">{{ $poStats['received'] }}</h5>
-                    </div>
-                </div>
-            </div>
+        <div class="col-6 col-xl-3">
+            <x-admin.kpi color="green" icon="bi-box-seam" :label="__('Received')" :value="number_format($ps['received'])"
+                :chip="$ps['overdue'] ? $ps['overdue'] . ' ' . __('overdue') : number_format($share($ps['received'])) . '%'"
+                :chip-tone="$ps['overdue'] ? 'bad' : ($share($ps['received']) >= 50 ? 'good' : '')" :chip-icon="$ps['overdue'] ? 'bi-alarm' : 'bi-check2-circle'"
+                :chip-title="$ps['overdue'] ? __('Orders past their expected delivery date') : __('Fulfilment rate')"
+                :caption="$ps['inTransit'] . ' ' . __('on the way') . ' · $' . number_format($ps['receivedValue'], 2) . ' ' . __('received')" :meter="$share($ps['received'])" />
         </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                    <div class="d-flex align-items-center justify-content-center rounded-3 bg-danger-subtle flex-shrink-0" style="width: 48px; height: 48px;">
-                        <i class="bi bi-x-circle text-danger fs-5"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted small mb-0">{{ __('Cancelled') }}</p>
-                        <h5 class="fw-bold mb-0">{{ $poStats['cancelled'] }}</h5>
-                    </div>
-                </div>
-            </div>
+        <div class="col-6 col-xl-3">
+            <x-admin.kpi color="red" icon="bi-x-octagon" :label="__('Cancelled')" :value="number_format($ps['cancelled'])"
+                :chip="number_format($share($ps['cancelled']), 1) . '%'" :chip-tone="$share($ps['cancelled']) >= 15 ? 'bad' : ($ps['cancelled'] ? 'warn' : 'good')" :chip-title="__('Cancellation rate')"
+                :caption="$ps['unpaidValue'] > 0 ? '$' . number_format($ps['unpaidValue'], 2) . ' ' . __('still unpaid on open orders') : __('All active orders are paid')" :meter="$share($ps['cancelled'])" />
         </div>
     </div>
 

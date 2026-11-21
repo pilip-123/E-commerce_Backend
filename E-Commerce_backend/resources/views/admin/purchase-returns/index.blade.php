@@ -6,59 +6,42 @@
 <div class="container-fluid p-0">
 
     {{-- Stats --}}
+    @php
+        $rs = $returnStats;
+        $share = fn ($n) => $rs['total'] > 0 ? $n / $rs['total'] * 100 : 0;
+        $returnRate = $rs['purchaseAmount'] > 0 ? $rs['totalAmount'] / $rs['purchaseAmount'] * 100 : 0;
+        $chart = collect($returnChartTotals)->values();
+        $lastChange = $chart->count() > 1 && $chart[$chart->count() - 2] > 0 ? ($chart->last() - $chart[$chart->count() - 2]) / $chart[$chart->count() - 2] * 100 : null;
+        $open = $rs['pending'] + $rs['approved'];
+    @endphp
     <div class="row g-3 mb-4">
-        <div class="col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                    <div class="d-flex align-items-center justify-content-center rounded-3 bg-info-subtle flex-shrink-0" style="width: 48px; height: 48px;">
-                        <i class="bi bi-arrow-return-left text-info fs-5"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted small mb-0">{{ __('Total Returns') }}</p>
-                        <h5 class="fw-bold mb-0">{{ number_format($returnStats['total']) }}</h5>
-                    </div>
+        <div class="col-6 col-xl-3">
+            <x-admin.kpi color="cyan" icon="bi-arrow-return-left" :label="__('Total Returns')" :value="number_format($rs['total'])"
+                :chip="number_format($rs['totalUnits']) . ' ' . __('units')" chip-icon="bi-box-seam">
+                <div class="app-kpi-meter" role="img" aria-label="{{ __('Returns by status') }}">
+                    @if ($rs['completed'])<span style="width:{{ $share($rs['completed']) }}%;background:#10b981"></span>@endif
+                    @if ($rs['approved'])<span style="width:{{ $share($rs['approved']) }}%;background:#3b82f6"></span>@endif
+                    @if ($rs['pending'])<span style="width:{{ $share($rs['pending']) }}%;background:#f59e0b"></span>@endif
+                    @if ($rs['cancelled'])<span style="width:{{ $share($rs['cancelled']) }}%;background:#94a3b8"></span>@endif
                 </div>
-            </div>
+                <div class="app-kpi-legend"><span><i style="background:#10b981"></i>{{ $rs['completed'] }} {{ __('done') }}</span><span><i style="background:#f59e0b"></i>{{ $open }} {{ __('open') }}</span><span><i style="background:#94a3b8"></i>{{ $rs['cancelled'] }} {{ __('cancelled') }}</span></div>
+            </x-admin.kpi>
         </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                    <div class="d-flex align-items-center justify-content-center rounded-3 bg-warning-subtle flex-shrink-0" style="width: 48px; height: 48px;">
-                        <i class="bi bi-clock-history text-warning fs-5"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted small mb-0">{{ __('Pending') }}</p>
-                        <h5 class="fw-bold mb-0">{{ number_format($returnStats['pending']) }}</h5>
-                    </div>
-                </div>
-            </div>
+        <div class="col-6 col-xl-3">
+            <x-admin.kpi color="amber" icon="bi-clock-history" :label="__('Pending')" :value="number_format($rs['pending'])"
+                :href="route('admin.purchase-returns.index', ['status' => 'pending'])"
+                :chip="$rs['pending'] ? number_format($share($rs['pending'])) . '%' : __('Clear')" :chip-tone="$rs['pending'] ? 'warn' : 'good'"
+                :caption="$open ? '$' . number_format($rs['pendingAmount'], 2) . ' ' . __('waiting to be settled') : __('No returns waiting')" :meter="$share($rs['pending'])" />
         </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                    <div class="d-flex align-items-center justify-content-center rounded-3 bg-success-subtle flex-shrink-0" style="width: 48px; height: 48px;">
-                        <i class="bi bi-check2-circle text-success fs-5"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted small mb-0">{{ __('Completed') }}</p>
-                        <h5 class="fw-bold mb-0">{{ number_format($returnStats['completed']) }}</h5>
-                    </div>
-                </div>
-            </div>
+        <div class="col-6 col-xl-3">
+            <x-admin.kpi color="green" icon="bi-check2-circle" :label="__('Completed')" :value="number_format($rs['completed'])"
+                :chip="number_format($share($rs['completed'])) . '%'" :chip-tone="$share($rs['completed']) >= 50 ? 'good' : ''" :chip-title="__('Completion rate')"
+                :caption="__('of all returns completed')" :meter="$share($rs['completed'])" />
         </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                    <div class="d-flex align-items-center justify-content-center rounded-3 bg-danger-subtle flex-shrink-0" style="width: 48px; height: 48px;">
-                        <i class="bi bi-cash-stack text-danger fs-5"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted small mb-0">{{ __('Returned Value') }}</p>
-                        <h5 class="fw-bold mb-0">${{ number_format($returnStats['totalAmount'], 2) }}</h5>
-                        {{-- <p class="text-muted mb-0" style="font-size: 11px;">{{ number_format($returnStats['totalUnits']) }} {{ __('units') }}</p> --}}
-                    </div>
-                </div>
-            </div>
+        <div class="col-6 col-xl-3">
+            <x-admin.kpi color="red" icon="bi-cash-stack" :label="__('Returned Value')" :value="'$' . number_format($rs['totalAmount'], 2)"
+                :trend="$lastChange" :higher-is-good="false" :spark="$returnChartTotals"
+                :caption="number_format($returnRate, 1) . '% ' . __('of purchases') . ' · $' . number_format($rs['totalUnits'] ? $rs['totalAmount'] / $rs['totalUnits'] : 0, 2) . '/' . __('unit')" />
         </div>
     </div>
 

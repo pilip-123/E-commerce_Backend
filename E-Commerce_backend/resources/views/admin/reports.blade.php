@@ -3,6 +3,7 @@
 @section('title', __('Reports'))
 
 @section('content')
+    @include('admin.partials.charts')
     <div class="container-fluid p-0">
 
         {{-- ───── PAGE HEADER ───── --}}
@@ -13,66 +14,35 @@
         </div>
 
         {{-- ───── SUMMARY STATS ───── --}}
-        <div class="row g-4 mb-4">
-            <div class="col-sm-6 col-xl-3">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-body d-flex align-items-center gap-4 py-4 px-4">
-                        <div class="d-flex align-items-center justify-content-center rounded-3 bg-success-subtle flex-shrink-0"
-                            style="width: 56px; height: 56px;">
-                            <i class="bi bi-currency-dollar text-success fs-3"></i>
-                        </div>
-                        <div>
-                            <p class="text-muted small fw-bold text-uppercase mb-1" style="letter-spacing:.04em;">
-                                {{ __('Total Revenue') }}</p>
-                            <h4 class="fw-bold mb-0">${{ number_format($totalRevenue, 2) }}</h4>
-                        </div>
-                    </div>
-                </div>
+        @php
+            $pct = fn ($cur, $prev) => $prev > 0 ? ($cur - $prev) / $prev * 100 : null;
+            $topCustomer = collect($topCustomers)->first();
+            $topSeller = collect($bestSellers)->first();
+            $customerShare = $topCustomer && $totalRevenue > 0 ? $topCustomer['total_spent'] / $totalRevenue * 100 : 0;
+            $unitsSold = collect($bestSellers)->sum('units_sold');
+        @endphp
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-xl-3">
+                <x-admin.kpi color="green" icon="bi-currency-dollar" :label="__('Total Revenue')" :value="'$' . number_format($totalRevenue, 2)"
+                    :trend="$pct($totalRevenue, $previousRevenue)" :trend-title="__('vs the 3 months before')" :spark="$weeklyRevenue"
+                    :caption="__('Last 3 months') . ' · ' . __('weekly trend')" />
             </div>
-            <div class="col-sm-6 col-xl-3">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-body d-flex align-items-center gap-4 py-4 px-4">
-                        <div class="d-flex align-items-center justify-content-center rounded-3 bg-primary-subtle flex-shrink-0"
-                            style="width: 56px; height: 56px;">
-                            <i class="bi bi-receipt text-primary fs-3"></i>
-                        </div>
-                        <div>
-                            <p class="text-muted small fw-bold text-uppercase mb-1" style="letter-spacing:.04em;">
-                                {{ __('Total Orders') }}</p>
-                            <h4 class="fw-bold mb-0">{{ number_format($totalSales) }}</h4>
-                        </div>
-                    </div>
-                </div>
+            <div class="col-6 col-xl-3">
+                <x-admin.kpi color="blue" icon="bi-receipt" :label="__('Total Orders')" :value="number_format($totalSales)"
+                    :trend="$pct($totalSales, $previousSales)" :trend-title="__('vs the 3 months before')" :spark="$weeklyOrders"
+                    :caption="__('Avg') . ' $' . number_format($totalSales ? $totalRevenue / $totalSales : 0, 2) . ' / ' . __('order')" />
             </div>
-            <div class="col-sm-6 col-xl-3">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-body d-flex align-items-center gap-4 py-4 px-4">
-                        <div class="d-flex align-items-center justify-content-center rounded-3 bg-warning-subtle flex-shrink-0"
-                            style="width: 56px; height: 56px;">
-                            <i class="bi bi-people text-warning fs-3"></i>
-                        </div>
-                        <div>
-                            <p class="text-muted small fw-bold text-uppercase mb-1" style="letter-spacing:.04em;">
-                                {{ __('Top Customers') }}</p>
-                            <h4 class="fw-bold mb-0">{{ count($topCustomers) }}</h4>
-                        </div>
-                    </div>
-                </div>
+            <div class="col-6 col-xl-3">
+                <x-admin.kpi color="amber" icon="bi-people" :label="__('Top Customers')" :value="number_format(count($topCustomers))"
+                    :chip="$topCustomer ? number_format($customerShare) . '%' : null" chip-icon="bi-star" :chip-title="__('Top customer share of revenue')"
+                    :caption="$topCustomer ? __('Top') . ': ' . \Illuminate\Support\Str::limit($topCustomer['name'], 16) . ' · $' . number_format($topCustomer['total_spent'], 2) : __('No customers yet')"
+                    :meter="$topCustomer ? $customerShare : null" />
             </div>
-            <div class="col-sm-6 col-xl-3">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-body d-flex align-items-center gap-4 py-4 px-4">
-                        <div class="d-flex align-items-center justify-content-center rounded-3 bg-info-subtle flex-shrink-0"
-                            style="width: 56px; height: 56px;">
-                            <i class="bi bi-box-seam text-info fs-3"></i>
-                        </div>
-                        <div>
-                            <p class="text-muted small fw-bold text-uppercase mb-1" style="letter-spacing:.04em;">
-                                {{ __('Best Sellers') }}</p>
-                            <h4 class="fw-bold mb-0">{{ count($bestSellers) }}</h4>
-                        </div>
-                    </div>
-                </div>
+            <div class="col-6 col-xl-3">
+                <x-admin.kpi color="cyan" icon="bi-box-seam" :label="__('Best Sellers')" :value="number_format(count($bestSellers))"
+                    :chip="$unitsSold ? number_format($unitsSold) . ' ' . __('sold') : null" chip-icon="bi-bag-check"
+                    :caption="$topSeller ? __('Top') . ': ' . \Illuminate\Support\Str::limit($topSeller['name'], 16) . ' · ' . $topSeller['units_sold'] . ' ' . __('sold') : __('No sales yet')"
+                    :meter="$topSeller && $unitsSold ? $topSeller['units_sold'] / $unitsSold * 100 : null" />
             </div>
         </div>
 
@@ -121,9 +91,9 @@
 
                 <div class="row g-3 mb-4">
                     <div class="col-sm-4">
-                        <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 mini-kpi tone-info">
                             <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-info-subtle flex-shrink-0"
+                                <div class="d-flex align-items-center justify-content-center rounded-3 mini-kpi-icon flex-shrink-0"
                                     style="width: 48px; height: 48px;">
                                     <i class="bi bi-cart text-info fs-5"></i>
                                 </div>
@@ -136,9 +106,9 @@
                         </div>
                     </div>
                     <div class="col-sm-4">
-                        <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 mini-kpi tone-success">
                             <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-success-subtle flex-shrink-0"
+                                <div class="d-flex align-items-center justify-content-center rounded-3 mini-kpi-icon flex-shrink-0"
                                     style="width: 48px; height: 48px;">
                                     <i class="bi bi-currency-dollar text-success fs-5"></i>
                                 </div>
@@ -151,9 +121,9 @@
                         </div>
                     </div>
                     <div class="col-sm-4">
-                        <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 mini-kpi tone-primary">
                             <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-primary-subtle flex-shrink-0"
+                                <div class="d-flex align-items-center justify-content-center rounded-3 mini-kpi-icon flex-shrink-0"
                                     style="width: 48px; height: 48px;">
                                     <i class="bi bi-calculator text-primary fs-5"></i>
                                 </div>
@@ -202,9 +172,9 @@
 
                 <div class="row g-3 mb-4">
                     <div class="col-sm-4">
-                        <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 mini-kpi tone-info">
                             <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-info-subtle flex-shrink-0"
+                                <div class="d-flex align-items-center justify-content-center rounded-3 mini-kpi-icon flex-shrink-0"
                                     style="width: 48px; height: 48px;">
                                     <i class="bi bi-cart text-info fs-5"></i>
                                 </div>
@@ -219,9 +189,9 @@
                         </div>
                     </div>
                     <div class="col-sm-4">
-                        <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 mini-kpi tone-success">
                             <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-success-subtle flex-shrink-0"
+                                <div class="d-flex align-items-center justify-content-center rounded-3 mini-kpi-icon flex-shrink-0"
                                     style="width: 48px; height: 48px;">
                                     <i class="bi bi-currency-dollar text-success fs-5"></i>
                                 </div>
@@ -236,9 +206,9 @@
                         </div>
                     </div>
                     <div class="col-sm-4">
-                        <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 mini-kpi tone-primary">
                             <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-primary-subtle flex-shrink-0"
+                                <div class="d-flex align-items-center justify-content-center rounded-3 mini-kpi-icon flex-shrink-0"
                                     style="width: 48px; height: 48px;">
                                     <i class="bi bi-calculator text-primary fs-5"></i>
                                 </div>
@@ -289,9 +259,9 @@
 
                 <div class="row g-3 mb-4">
                     <div class="col-sm-6 col-xl-3">
-                        <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 mini-kpi tone-success">
                             <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-success-subtle flex-shrink-0"
+                                <div class="d-flex align-items-center justify-content-center rounded-3 mini-kpi-icon flex-shrink-0"
                                     style="width: 48px; height: 48px;">
                                     <i class="bi bi-currency-dollar text-success fs-5"></i>
                                 </div>
@@ -304,9 +274,9 @@
                         </div>
                     </div>
                     <div class="col-sm-6 col-xl-3">
-                        <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 mini-kpi tone-info">
                             <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-info-subtle flex-shrink-0"
+                                <div class="d-flex align-items-center justify-content-center rounded-3 mini-kpi-icon flex-shrink-0"
                                     style="width: 48px; height: 48px;">
                                     <i class="bi bi-cart text-info fs-5"></i>
                                 </div>
@@ -318,9 +288,9 @@
                         </div>
                     </div>
                     <div class="col-sm-6 col-xl-3">
-                        <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 mini-kpi tone-primary">
                             <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-primary-subtle flex-shrink-0"
+                                <div class="d-flex align-items-center justify-content-center rounded-3 mini-kpi-icon flex-shrink-0"
                                     style="width: 48px; height: 48px;">
                                     <i class="bi bi-check-circle text-primary fs-5"></i>
                                 </div>
@@ -332,9 +302,9 @@
                         </div>
                     </div>
                     <div class="col-sm-6 col-xl-3">
-                        <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 mini-kpi tone-warning">
                             <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-warning-subtle flex-shrink-0"
+                                <div class="d-flex align-items-center justify-content-center rounded-3 mini-kpi-icon flex-shrink-0"
                                     style="width: 48px; height: 48px;">
                                     <i class="bi bi-calculator text-warning fs-5"></i>
                                 </div>
@@ -395,9 +365,9 @@
 
                 <div class="row g-3 mb-4">
                     <div class="col-sm-6">
-                        <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 mini-kpi tone-success">
                             <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-success-subtle flex-shrink-0"
+                                <div class="d-flex align-items-center justify-content-center rounded-3 mini-kpi-icon flex-shrink-0"
                                     style="width: 48px; height: 48px;">
                                     <i class="bi bi-currency-dollar text-success fs-5"></i>
                                 </div>
@@ -410,9 +380,9 @@
                         </div>
                     </div>
                     <div class="col-sm-6">
-                        <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 mini-kpi tone-info">
                             <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-info-subtle flex-shrink-0"
+                                <div class="d-flex align-items-center justify-content-center rounded-3 mini-kpi-icon flex-shrink-0"
                                     style="width: 48px; height: 48px;">
                                     <i class="bi bi-people text-info fs-5"></i>
                                 </div>
@@ -498,9 +468,9 @@
 
                 <div class="row g-3 mb-4">
                     <div class="col-sm-6">
-                        <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 mini-kpi tone-info">
                             <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-info-subtle flex-shrink-0"
+                                <div class="d-flex align-items-center justify-content-center rounded-3 mini-kpi-icon flex-shrink-0"
                                     style="width: 48px; height: 48px;">
                                     <i class="bi bi-box-seam text-info fs-5"></i>
                                 </div>
@@ -512,9 +482,9 @@
                         </div>
                     </div>
                     <div class="col-sm-6">
-                        <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 mini-kpi tone-primary">
                             <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-primary-subtle flex-shrink-0"
+                                <div class="d-flex align-items-center justify-content-center rounded-3 mini-kpi-icon flex-shrink-0"
                                     style="width: 48px; height: 48px;">
                                     <i class="bi bi-grid text-primary fs-5"></i>
                                 </div>
@@ -830,9 +800,9 @@
 
                 <div class="row g-3 mb-4">
                     <div class="col-sm-6 col-xl-3">
-                        <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 mini-kpi tone-info">
                             <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-info-subtle flex-shrink-0" style="width: 48px; height: 48px;">
+                                <div class="d-flex align-items-center justify-content-center rounded-3 mini-kpi-icon flex-shrink-0" style="width: 48px; height: 48px;">
                                     <i class="bi bi-receipt text-info fs-5"></i>
                                 </div>
                                 <div>
@@ -843,9 +813,9 @@
                         </div>
                     </div>
                     <div class="col-sm-6 col-xl-3">
-                        <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 mini-kpi tone-success">
                             <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-success-subtle flex-shrink-0" style="width: 48px; height: 48px;">
+                                <div class="d-flex align-items-center justify-content-center rounded-3 mini-kpi-icon flex-shrink-0" style="width: 48px; height: 48px;">
                                     <i class="bi bi-cash-stack text-success fs-5"></i>
                                 </div>
                                 <div>
@@ -856,9 +826,9 @@
                         </div>
                     </div>
                     <div class="col-sm-6 col-xl-3">
-                        <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 mini-kpi tone-warning">
                             <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-warning-subtle flex-shrink-0" style="width: 48px; height: 48px;">
+                                <div class="d-flex align-items-center justify-content-center rounded-3 mini-kpi-icon flex-shrink-0" style="width: 48px; height: 48px;">
                                     <i class="bi bi-hourglass-split text-warning fs-5"></i>
                                 </div>
                                 <div>
@@ -869,9 +839,9 @@
                         </div>
                     </div>
                     <div class="col-sm-6 col-xl-3">
-                        <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 mini-kpi tone-danger">
                             <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                                <div class="d-flex align-items-center justify-content-center rounded-3 bg-danger-subtle flex-shrink-0" style="width: 48px; height: 48px;">
+                                <div class="d-flex align-items-center justify-content-center rounded-3 mini-kpi-icon flex-shrink-0" style="width: 48px; height: 48px;">
                                     <i class="bi bi-arrow-return-left text-danger fs-5"></i>
                                 </div>
                                 <div>
@@ -888,20 +858,9 @@
                         <h5 class="fw-bold mb-0"><i class="bi bi-bar-chart text-success me-2"></i>{{ __('Purchases Over Time') }}</h5>
                         @include('admin.partials.export-dropdown', ['exportRoute' => route('admin.export.purchase-spending')])
                     </div>
-                    <div class="card-body py-4 px-4" style="background: var(--badge-success-bg);">
-                        @php $maxPurchase = max($purchaseChartTotals->max() ?? 0, 1); @endphp
-                        <div class="d-flex align-items-end gap-2" style="height: 200px;">
-                            @foreach ($purchaseChartTotals as $i => $total)
-                                <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-end h-100" style="min-width: 0;">
-                                    <div class="w-100" style="height: {{ $total > 0 ? max(($total / $maxPurchase) * 100, 2) : 2 }}%; border-radius: 6px 6px 0 0; background: linear-gradient(180deg, #34d399, #059669);" title="${{ number_format($total, 2) }}"></div>
-                                </div>
-                            @endforeach
-                        </div>
-                        <div class="d-flex justify-content-between small text-muted mt-2 px-1">
-                            @foreach ($purchaseChartMonths as $month)
-                                <span style="font-size: 10px;">{{ $month }}</span>
-                            @endforeach
-                        </div>
+                    <div class="card-body py-4 px-4">
+                        <div class="ac-legend mb-2"><span><i style="background:#059669"></i>{{ __('Purchases') }} <b>${{ number_format($purchaseChartTotals->sum(), 2) }}</b></span><span>{{ __('Avg') }} <b>${{ number_format($purchaseChartTotals->avg() ?? 0, 2) }}</b> / {{ __('month') }}</span></div>
+                        <div id="reportPurchaseChart" style="height: 230px;"></div>
                     </div>
                 </div>
 
@@ -1047,6 +1006,13 @@
 
 @push('scripts')
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            AppCharts.bars('reportPurchaseChart', {
+                labels: @json($purchaseChartMonths),
+                emptyText: @json(__('No purchases in this period')),
+                series: [{ name: @json(__('Purchases')), values: @json($purchaseChartTotals), color: '#059669', format: 'money' }]
+            });
+        });
         (function() {
             var R = {
                 dailySales: @json(route('admin.reports.daily-sales')),
@@ -1090,189 +1056,45 @@
                 });
             }
 
-            function lineChartPath(values, width, height) {
-                if (!values || values.length < 2) return {
-                    area: '',
-                    line: '',
-                    points: []
-                };
-                var maxVal = Math.max.apply(null, values) || 1;
-                var stepX = width / (values.length - 1);
-                var points = values.map(function(v, i) {
-                    var x = i * stepX;
-                    var y = height - (v / maxVal) * (height * 0.82) - 8;
-                    return {
-                        x: x,
-                        y: Math.max(y, 2),
-                        value: v,
-                        index: i
-                    };
-                });
-
-                var d = 'M' + points[0].x + ',' + points[0].y;
-                for (var i = 1; i < points.length; i++) {
-                    var prev = points[i - 1],
-                        cur = points[i];
-                    var cx1 = prev.x + (cur.x - prev.x) / 2,
-                        cy1 = prev.y;
-                    var cx2 = cur.x - (cur.x - prev.x) / 2,
-                        cy2 = cur.y;
-                    d += ' C' + cx1 + ',' + cy1 + ' ' + cx2 + ',' + cy2 + ' ' + cur.x + ',' + cur.y;
-                }
-                var area = d + ' L' + points[points.length - 1].x + ',' + height + ' L' + points[0].x + ',' + height +
-                    ' Z';
-                return {
-                    area: area,
-                    line: d,
-                    points: points
-                };
-            }
-
+            // Line chart for the Daily / Monthly / Revenue tabs (drawn by AppCharts).
             function lc(id, items, vk, lk, color) {
                 var el = document.getElementById(id);
-                if (!el || !items || !items.length) return;
-                var values = items.map(function(it) {
-                    return it[vk] || 0;
-                });
+                if (!el) return;
+                items = items || [];
                 var labels = items.map(function(it) {
                     if (it[lk] == null) return '';
                     var label = String(it[lk]);
-                    if (id === 'revMonthlyChart' && /^\d{4}-\d{2}$/.test(label)) {
-                        var monthDate = new Date(label + '-01T12:00:00');
-                        return monthDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-                    }
-                    return label.substring(0, 8);
+                    if (/^\d{4}-\d{2}$/.test(label)) return new Date(label + '-01T12:00:00').toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+                    if (/^\d{4}-\d{2}-\d{2}$/.test(label)) return new Date(label + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                    if (/^\d{1,2}$/.test(label)) return label.padStart(2, '0') + ':00';
+                    return label;
                 });
-                var w = 600,
-                    h = 200;
-                var pathData = lineChartPath(values, w, h);
-                var pts = pathData.points;
-
-                var strokeColor = color === 'g' ? '#059669' : color === 'p' ? '#047857' : '#10b981';
-                var gradId = 'lcGrad_' + id;
-
-                var svg = '<svg viewBox="0 0 ' + w + ' ' + h +
-                    '" preserveAspectRatio="none" style="width:100%;height:100%;display:block;position:absolute;top:0;left:0;" xmlns="http://www.w3.org/2000/svg">' +
-                    '<defs><linearGradient id="' + gradId + '" x1="0" y1="0" x2="0" y2="1">' +
-                    '<stop offset="0%" stop-color="' + strokeColor + '" stop-opacity="0.45"/>' +
-                    '<stop offset="100%" stop-color="' + strokeColor + '" stop-opacity="0.04"/>' +
-                    '</linearGradient></defs>' +
-                    '<path d="' + pathData.area + '" fill="url(#' + gradId + ')"/>' +
-                    '<path d="' + pathData.line + '" fill="none" stroke="' + strokeColor + '" stroke-width="2.5"/>' +
-                    '<g id="dots_' + id + '">' +
-                    pts.map(function(p) {
-                        return '<circle cx="' + p.x + '" cy="' + p.y + '" r="4" fill="#fff" stroke="' +
-                            strokeColor + '" stroke-width="2.5" class="lc-dot-' + id +
-                            '" style="cursor:crosshair"/>';
-                    }).join('') +
-                    '</g>' +
-                    '<rect width="' + w + '" height="' + h +
-                    '" fill="transparent" style="cursor:crosshair;pointer-events:all;" class="lc-overlay-' + id +
-                    '"/>' +
-                    '</svg>';
-
-                var tooltipId = 'lcTooltip_' + id;
-                var labelsHtml = '<div class="d-flex justify-content-between align-items-center small mt-2 px-1" style="gap:6px;">' +
-                    items.map(function(it, i) {
-                        var show = (items.length <= 8 || i % Math.ceil(items.length / 6) === 0 || i === items
-                            .length - 1);
-                        if (!show) return '';
-                        return id === 'revMonthlyChart'
-                            ? '<span style="display:inline-block;padding:4px 9px;border:1px solid rgba(5,150,105,.14);border-radius:999px;background:#fff;color:#047857;font-size:.7rem;font-weight:700;line-height:1.2;white-space:nowrap;box-shadow:0 1px 3px rgba(15,23,42,.05);">' + labels[i] + '</span>'
-                            : '<span>' + labels[i] + '</span>';
-                    }).join('') +
-                    '</div>';
-
-                el.innerHTML = '<div style="position:relative;height:100%;">' +
-                    '<div id="' + tooltipId +
-                    '" style="display:none;position:absolute;background:#1f2937;color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;pointer-events:none;white-space:nowrap;z-index:10;transform:translate(-50%,-110%);box-shadow:0 4px 12px rgba(0,0,0,.2);"></div>' +
-                    svg +
-                    '</div>' +
-                    labelsHtml;
-
-                // Hover logic
-                var container = el.querySelector('div[style*="position:relative"]') || el;
-                var overlay = el.querySelector('.lc-overlay-' + id);
-                var tooltip = document.getElementById(tooltipId);
-                if (overlay && tooltip) {
-                    overlay.addEventListener('mousemove', function(e) {
-                        var rect = container.getBoundingClientRect();
-                        var scaleX = w / rect.width;
-                        var mx = (e.clientX - rect.left) * scaleX;
-                        var closest = pts[0],
-                            minDist = Math.abs(mx - pts[0].x);
-                        for (var i = 1; i < pts.length; i++) {
-                            var dist = Math.abs(mx - pts[i].x);
-                            if (dist < minDist) {
-                                minDist = dist;
-                                closest = pts[i];
-                            }
-                        }
-                        var label = labels[closest.index] || '';
-                        tooltip.textContent = label + ': ' + (closest.value || 0).toLocaleString();
-
-                        var elRect = el.getBoundingClientRect();
-                        var tx = e.clientX - elRect.left;
-                        var ty = (closest.y / h) * rect.height;
-                        tooltip.style.display = 'block';
-                        tooltip.style.left = tx + 'px';
-                        tooltip.style.top = ty + 'px';
-
-                        document.querySelectorAll('.lc-dot-' + id).forEach(function(dot) {
-                            var cx = parseFloat(dot.getAttribute('cx'));
-                            if (Math.abs(cx - closest.x) < 1) {
-                                dot.setAttribute('r', '6');
-                                dot.setAttribute('fill', strokeColor);
-                            } else {
-                                dot.setAttribute('r', '4');
-                                dot.setAttribute('fill', '#fff');
-                            }
-                        });
-                    });
-                    overlay.addEventListener('mouseleave', function() {
-                        tooltip.style.display = 'none';
-                        document.querySelectorAll('.lc-dot-' + id).forEach(function(dot) {
-                            dot.setAttribute('r', '4');
-                            dot.setAttribute('fill', '#fff');
-                        });
-                    });
-                }
+                var money = vk === 'total' || vk === 'revenue';
+                AppCharts.line(el, {
+                    title: id,
+                    labels: labels,
+                    emptyText: @json(__('No sales in this period')),
+                    series: [{
+                        name: money ? @json(__('Revenue')) : @json(__('Orders')),
+                        values: items.map(function(it) { return it[vk] || 0; }),
+                        color: color === 'c' ? '#06b6d4' : '#10b981',
+                        format: money ? 'money' : 'number'
+                    }]
+                });
             }
 
-            function bc(id, items, vk, lk, cl, ev) {
+            // Bar chart for the Best Sellers tab.
+            function bc(id, items, vk, lk) {
                 var el = document.getElementById(id);
                 if (!el) return;
-                var m = mx(items, vk),
-                    e = ev || 3;
-                var html = '<div style="position:absolute;left:0;right:0;top:0;bottom:32px;pointer-events:none;">';
-                for (var g = 1; g <= 4; g++) {
-                    var y = (g / 5) * 100;
-                    html += '<div style="position:absolute;left:0;right:0;top:' + (100 - y) +
-                        '%;border-bottom:1px dashed var(--grid-line);"></div>';
-                }
-                html +=
-                    '</div><div style="display:flex;align-items:flex-end;gap:4px;height:100%;position:relative;z-index:1;padding:0 4px;">';
-                items.map(function(it, i) {
-                    var h = it[vk] / m * 100;
-                    var grad = cl === 'g' ? 'linear-gradient(180deg,#34d399,#059669)' : cl === 'p' ?
-                        'linear-gradient(180deg,#059669,#047857)' : 'linear-gradient(180deg,#10b981,#059669)';
-                    var shadow = cl === 'p' ? '0 2px 8px rgba(4,120,87,.3)' : '0 2px 8px rgba(16,185,129,.25)';
-                    var lb = it[lk] != null ? String(it[lk]).substring(0, 14) : '';
-                    var val = it[vk];
-                    html +=
-                        '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;position:relative;">';
-                    html += '<div title="' + lb + ': ' + val + '" style="width:70%;max-width:40px;height:' +
-                        h + '%;border-radius:6px 6px 3px 3px;background:' + grad + ';box-shadow:' + shadow +
-                        ';min-height:2px;transition:all .25s ease;cursor:pointer;position:relative;" onmouseover="this.style.opacity=\'.8\'" onmouseout="this.style.opacity=\'1\'">';
-                    if (h > 15) html += '<span style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:.65rem;font-weight:700;color:#059669;white-space:nowrap;">' + val + '</span>';
-                    html += '</div>';
-                    html +=
-                        '<span style="position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);font-size:.6rem;font-weight:600;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:64px;text-align:center;">' +
-                        lb + '</span>';
-                    html += '</div>';
+                items = items || [];
+                AppCharts.bars(el, {
+                    title: id,
+                    labels: items.map(function(it) { return it[lk] != null ? String(it[lk]) : ''; }),
+                    rotateLabels: items.length > 6,
+                    emptyText: @json(__('No products sold in this period')),
+                    series: [{ name: @json(__('Units sold')), values: items.map(function(it) { return it[vk] || 0; }), color: '#059669', format: 'number' }]
                 });
-                html += '</div>';
-                el.innerHTML = html;
             }
 
             function sg(id, items) {
@@ -1564,91 +1386,19 @@
                 });
             }
 
+            // Promotions tab: revenue (left axis) vs orders (right axis, dashed).
             function salesLineChart(id, items, lk) {
                 var el = document.getElementById(id);
                 if (!el) return;
-                if (!items || !items.length) {
-                    el.innerHTML = '<p class="text-muted text-center py-4 mb-0">No data</p>';
-                    return;
-                }
-                var maxRev = items.reduce(function(m, d) { return Math.max(m, d.revenue || 0); }, 0) || 1;
-                var maxOrd = items.reduce(function(m, d) { return Math.max(m, d.orders || 0); }, 0) || 1;
-                var w = 700, h = 240, pad = { t: 20, r: 20, b: 40, l: 55 };
-                var cw = w - pad.l - pad.r, ch = h - pad.t - pad.b;
-                var stepX = cw / Math.max(items.length - 1, 1);
-                var revPts = items.map(function(d, i) {
-                    var x = pad.l + i * stepX;
-                    var y = pad.t + ch - ((d.revenue || 0) / maxRev) * ch;
-                    return { x: x, y: y, label: d[lk] || '', value: d.revenue || 0, index: i };
-                });
-                var ordPts = items.map(function(d, i) {
-                    var x = pad.l + i * stepX;
-                    var y = pad.t + ch - ((d.orders || 0) / maxOrd) * ch;
-                    return { x: x, y: y, label: d[lk] || '', value: d.orders || 0, index: i };
-                });
-                function linePath(pts) {
-                    return pts.map(function(p, i) { return (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1); }).join(' ');
-                }
-                function areaPath(pts) {
-                    var bottom = pad.t + ch;
-                    return linePath(pts) + ' L' + pts[pts.length - 1].x.toFixed(1) + ',' + bottom + ' L' + pts[0].x.toFixed(1) + ',' + bottom + ' Z';
-                }
-                var grid = '';
-                for (var g = 0; g <= 4; g++) {
-                    var gy = pad.t + ch - (g / 4) * ch;
-                    var gv = (g / 4) * maxRev;
-                    grid += '<line x1="' + pad.l + '" y1="' + gy + '" x2="' + (w - pad.r) + '" y2="' + gy + '" stroke="#e5e7eb" stroke-width="1"/>';
-                    grid += '<text x="' + (pad.l - 8) + '" y="' + (gy + 4) + '" text-anchor="end" fill="#9ca3af" font-size="11">$' + fm(gv) + '</text>';
-                }
-                var labelsHtml = '';
-                var labelInterval = Math.max(1, Math.floor(items.length / 10));
-                revPts.forEach(function(p, i) {
-                    if (i % labelInterval === 0 || i === revPts.length - 1) {
-                        labelsHtml += '<text x="' + p.x + '" y="' + (h - 8) + '" text-anchor="middle" fill="#9ca3af" font-size="10">' + p.label + '</text>';
-                    }
-                });
-                var revDots = revPts.map(function(p) {
-                    return '<circle cx="' + p.x + '" cy="' + p.y + '" r="4" fill="#fff" stroke="#059669" stroke-width="2.5" style="cursor:pointer;" data-idx="' + p.index + '" data-series="rev"/>';
-                }).join('');
-                var ordDots = ordPts.map(function(p) {
-                    return '<circle cx="' + p.x + '" cy="' + p.y + '" r="4" fill="#fff" stroke="#f59e0b" stroke-width="2.5" style="cursor:pointer;" data-idx="' + p.index + '" data-series="ord"/>';
-                }).join('');
-                var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" style="width:100%;height:100%;display:block;position:absolute;top:0;left:0;">' +
-                    '<defs><linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#059669" stop-opacity="0.35"/><stop offset="100%" stop-color="#059669" stop-opacity="0.03"/></linearGradient><linearGradient id="ordGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f59e0b" stop-opacity="0.25"/><stop offset="100%" stop-color="#f59e0b" stop-opacity="0.02"/></linearGradient></defs>' +
-                    grid +
-                    '<path d="' + areaPath(revPts) + '" fill="url(#revGrad)"/>' +
-                    '<path d="' + linePath(revPts) + '" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>' +
-                    '<path d="' + areaPath(ordPts) + '" fill="url(#ordGrad)"/>' +
-                    '<path d="' + linePath(ordPts) + '" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6,3"/>' +
-                    '<g>' + revDots + ordDots + '</g>' +
-                    '<g>' + labelsHtml + '</g>' +
-                    '</svg>';
-                el.innerHTML = '<div style="position:relative;height:100%;width:100%;">' + svg + '</div>';
-                var dots = el.querySelectorAll('circle');
-                var tip = document.createElement('div');
-                tip.id = id + '_tip';
-                tip.style.cssText = 'display:none;position:absolute;background:#1f2937;color:#fff;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;pointer-events:none;white-space:nowrap;z-index:10;transform:translate(-50%,-120%);box-shadow:0 4px 14px rgba(0,0,0,.25);';
-                el.querySelector('div').appendChild(tip);
-                dots.forEach(function(dot) {
-                    dot.addEventListener('mouseenter', function(e) {
-                        var idx = parseInt(this.getAttribute('data-idx'));
-                        if (isNaN(idx) || !revPts[idx]) return;
-                        var series = this.getAttribute('data-series');
-                        var p = series === 'rev' ? revPts[idx] : ordPts[idx];
-                        var prefix = series === 'rev' ? 'Revenue: $' : 'Orders: ';
-                        tip.textContent = p.label + ' — ' + prefix + (p.value || 0).toLocaleString();
-                        tip.style.display = 'block';
-                        var rect = el.getBoundingClientRect();
-                        tip.style.left = (p.x / w * rect.width) + 'px';
-                        tip.style.top = (p.y / h * rect.height) + 'px';
-                        this.setAttribute('r', '6');
-                        this.setAttribute('fill', series === 'rev' ? '#059669' : '#f59e0b');
-                    });
-                    dot.addEventListener('mouseleave', function() {
-                        tip.style.display = 'none';
-                        this.setAttribute('r', '4');
-                        this.setAttribute('fill', '#fff');
-                    });
+                items = items || [];
+                AppCharts.line(el, {
+                    title: id,
+                    labels: items.map(function(d) { return d[lk] || ''; }),
+                    emptyText: @json(__('No sales in this period')),
+                    series: [
+                        { name: @json(__('Revenue')), values: items.map(function(d) { return d.revenue || 0; }), color: '#059669', format: 'money' },
+                        { name: @json(__('Orders')), values: items.map(function(d) { return d.orders || 0; }), color: '#f59e0b', format: 'number', axis: 'right', dashed: true }
+                    ]
                 });
             }
 
@@ -1750,7 +1500,7 @@
                         });
                         target.style.display = 'block';
                         target.classList.add('show', 'active');
-                        var loader = loaders[id.replace(/-/g, '')];
+                        var loader = loaders[id.replace(/-(\w)/g, function(_, c) { return c.toUpperCase(); })]; // 'sellers-pane' → 'sellersPane'
                         if (loader) setTimeout(loader, 50);
                     });
                 });

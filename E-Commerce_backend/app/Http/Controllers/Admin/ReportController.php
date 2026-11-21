@@ -42,6 +42,22 @@ class ReportController extends Controller
         $totalRevenue = (float) Order::whereBetween('created_at', [$threeMonthsAgo, $now])->sum('total_amount');
         $totalSales = Order::whereBetween('created_at', [$threeMonthsAgo, $now])->count();
 
+        // ── Summary card extras: weekly sparkline data + the previous 3 months for trend chips ──
+        $weekStart = Carbon::now()->startOfWeek()->subWeeks(12);
+        $weeklyRevenue = array_fill(0, 13, 0.0);
+        $weeklyOrders = array_fill(0, 13, 0);
+        Order::where('created_at', '>=', $weekStart)->get(['created_at', 'total_amount'])
+            ->each(function ($order) use (&$weeklyRevenue, &$weeklyOrders, $weekStart) {
+                $week = (int) floor($weekStart->diffInDays($order->created_at) / 7);
+                if ($week >= 0 && $week < 13) {
+                    $weeklyRevenue[$week] += (float) $order->total_amount;
+                    $weeklyOrders[$week]++;
+                }
+            });
+        $previousWindow = [$threeMonthsAgo->copy()->subMonths(3), $threeMonthsAgo->copy()->subSecond()];
+        $previousRevenue = (float) Order::whereBetween('created_at', $previousWindow)->sum('total_amount');
+        $previousSales = Order::whereBetween('created_at', $previousWindow)->count();
+
         $topCustomers = Order::whereBetween('orders.created_at', [$threeMonthsAgo, $now])
             ->join('users', 'orders.user_id', '=', 'users.id')
             ->selectRaw('users.id, users.name, users.email, COUNT(*) as order_count, SUM(orders.total_amount) as total_spent')
@@ -182,7 +198,7 @@ class ReportController extends Controller
             'today', 'currentMonth', 'threeMonthsAgo', 'now',
             'dailyTotalSales', 'dailyTotalRevenue',
             'monthlyTotalSales', 'monthlyTotalRevenue',
-            'totalRevenue', 'totalSales',
+            'totalRevenue', 'totalSales', 'weeklyRevenue', 'weeklyOrders', 'previousRevenue', 'previousSales',
             'topCustomers', 'bestSellers',
             'totalPromotions', 'promoThisWeek', 'promoThisMonth', 'promoThisYear', 'activePromotions',
             'totalDiscountCodes', 'totalCodeUses',

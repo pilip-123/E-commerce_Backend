@@ -17,11 +17,14 @@ class PasswordResetMail extends Mailable
     public string $token;
     public string $resetUrl;
 
-    public function __construct(User $user, string $token)
+    /**
+     * @param  string|null  $resetUrl  Link to put in the email; defaults to the backend reset page.
+     */
+    public function __construct(User $user, string $token, ?string $resetUrl = null)
     {
         $this->user = $user;
         $this->token = $token;
-        $this->resetUrl = $this->buildResetUrl();
+        $this->resetUrl = $resetUrl ?? $this->buildResetUrl();
     }
 
     public function envelope(): Envelope

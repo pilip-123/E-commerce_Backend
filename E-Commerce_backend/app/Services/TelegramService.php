@@ -24,7 +24,9 @@ class TelegramService
         }
 
         try {
-            $response = Http::timeout(15)->post("https://api.telegram.org/bot{$this->botToken}/sendMessage", [
+            $response = Http::withOptions(['verify' => $this->caBundle()])
+                ->timeout(15)
+                ->post("https://api.telegram.org/bot{$this->botToken}/sendMessage", [
                 'chat_id' => $this->chatId,
                 'text' => $message,
                 'parse_mode' => 'HTML',
@@ -49,6 +51,14 @@ class TelegramService
             ]);
             return false;
         }
+    }
+
+    /**
+     * Certificate bundle used to verify api.telegram.org (see App\Support\CaBundle).
+     */
+    protected function caBundle(): string|bool
+    {
+        return \App\Support\CaBundle::guzzleVerify();
     }
 
     public function sendOrderNotification(\App\Models\Order $order): bool

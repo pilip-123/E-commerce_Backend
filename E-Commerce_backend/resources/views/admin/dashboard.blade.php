@@ -11,15 +11,47 @@
     html[data-theme="dark"] .dashboard-date {
         color: #ecfdf5;
     }
+
+    /* ── Live summary chart ── */
+    .live-pill { display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:99px; font-size:11.5px; font-weight:650; color:var(--badge-green-text); background:var(--badge-green-bg); }
+    .live-pill .live-dot { width:7px; height:7px; border-radius:50%; background:#22c55e; box-shadow:0 0 0 0 rgba(34,197,94,.6); animation:live-ping 1.8s ease-out infinite; }
+    .live-pill.is-paused, .live-pill.is-offline { color:var(--badge-gray-text); background:var(--badge-gray-bg); }
+    .live-pill.is-paused .live-dot { background:#94a3b8; animation:none; }
+    .live-pill.is-offline .live-dot { background:#ef4444; animation:none; }
+    @keyframes live-ping { 0% { box-shadow:0 0 0 0 rgba(34,197,94,.55); } 80%,100% { box-shadow:0 0 0 7px rgba(34,197,94,0); } }
+    .live-range .btn { font-size:12px; font-weight:650; color:var(--admin-text-muted); border-color:var(--admin-border); }
+    .live-range .btn.active { color:#fff; background:#4f46e5; border-color:#4f46e5; }
+    .live-legend { font-size:12.5px; color:var(--admin-text-muted); }
+    .live-legend b { color:var(--admin-text); font-variant-numeric:tabular-nums; }
+    .live-legend .swatch { display:inline-block; width:10px; height:10px; margin-right:6px; border-radius:3px; vertical-align:-1px; }
+    .live-new { padding:3px 10px; border-radius:99px; font-size:11.5px; font-weight:700; color:#fff; background:linear-gradient(90deg,#6366f1,#8b5cf6); box-shadow:0 6px 16px rgba(99,102,241,.35); animation:live-pop .35s cubic-bezier(.2,.9,.3,1.4); }
+    @keyframes live-pop { from { transform:scale(.6); opacity:0; } to { transform:scale(1); opacity:1; } }
+    .live-chart { position:relative; min-height:240px; }
+    .live-chart svg { display:block; width:100%; height:240px; overflow:visible; }
+    .live-chart .live-line { stroke-dasharray:3000; stroke-dashoffset:3000; animation:live-draw 1.2s ease-out forwards; }
+    .live-chart .live-area { opacity:0; animation:live-fade .8s ease-out .3s forwards; }
+    .live-chart .live-bar { transform-box:fill-box; transform-origin:50% 100%; animation:live-grow .6s cubic-bezier(.2,.8,.2,1) both; animation-delay:calc(var(--i,0) * 15ms); }
+    .live-chart .live-now { animation:live-now 1.8s ease-out infinite; transform-box:fill-box; transform-origin:center; }
+    .live-chart .live-cross, .live-chart .live-hover-dot { opacity:0; transition:opacity .12s ease; pointer-events:none; }
+    .live-chart.is-hovering .live-cross, .live-chart.is-hovering .live-hover-dot { opacity:1; }
+    @keyframes live-draw { to { stroke-dashoffset:0; } }
+    @keyframes live-fade { to { opacity:1; } }
+    @keyframes live-grow { from { transform:scaleY(0); } to { transform:scaleY(1); } }
+    @keyframes live-now { 0% { r:5; opacity:.7; } 100% { r:16; opacity:0; } }
+    .live-tooltip { position:absolute; display:none; z-index:10; min-width:170px; padding:10px 12px; border-radius:12px; pointer-events:none; color:#fff; font-size:12px; background:rgba(17,24,39,.94); box-shadow:0 12px 28px rgba(0,0,0,.25); }
+    .live-tooltip .tt-title { margin-bottom:6px; font-weight:750; }
+    .live-tooltip .tt-row { display:flex; justify-content:space-between; gap:16px; line-height:1.7; }
+    .live-tooltip .tt-row i { display:inline-block; width:8px; height:8px; margin-right:6px; border-radius:2px; }
+    .live-tooltip .tt-foot { margin-top:6px; padding-top:6px; border-top:1px solid rgba(255,255,255,.15); color:#cbd5e1; }
+    .live-empty { position:absolute; inset:0; display:grid; place-items:center; color:var(--admin-text-muted); font-size:13px; }
+    @media (prefers-reduced-motion:reduce) { .live-chart .live-line, .live-chart .live-area, .live-chart .live-bar { animation:none; stroke-dashoffset:0; opacity:1; } .live-chart .live-now, .live-pill .live-dot { animation:none; } }
 </style>
 @endpush
 
 @section('content')
+    @include('admin.partials.kpi-styles')
     <div class="container-fluid p-0">
 
-        @php
-            $dayfalse = 0 ;
-        @endphp
 
         {{-- TOP ACTION BAR --}}
         <div
@@ -127,185 +159,70 @@
         </div>
 
         {{-- STAT CARDS --}}
-        <div class="row g-3 mb-4">
-            <div class="col-sm-6 col-xl-3">
-                <div class="card border-0 rounded-4 text-white position-relative overflow-hidden h-100"
-                    style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); min-height: 160px;">
-                    <div class="card-body d-flex flex-column">
-                        <p class="small text-uppercase fw-bold opacity-75 mb-0"
-                            style="font-size: 11px; letter-spacing: .08em;">{{ __('New Orders') }}</p>
-                        <p class="fw-bold mb-0" style="font-size: 38px; line-height: 1.15; margin-top: 4px;"
-                            id="statOrders">
-                            {{ number_format($stats['orders']) }}</p>
-                        @if($dayfalse)
-                        <p class="small opacity-75 mb-0" style="font-size: 11px; margin-top: 3px;" id="trendOrders">
-                            {{ $trends['orders'] >= 0 ? '+' : '' }}{{ number_format($trends['orders'], 2) }}% (30 days)
-                        </p>
-                        @endif
-                    </div>
-                    <div class="position-absolute top-0 end-0 d-flex align-items-center justify-content-center rounded-circle"
-                        style="width: 44px; height: 44px; margin: 18px; background: rgba(255,255,255,.25);">
-                        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"
-                            viewBox="0 0 24 24">
-                            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-                            <line x1="3" y1="6" x2="21" y2="6" />
-                            <path d="M16 10a4 4 0 0 1-8 0" />
-                        </svg>
-                    </div>
+        @php
+            $pendingShare = $stats['orders'] > 0 ? $stats['pendingOrders'] / $stats['orders'] * 100 : 0;
+            $poPendingShare = $purchaseStats['purchaseOrders'] > 0 ? $purchaseStats['pendingPurchaseOrders'] / $purchaseStats['purchaseOrders'] * 100 : 0;
+            $paymentShare = $purchaseStats['totalPurchaseAmount'] > 0 ? min(100, $purchaseStats['pendingPayments'] / $purchaseStats['totalPurchaseAmount'] * 100) : 0;
+        @endphp
+        <div class="row g-3 mb-3">
+            <div class="col-6 col-xl-3">
+                <div class="app-kpi kpi-cyan">
+                    <div class="app-kpi-head"><span class="app-kpi-icon"><i class="bi bi-bag-check"></i></span><span class="app-kpi-label">{{ __('New Orders') }}</span><span class="app-kpi-chip" id="trendOrders">—</span></div>
+                    <div class="app-kpi-value" id="statOrders">{{ number_format($stats['orders']) }}</div>
+                    <div class="app-kpi-foot"><div class="app-kpi-caption" id="ordersCaption">{{ __('All time') }}</div><svg class="app-kpi-spark" id="ordersSpark" aria-hidden="true"><title>{{ __('Orders, last 6 months') }}</title></svg></div>
                 </div>
             </div>
-            <div class="col-sm-6 col-xl-3">
-                <div class="card border-0 rounded-4 text-white position-relative overflow-hidden h-100"
-                    style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); min-height: 160px;">
-                    <div class="card-body d-flex flex-column">
-                        <p class="small text-uppercase fw-bold opacity-75 mb-0"
-                            style="font-size: 11px; letter-spacing: .08em;">{{ __('Total Income') }}</p>
-                        <p class="fw-bold mb-0" style="font-size: 38px; line-height: 1.15; margin-top: 4px;"
-                            id="statRevenue">
-                            ${{ number_format($stats['revenue'], 2) }}</p>
-                        @if($dayfalse)
-                        <p class="small opacity-75 mb-0" style="font-size: 11px; margin-top: 3px;" id="trendRevenue">
-                            {{ $trends['revenue'] >= 0 ? __('Increased') : __('Decreased') }} by
-                            {{ number_format(abs($trends['revenue']), 2) }}%
-                        </p>
-                        @endif
-                    </div>
-                    <div class="position-absolute top-0 end-0 d-flex align-items-center justify-content-center rounded-circle"
-                        style="width: 44px; height: 44px; margin: 18px; background: rgba(255,255,255,.25);">
-                        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"
-                            viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="10" />
-                            <path d="M12 6v6l4 2" />
-                        </svg>
-                    </div>
+            <div class="col-6 col-xl-3">
+                <div class="app-kpi kpi-green">
+                    <div class="app-kpi-head"><span class="app-kpi-icon"><i class="bi bi-cash-coin"></i></span><span class="app-kpi-label">{{ __('Total Income') }}</span><span class="app-kpi-chip" id="trendRevenue">—</span></div>
+                    <div class="app-kpi-value" id="statRevenue">${{ number_format($stats['revenue'], 2) }}</div>
+                    <div class="app-kpi-foot"><div class="app-kpi-caption" id="revenueCaption">{{ __('Avg') }} ${{ number_format($stats['orders'] ? $stats['revenue'] / $stats['orders'] : 0, 2) }} / {{ __('order') }}</div><svg class="app-kpi-spark" id="revenueSpark" aria-hidden="true"><title>{{ __('Income, last 6 months') }}</title></svg></div>
                 </div>
             </div>
-            <div class="col-sm-6 col-xl-3">
-                <div class="card border-0 rounded-4 text-white position-relative overflow-hidden h-100"
-                    style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); min-height: 160px;">
-                    <div class="card-body d-flex flex-column">
-                        <p class="small text-uppercase fw-bold opacity-75 mb-0"
-                            style="font-size: 11px; letter-spacing: .08em;">{{ __('Pending Orders') }}</p>
-                        <p class="fw-bold mb-0" style="font-size: 38px; line-height: 1.15; margin-top: 4px;"
-                            id="statPending">
-                            {{ number_format($stats['pendingOrders']) }}</p>
-                        @if($dayfalse)
-                        <p class="small opacity-75 mb-0" style="font-size: 11px; margin-top: 3px;" id="trendLabel">
-                            {{ $trends['orders'] >= 0 ? '+' : '' }}{{ number_format($trends['orders'], 2) }}% (30 days)
-                        </p>
-                        @endif
-                    </div>
-                    <div class="position-absolute top-0 end-0 d-flex align-items-center justify-content-center rounded-circle"
-                        style="width: 44px; height: 44px; margin: 18px; background: rgba(255,255,255,.25);">
-                        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"
-                            viewBox="0 0 24 24">
-                            <rect x="5" y="2" width="14" height="20" rx="2" />
-                            <line x1="9" y1="7" x2="15" y2="7" />
-                            <line x1="9" y1="11" x2="15" y2="11" />
-                            <line x1="9" y1="15" x2="12" y2="15" />
-                        </svg>
-                    </div>
+            <div class="col-6 col-xl-3">
+                <div class="app-kpi kpi-blue">
+                    <div class="app-kpi-head"><span class="app-kpi-icon"><i class="bi bi-hourglass-split"></i></span><span class="app-kpi-label">{{ __('Pending Orders') }}</span><span class="app-kpi-chip" id="pendingChip">{{ round($pendingShare) }}%</span></div>
+                    <div class="app-kpi-value" id="statPending">{{ number_format($stats['pendingOrders']) }}</div>
+                    <div class="app-kpi-foot"><div class="app-kpi-caption"><span id="pendingCaption">{{ __('of orders waiting to be processed') }}</span><div class="app-kpi-meter"><span id="pendingMeter" style="width:{{ round($pendingShare, 1) }}%"></span></div></div></div>
                 </div>
             </div>
-            <div class="col-sm-6 col-xl-3">
-                <div class="card border-0 rounded-4 text-white position-relative overflow-hidden h-100"
-                    style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); min-height: 160px;">
-                    <div class="card-body d-flex flex-column">
-                        <p class="small text-uppercase fw-bold opacity-75 mb-0"
-                            style="font-size: 11px; letter-spacing: .08em;">{{ __('New Users') }}</p>
-                        <p class="fw-bold mb-0" style="font-size: 38px; line-height: 1.15; margin-top: 4px;"
-                            id="statUsers">
-                            {{ number_format($stats['users']) }}</p>
-                        @if($dayfalse)
-                        <p class="small opacity-75 mb-0" style="font-size: 11px; margin-top: 3px;" id="trendUsers">
-                            {{ $trends['users'] >= 0 ? '+' : '' }}{{ number_format($trends['users'], 2) }}% (30 days)
-                        </p>
-                        @endif
-                    </div>
-                    <div class="position-absolute top-0 end-0 d-flex align-items-center justify-content-center rounded-circle"
-                        style="width: 44px; height: 44px; margin: 18px; background: rgba(255,255,255,.25);">
-                        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"
-                            viewBox="0 0 24 24">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                            <circle cx="12" cy="7" r="4" />
-                        </svg>
-                    </div>
+            <div class="col-6 col-xl-3">
+                <div class="app-kpi kpi-amber">
+                    <div class="app-kpi-head"><span class="app-kpi-icon"><i class="bi bi-person-plus"></i></span><span class="app-kpi-label">{{ __('New Users') }}</span><span class="app-kpi-chip" id="trendUsers">—</span></div>
+                    <div class="app-kpi-value" id="statUsers">{{ number_format($stats['users']) }}</div>
+                    <div class="app-kpi-foot"><div class="app-kpi-caption" id="usersCaption">{{ __('All time') }}</div></div>
                 </div>
             </div>
         </div>
 
         {{-- PURCHASING STATS --}}
         <div class="row g-3 mb-4">
-            <div class="col-sm-6 col-xl-3">
-                <div class="card border-0 rounded-4 text-white position-relative overflow-hidden h-100"
-                    style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); min-height: 160px;">
-                    <div class="card-body d-flex flex-column">
-                        <p class="small text-uppercase fw-bold opacity-75 mb-0" style="font-size: 11px; letter-spacing: .08em;">{{ __('Total Suppliers') }}</p>
-                        <p class="fw-bold mb-0" style="font-size: 38px; line-height: 1.15; margin-top: 4px;" id="purchaseStatSuppliers">{{ number_format($purchaseStats['totalSuppliers']) }}</p>
-                    </div>
-                    <div class="position-absolute top-0 end-0 d-flex align-items-center justify-content-center rounded-circle"
-                        style="width: 44px; height: 44px; margin: 18px; background: rgba(255,255,255,.25);">
-                        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"
-                            viewBox="0 0 24 24">
-                            <rect x="1" y="3" width="15" height="13" />
-                            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
-                            <circle cx="5.5" cy="18.5" r="2.5" />
-                            <circle cx="18.5" cy="18.5" r="2.5" />
-                        </svg>
-                    </div>
+            <div class="col-6 col-xl-3">
+                <div class="app-kpi kpi-sky">
+                    <div class="app-kpi-head"><span class="app-kpi-icon"><i class="bi bi-truck"></i></span><span class="app-kpi-label">{{ __('Total Suppliers') }}</span><span class="app-kpi-chip" id="supplierChip">—</span></div>
+                    <div class="app-kpi-value" id="purchaseStatSuppliers">{{ number_format($purchaseStats['totalSuppliers']) }}</div>
+                    <div class="app-kpi-foot"><div class="app-kpi-caption" id="supplierCaption">{{ __('Supplier accounts') }}</div></div>
                 </div>
             </div>
-            <div class="col-sm-6 col-xl-3">
-                <div class="card border-0 rounded-4 text-white position-relative overflow-hidden h-100"
-                    style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); min-height: 160px;">
-                    <div class="card-body d-flex flex-column">
-                        <p class="small text-uppercase fw-bold opacity-75 mb-0" style="font-size: 11px; letter-spacing: .08em;">{{ __('Purchase Orders') }}</p>
-                        <p class="fw-bold mb-0" style="font-size: 38px; line-height: 1.15; margin-top: 4px;" id="purchaseStatOrders">{{ number_format($purchaseStats['purchaseOrders']) }}</p>
-                    </div>
-                    <div class="position-absolute top-0 end-0 d-flex align-items-center justify-content-center rounded-circle"
-                        style="width: 44px; height: 44px; margin: 18px; background: rgba(255,255,255,.25);">
-                        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"
-                            viewBox="0 0 24 24">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                            <polyline points="14 2 14 8 20 8" />
-                            <line x1="16" y1="13" x2="8" y2="13" />
-                            <line x1="16" y1="17" x2="8" y2="17" />
-                        </svg>
-                    </div>
+            <div class="col-6 col-xl-3">
+                <div class="app-kpi kpi-violet">
+                    <div class="app-kpi-head"><span class="app-kpi-icon"><i class="bi bi-file-earmark-text"></i></span><span class="app-kpi-label">{{ __('Purchase Orders') }}</span><span class="app-kpi-chip" id="poChip">—</span></div>
+                    <div class="app-kpi-value" id="purchaseStatOrders">{{ number_format($purchaseStats['purchaseOrders']) }}</div>
+                    <div class="app-kpi-foot"><div class="app-kpi-caption" id="poCaption">{{ __('Worth') }} ${{ number_format($purchaseStats['totalPurchaseAmount'], 2) }}</div><svg class="app-kpi-spark" id="purchaseSpark" aria-hidden="true"><title>{{ __('Purchases, last 6 months') }}</title></svg></div>
                 </div>
             </div>
-            <div class="col-sm-6 col-xl-3">
-                <div class="card border-0 rounded-4 text-white position-relative overflow-hidden h-100"
-                    style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); min-height: 160px;">
-                    <div class="card-body d-flex flex-column">
-                        <p class="small text-uppercase fw-bold opacity-75 mb-0" style="font-size: 11px; letter-spacing: .08em;">{{ __('Pending Purchase Orders') }}</p>
-                        <p class="fw-bold mb-0" style="font-size: 38px; line-height: 1.15; margin-top: 4px;" id="purchaseStatPending">{{ number_format($purchaseStats['pendingPurchaseOrders']) }}</p>
-                    </div>
-                    <div class="position-absolute top-0 end-0 d-flex align-items-center justify-content-center rounded-circle"
-                        style="width: 44px; height: 44px; margin: 18px; background: rgba(255,255,255,.25);">
-                        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"
-                            viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="10" />
-                            <polyline points="12 6 12 12 16 14" />
-                        </svg>
-                    </div>
+            <div class="col-6 col-xl-3">
+                <div class="app-kpi kpi-amber">
+                    <div class="app-kpi-head"><span class="app-kpi-icon"><i class="bi bi-clock-history"></i></span><span class="app-kpi-label">{{ __('Pending Purchase Orders') }}</span><span class="app-kpi-chip" id="poPendingChip">{{ round($poPendingShare) }}%</span></div>
+                    <div class="app-kpi-value" id="purchaseStatPending">{{ number_format($purchaseStats['pendingPurchaseOrders']) }}</div>
+                    <div class="app-kpi-foot"><div class="app-kpi-caption"><span id="poPendingCaption">{{ __('of purchase orders awaiting approval') }}</span><div class="app-kpi-meter"><span id="poPendingMeter" style="width:{{ round($poPendingShare, 1) }}%"></span></div></div></div>
                 </div>
             </div>
-            <div class="col-sm-6 col-xl-3">
-                <div class="card border-0 rounded-4 text-white position-relative overflow-hidden h-100"
-                    style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); min-height: 160px;">
-                    <div class="card-body d-flex flex-column">
-                        <p class="small text-uppercase fw-bold opacity-75 mb-0" style="font-size: 11px; letter-spacing: .08em;">{{ __('Pending Payments') }}</p>
-                        <p class="fw-bold mb-0" style="font-size: 38px; line-height: 1.15; margin-top: 4px;" id="purchaseStatPayments">${{ number_format($purchaseStats['pendingPayments'], 2) }}</p>
-                    </div>
-                    <div class="position-absolute top-0 end-0 d-flex align-items-center justify-content-center rounded-circle"
-                        style="width: 44px; height: 44px; margin: 18px; background: rgba(255,255,255,.25);">
-                        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"
-                            viewBox="0 0 24 24">
-                            <line x1="12" y1="1" x2="12" y2="23" />
-                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                        </svg>
-                    </div>
+            <div class="col-6 col-xl-3">
+                <div class="app-kpi kpi-red">
+                    <div class="app-kpi-head"><span class="app-kpi-icon"><i class="bi bi-credit-card-2-front"></i></span><span class="app-kpi-label">{{ __('Pending Payments') }}</span><span class="app-kpi-chip" id="paymentChip">{{ round($paymentShare) }}%</span></div>
+                    <div class="app-kpi-value" id="purchaseStatPayments">${{ number_format($purchaseStats['pendingPayments'], 2) }}</div>
+                    <div class="app-kpi-foot"><div class="app-kpi-caption"><span id="paymentCaption">{{ __('of') }} ${{ number_format($purchaseStats['totalPurchaseAmount'], 2) }} {{ __('still unpaid') }}</span><div class="app-kpi-meter"><span id="paymentMeter" style="width:{{ round($paymentShare, 1) }}%"></span></div></div></div>
                 </div>
             </div>
         </div>
@@ -316,7 +233,18 @@
                 {{-- Summary Chart --}}
                 <div class="card border-0 shadow-sm rounded-4 mb-3">
                     <div class="card-body">
-                        <h5 class="card-title fw-bold mb-3" style="font-size: 15px;">{{ __('Summary') }}</h5>
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <h5 class="card-title fw-bold mb-0" style="font-size: 15px;">{{ __('Summary') }}</h5>
+                                <span class="live-pill" id="liveStatus" role="status" aria-live="polite"><span class="live-dot"></span><span id="liveText">{{ __('Connecting…') }}</span></span>
+                            </div>
+                            <div class="btn-group btn-group-sm live-range" role="group" aria-label="{{ __('Chart range') }}">
+                                <button type="button" class="btn btn-outline-secondary" data-range="24h">24h</button>
+                                <button type="button" class="btn btn-outline-secondary" data-range="7d">7d</button>
+                                <button type="button" class="btn btn-outline-secondary active" data-range="30d">30d</button>
+                                <button type="button" class="btn btn-outline-secondary" data-range="12m">12m</button>
+                            </div>
+                        </div>
                         <div class="row g-0 border-bottom pb-3 mb-3">
                             <div class="col border-end">
                                 <p class="fw-bold mb-0" style="font-size: 15px;" id="summaryProducts">{{ $stats['products'] }}</p>
@@ -336,33 +264,15 @@
                                 <p class="small text-muted mb-0">{{ __('Total Revenue') }}</p>
                             </div>
                         </div>
-                        <div id="chartContainer" style="position: relative;">
-                            <svg viewBox="0 0 600 130" preserveAspectRatio="none" class="w-100"
-                                style="height: 130px; display: block;" xmlns="http://www.w3.org/2000/svg">
-                                <defs>
-                                    <linearGradient id="areaGrad" x1="0" y1="0" x2="0"
-                                        y2="1">
-                                        <stop offset="0%" stop-color="#f87171" stop-opacity="0.55" />
-                                        <stop offset="100%" stop-color="#f87171" stop-opacity="0.04" />
-                                    </linearGradient>
-                                </defs>
-                                <path id="chartArea"
-                                    d="M0,120 C60,115 90,100 120,95 C160,88 190,105 240,100 C290,95 320,85 360,70 C400,55 440,75 490,55 C530,38 570,20 600,10 L600,130 L0,130 Z"
-                                    fill="url(#areaGrad)" />
-                                <path id="chartLine"
-                                    d="M0,120 C60,115 90,100 120,95 C160,88 190,105 240,100 C290,95 320,85 360,70 C400,55 440,75 490,55 C530,38 570,20 600,10"
-                                    fill="none" stroke="#f87171" stroke-width="2.5" />
-                                <g id="chartDots"></g>
-                                <rect id="chartOverlay" width="600" height="130" fill="transparent" style="cursor: crosshair;" />
-                            </svg>
-                            <div id="chartTooltip"
-                                style="display:none; position:absolute; background:#1f2937; color:#fff; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:600; pointer-events:none; white-space:nowrap; z-index:10; transform:translate(-50%,-110%); box-shadow:0 4px 12px rgba(0,0,0,.2);">
-                            </div>
-                            <div class="d-flex justify-content-between small text-muted mt-1 px-1" id="chartLabels">
-                                @foreach ($chartMonths as $month)
-                                    <span>{{ $month }}</span>
-                                @endforeach
-                            </div>
+                        <div class="live-legend d-flex flex-wrap align-items-center gap-3 mb-2">
+                            <span><i class="swatch" style="background:#6366f1"></i>{{ __('Revenue') }} <b id="liveRevenueTotal">—</b> <span class="app-kpi-chip" id="liveRevenueChip">—</span></span>
+                            <span><i class="swatch" style="background:#22d3ee"></i>{{ __('Orders') }} <b id="liveOrdersTotal">—</b> <span class="app-kpi-chip" id="liveOrdersChip">—</span></span>
+                            <span class="ms-auto live-new d-none" id="liveNew"></span>
+                        </div>
+                        <div id="chartContainer" class="live-chart">
+                            <svg id="liveChart" role="img" aria-label="{{ __('Revenue and orders over time') }}"></svg>
+                            <div class="live-empty" id="liveEmpty">{{ __('Loading chart…') }}</div>
+                            <div id="chartTooltip" class="live-tooltip"></div>
                         </div>
                     </div>
                 </div>
@@ -560,103 +470,6 @@
                 });
             });
 
-            var chartPoints = [];
-            var chartMonths = [];
-            var chartValues = [];
-
-            function buildChartPath(values, width, height) {
-                if (!values || values.length < 2) return { area: '', line: '', points: [] };
-                var maxVal = Math.max.apply(null, values) || 1;
-                var stepX = width / (values.length - 1);
-                var points = values.map(function(v, i) {
-                    var x = i * stepX;
-                    var y = height - (v / maxVal) * (height * 0.85) - 8;
-                    return { x: x, y: Math.max(y, 2), value: v, index: i };
-                });
-                var d = 'M' + points[0].x + ',' + points[0].y;
-                for (var i = 1; i < points.length; i++) {
-                    var prev = points[i - 1];
-                    var cur = points[i];
-                    var cx1 = prev.x + (cur.x - prev.x) / 2;
-                    var cy1 = prev.y;
-                    var cx2 = cur.x - (cur.x - prev.x) / 2;
-                    var cy2 = cur.y;
-                    d += ' C' + cx1 + ',' + cy1 + ' ' + cx2 + ',' + cy2 + ' ' + cur.x + ',' + cur.y;
-                }
-                var area = d + ' L' + points[points.length - 1].x + ',' + height + ' L' + points[0].x + ',' + height + ' Z';
-                return { area: area, line: d, points: points };
-            }
-
-            function renderChartDots(points) {
-                var dotsEl = document.getElementById('chartDots');
-                if (!dotsEl) return;
-                dotsEl.innerHTML = '';
-                points.forEach(function(p) {
-                    var circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                    circle.setAttribute('cx', p.x);
-                    circle.setAttribute('cy', p.y);
-                    circle.setAttribute('r', '4');
-                    circle.setAttribute('fill', '#fff');
-                    circle.setAttribute('stroke', '#f87171');
-                    circle.setAttribute('stroke-width', '2.5');
-                    circle.setAttribute('class', 'chart-dot');
-                    circle.style.cursor = 'crosshair';
-                    dotsEl.appendChild(circle);
-                });
-            }
-
-            function setupChartHover(points, months, values) {
-                var container = document.getElementById('chartContainer');
-                var overlay = document.getElementById('chartOverlay');
-                var tooltip = document.getElementById('chartTooltip');
-                if (!overlay || !tooltip || !container) return;
-
-                overlay.addEventListener('mousemove', function(e) {
-                    var rect = container.getBoundingClientRect();
-                    var svg = overlay.closest('svg');
-                    var viewBoxW = 600;
-                    var svgRect = svg.getBoundingClientRect();
-                    var scaleX = svgRect.width / viewBoxW;
-                    var mx = (e.clientX - svgRect.left) / scaleX;
-
-                    var closest = points[0];
-                    var minDist = Math.abs(mx - points[0].x);
-                    for (var i = 1; i < points.length; i++) {
-                        var dist = Math.abs(mx - points[i].x);
-                        if (dist < minDist) { minDist = dist; closest = points[i]; }
-                    }
-
-                    var label = months[closest.index] || '';
-                    var val = values[closest.index];
-                    tooltip.textContent = label + ': ' + (val !== undefined ? val.toLocaleString() : '0') + ' orders';
-                    tooltip.style.display = 'block';
-
-                    var tooltipX = e.clientX - rect.left;
-                    var tooltipY = (closest.y / 130) * svgRect.height;
-                    tooltip.style.left = tooltipX + 'px';
-                    tooltip.style.top = tooltipY + 'px';
-
-                    document.querySelectorAll('.chart-dot').forEach(function(dot) {
-                        var cx = parseFloat(dot.getAttribute('cx'));
-                        if (Math.abs(cx - closest.x) < 1) {
-                            dot.setAttribute('r', '6');
-                            dot.setAttribute('fill', '#f87171');
-                        } else {
-                            dot.setAttribute('r', '4');
-                            dot.setAttribute('fill', '#fff');
-                        }
-                    });
-                });
-
-                overlay.addEventListener('mouseleave', function() {
-                    tooltip.style.display = 'none';
-                    document.querySelectorAll('.chart-dot').forEach(function(dot) {
-                        dot.setAttribute('r', '4');
-                        dot.setAttribute('fill', '#fff');
-                    });
-                });
-            }
-
             function renderPurchaseChart(labels, totals) {
                 var barsEl = document.getElementById('purchaseChartBars');
                 var labelsEl = document.getElementById('purchaseChartLabels');
@@ -675,6 +488,29 @@
                 }).join('');
             }
 
+            function setText(id, text) { var el = document.getElementById(id); if (el) el.textContent = text; }
+            // Percentage chip + meter; the chip turns `tone` (warn/bad) once the share is noticeable.
+            function setShare(chipId, meterId, percent, tone) {
+                var chip = document.getElementById(chipId), meter = document.getElementById(meterId), p = Math.max(0, Math.min(100, percent || 0));
+                if (chip) { chip.textContent = Math.round(p) + '%'; chip.className = 'app-kpi-chip' + (p >= 25 ? ' ' + tone : ''); }
+                if (meter) meter.style.width = p + '%';
+            }
+            function setSupplierChip(suppliers, purchaseOrders) {
+                var chip = document.getElementById('supplierChip'); if (!chip) return;
+                chip.innerHTML = suppliers ? '<i class="bi bi-file-earmark-text"></i>' + (purchaseOrders / suppliers).toFixed(1) + ' ' + @json(__('PO each')) : '—';
+                chip.title = @json(__('Purchase orders per supplier'));
+            }
+            appKpiSpark(document.getElementById('ordersSpark'), @json($chartOrders));
+            appKpiSpark(document.getElementById('revenueSpark'), @json($chartRevenue));
+            appKpiSpark(document.getElementById('purchaseSpark'), @json($purchaseChartTotals));
+            setShare('pendingChip', 'pendingMeter', {{ round($pendingShare, 2) }}, 'warn');
+            setShare('poPendingChip', 'poPendingMeter', {{ round($poPendingShare, 2) }}, 'warn');
+            setShare('paymentChip', 'paymentMeter', {{ round($paymentShare, 2) }}, 'bad');
+            setSupplierChip({{ (int) $purchaseStats['totalSuppliers'] }}, {{ (int) $purchaseStats['purchaseOrders'] }});
+            appKpiTrend(document.getElementById('trendOrders'), {{ (float) $trends['orders'] }}, true, @json(__('30-day trend')));
+            appKpiTrend(document.getElementById('trendRevenue'), {{ (float) $trends['revenue'] }}, true, @json(__('30-day trend')));
+            appKpiTrend(document.getElementById('trendUsers'), {{ (float) $trends['users'] }}, true, @json(__('30-day trend')));
+
             function fetchDashboardData(period) {
                 fetch('{{ route('admin.dashboard.data') }}?period=' + period)
                     .then(function(r) {
@@ -688,19 +524,17 @@
                             .toLocaleString();
                         document.getElementById('statUsers').textContent = data.stats.users.toLocaleString();
 
-                        document.getElementById('trendOrders').textContent = (data.trends.orders >= 0 ? '+' :
-                            '') + data.trends.orders.toFixed(2) + '% (' + data.label + ')';
-                        document.getElementById('trendRevenue').textContent = (data.trends.revenue >= 0 ?
-                                '{{ __("Increased") }}' : '{{ __("Decreased") }}') + ' by ' + Math.abs(data.trends.revenue).toFixed(2) +
-                            '%';
-                        document.getElementById('trendUsers').textContent = (data.trends.users >= 0 ? '+' :
-                            '') + data.trends.users.toFixed(2) + '% (' + data.label + ')';
-
-                        var trendLabel = document.getElementById('trendLabel');
-                        if (trendLabel) {
-                            trendLabel.textContent = (data.trends.orders >= 0 ? '+' : '') + data.trends.orders
-                                .toFixed(2) + '% (' + data.label + ')';
-                        }
+                        // KPI chips & captions (compare with the previous period)
+                        var vsText = {day: @json(__('vs yesterday')), week: @json(__('vs last week')), month: @json(__('vs last month')), annual: @json(__('vs last year'))}[period] || '';
+                        var periodText = data.label ? data.label.charAt(0).toUpperCase() + data.label.slice(1) : '';
+                        appKpiTrend(document.getElementById('trendOrders'), data.trends.orders, true, vsText);
+                        appKpiTrend(document.getElementById('trendRevenue'), data.trends.revenue, true, vsText);
+                        appKpiTrend(document.getElementById('trendUsers'), data.trends.users, true, vsText);
+                        setText('ordersCaption', periodText + ' · ' + vsText);
+                        setText('usersCaption', periodText + ' · ' + vsText);
+                        var orders = Number(data.stats.orders) || 0, revenue = parseFloat(data.stats.revenue) || 0;
+                        setText('revenueCaption', @json(__('Avg')) + ' $' + (orders ? revenue / orders : 0).toFixed(2) + ' / ' + @json(__('order')));
+                        setShare('pendingChip', 'pendingMeter', orders ? data.stats.pendingOrders / orders * 100 : 0, 'warn');
 
                         if (data.summary) {
                             var el = document.getElementById('summaryProducts');
@@ -713,41 +547,195 @@
                             if (el) el.textContent = '$' + parseFloat(data.summary.totalRevenue).toFixed(2);
                         }
 
-                        if (data.chart && data.chart.orders) {
-                            chartMonths = data.chart.months || [];
-                            chartValues = data.chart.orders || [];
-
-                            var paths = buildChartPath(chartValues, 600, 130);
-                            chartPoints = paths.points || [];
-
-                            var areaEl = document.getElementById('chartArea');
-                            var lineEl = document.getElementById('chartLine');
-                            if (areaEl) areaEl.setAttribute('d', paths.area);
-                            if (lineEl) lineEl.setAttribute('d', paths.line);
-
-                            renderChartDots(chartPoints);
-                            setupChartHover(chartPoints, chartMonths, chartValues);
-
-                            var labelsEl = document.getElementById('chartLabels');
-                            if (labelsEl && chartMonths.length) {
-                                labelsEl.innerHTML = chartMonths.map(function(m) {
-                                    return '<span>' + m + '</span>';
-                                }).join('');
-                            }
-                        }
-
                         // Purchasing stats
                         var ps = data.purchaseStats || {};
                         document.getElementById('purchaseStatSuppliers').textContent = (ps.totalSuppliers || 0).toLocaleString();
                         document.getElementById('purchaseStatOrders').textContent = (ps.purchaseOrders || 0).toLocaleString();
                         document.getElementById('purchaseStatPending').textContent = (ps.pendingPurchaseOrders || 0).toLocaleString();
                         document.getElementById('purchaseStatPayments').textContent = '$' + parseFloat(ps.pendingPayments || 0).toFixed(2);
+                        var poCount = ps.purchaseOrders || 0, purchaseTotal = parseFloat(ps.totalPurchaseAmount || 0);
+                        setText('poCaption', @json(__('Worth')) + ' $' + purchaseTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' · ' + (data.label || ''));
+                        setSupplierChip(ps.totalSuppliers || 0, poCount);
+                        setShare('poPendingChip', 'poPendingMeter', poCount ? (ps.pendingPurchaseOrders || 0) / poCount * 100 : 0, 'warn');
+                        setShare('paymentChip', 'paymentMeter', purchaseTotal ? Math.min(100, (ps.pendingPayments || 0) / purchaseTotal * 100) : 0, 'bad');
+                        setText('paymentCaption', @json(__('of')) + ' $' + purchaseTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + @json(__('still unpaid')));
 
                         if (data.purchaseChart) {
                             renderPurchaseChart(data.purchaseChart.labels || [], data.purchaseChart.totals || []);
                         }
                     });
             }
+
+
+            // ─── Live summary chart ───────────────────────────────────────
+            // Polls the server every 15 s (paused while the tab is hidden) and
+            // redraws revenue (line) over orders (bars) for the chosen range.
+            var LIVE_URL = @json(route('admin.dashboard.live'));
+            var LIVE_EVERY = 15000;
+            var T = {
+                live: @json(__('Live')), updated: @json(__('updated')), ago: @json(__('ago')), justNow: @json(__('just now')),
+                paused: @json(__('Paused')), offline: @json(__('Reconnecting…')), revenue: @json(__('Revenue')), orders: @json(__('Orders')),
+                avg: @json(__('Avg / order')), peak: @json(__('Peak')), now: @json(__('Now')), newOrder: @json(__('new order')), newOrders: @json(__('new orders')),
+                empty: @json(__('No orders in this range yet')), fresh: @json(__('New')), vsPrev: @json(__('vs previous period'))
+            };
+            var live = { range: '30d', data: null, timer: null, updatedAt: 0, failed: false, latest: null, newTimer: null };
+
+            function fmtMoney(v) { return '$' + Number(v || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+            function shortMoney(v) { var a = Math.abs(v); return '$' + (a >= 1e6 ? +(v / 1e6).toFixed(1) + 'M' : a >= 1e3 ? +(v / 1e3).toFixed(1) + 'k' : +v.toFixed(a < 10 ? 1 : 0)); }
+            function niceCeil(v) { if (!(v > 0)) return 1; var e = Math.pow(10, Math.floor(Math.log10(v))), f = v / e; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * e; }
+            function escapeHtml(t) { return String(t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+            function smoothLine(pts) {
+                return pts.map(function (p, i) {
+                    if (!i) return 'M' + p[0] + ',' + p[1];
+                    var q = pts[i - 1], mx = (q[0] + p[0]) / 2;
+                    return 'C' + mx + ',' + q[1] + ' ' + mx + ',' + p[1] + ' ' + p[0] + ',' + p[1];
+                }).join('');
+            }
+            function setChangeChip(id, current, previous) {
+                var el = document.getElementById(id); if (!el) return;
+                if (!previous) { el.className = 'app-kpi-chip' + (current ? ' good' : ''); el.textContent = current ? T.fresh : '—'; el.title = T.vsPrev; return; }
+                appKpiTrend(el, (current - previous) / previous * 100, true, T.vsPrev);
+            }
+
+            function drawLiveChart(animate) {
+                var d = live.data, svg = document.getElementById('liveChart'); if (!d || !svg) return;
+                var wrap = svg.parentElement, W = Math.max(wrap.clientWidth, 320), H = 240, L = 52, R = 34, top = 26, B = 26;
+                var pw = W - L - R, ph = H - top - B, n = d.labels.length, step = pw / n;
+                var maxRev = niceCeil(Math.max.apply(null, d.revenue.concat(0)) * 1.15);
+                var maxOrd = Math.max(4, Math.ceil(Math.max.apply(null, d.orders.concat(0)) * 1.25 / 4) * 4);
+                var x = function (i) { return L + step * i + step / 2; };
+                var yRev = function (v) { return top + ph - v / maxRev * ph; };
+                var yOrd = function (v) { return top + ph - v / maxOrd * ph; };
+                var barW = Math.max(3, Math.min(18, step * .5));
+                var html = '<defs><linearGradient id="liveArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6366f1" stop-opacity=".35"/><stop offset="100%" stop-color="#6366f1" stop-opacity="0"/></linearGradient>'
+                    + '<linearGradient id="liveBar" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#67e8f9"/><stop offset="100%" stop-color="#06b6d4"/></linearGradient>'
+                    + '<linearGradient id="liveStroke" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#818cf8"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient>'
+                    + '<filter id="liveGlow" x="-20%" y="-50%" width="140%" height="200%"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#6366f1" flood-opacity=".35"/></filter></defs>';
+                for (var t = 0; t <= 4; t++) {
+                    var gy = top + ph - ph * t / 4;
+                    html += '<line x1="' + L + '" y1="' + gy + '" x2="' + (W - R) + '" y2="' + gy + '" stroke="var(--admin-border)" ' + (t ? 'stroke-dasharray="2 5"' : '') + '/>'
+                        + '<text x="' + (L - 8) + '" y="' + (gy + 3.5) + '" text-anchor="end" font-size="10" fill="var(--admin-text-muted)">' + shortMoney(maxRev * t / 4) + '</text>'
+                        + '<text x="' + (W - R + 8) + '" y="' + (gy + 3.5) + '" font-size="10" fill="#0891b2">' + (maxOrd * t / 4) + '</text>';
+                }
+                // orders as bars (right axis)
+                d.orders.forEach(function (v, i) {
+                    if (!v) return;
+                    var h = ph - (yOrd(v) - top), bx = x(i) - barW / 2, r = Math.min(4, barW / 2, h);
+                    html += '<path class="' + (animate ? 'live-bar' : '') + '" style="--i:' + i + '" d="M' + bx + ',' + (top + ph) + 'V' + (yOrd(v) + r) + 'Q' + bx + ',' + yOrd(v) + ' ' + (bx + r) + ',' + yOrd(v) + 'H' + (bx + barW - r) + 'Q' + (bx + barW) + ',' + yOrd(v) + ' ' + (bx + barW) + ',' + (yOrd(v) + r) + 'V' + (top + ph) + 'Z" fill="url(#liveBar)" opacity="' + (i === n - 1 ? .9 : .45) + '"/>';
+                });
+                // revenue as smooth area + line (left axis)
+                var pts = d.revenue.map(function (v, i) { return [+x(i).toFixed(1), +yRev(v).toFixed(1)]; });
+                var line = smoothLine(pts);
+                html += '<path class="' + (animate ? 'live-area' : '') + '" d="' + line + 'L' + pts[n - 1][0] + ',' + (top + ph) + 'L' + pts[0][0] + ',' + (top + ph) + 'Z" fill="url(#liveArea)"/>'
+                    + '<path class="' + (animate ? 'live-line' : '') + '" d="' + line + '" fill="none" stroke="url(#liveStroke)" stroke-width="2.6" stroke-linecap="round" filter="url(#liveGlow)"/>';
+                // peak marker
+                var peak = d.revenue.indexOf(Math.max.apply(null, d.revenue));
+                if (d.revenue[peak] > 0) {
+                    var px = pts[peak][0], py = pts[peak][1], label = T.peak + ' ' + shortMoney(d.revenue[peak]), lw = label.length * 6 + 16;
+                    var lx = Math.min(Math.max(px - lw / 2, L), W - R - lw);
+                    html += '<circle cx="' + px + '" cy="' + py + '" r="4.5" fill="#7c3aed" stroke="var(--admin-surface)" stroke-width="2"/>'
+                        + '<rect x="' + lx + '" y="' + Math.max(0, py - 28) + '" width="' + lw + '" height="18" rx="9" fill="#7c3aed"/>'
+                        + '<text x="' + (lx + lw / 2) + '" y="' + (Math.max(0, py - 28) + 12.5) + '" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">' + escapeHtml(label) + '</text>';
+                }
+                // "now" pulse on the latest bucket
+                var last = pts[n - 1];
+                html += '<circle class="live-now" cx="' + last[0] + '" cy="' + last[1] + '" r="5" fill="#6366f1"/><circle cx="' + last[0] + '" cy="' + last[1] + '" r="4" fill="var(--admin-surface)" stroke="#6366f1" stroke-width="2.5"/>';
+                // x labels (thinned)
+                var every = Math.ceil(n / Math.max(4, Math.floor(pw / 70)));
+                d.labels.forEach(function (lab, i) {
+                    if (i !== n - 1 && (i % every || n - 1 - i < every * .7)) return; // keep room for the "Now" label
+                    html += '<text x="' + x(i) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="10" ' + (i === n - 1 ? 'font-weight="700" fill="#6366f1">' + escapeHtml(T.now) : 'fill="var(--admin-text-muted)">' + escapeHtml(lab)) + '</text>';
+                });
+                html += '<line class="live-cross" id="liveCross" x1="0" x2="0" y1="' + top + '" y2="' + (top + ph) + '" stroke="#6366f1" stroke-width="1" stroke-dasharray="3 3"/>'
+                    + '<circle class="live-hover-dot" id="liveHoverDot" r="5.5" fill="#6366f1" stroke="var(--admin-surface)" stroke-width="2.5"/>';
+                svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+                svg.innerHTML = html;
+                svg._live = { L: L, step: step, n: n, pts: pts };
+                document.getElementById('liveEmpty').textContent = T.empty;
+                document.getElementById('liveEmpty').hidden = d.totals.orders > 0;
+            }
+
+            (function bindLiveHover() {
+                var svg = document.getElementById('liveChart'), wrap = document.getElementById('chartContainer'), tip = document.getElementById('chartTooltip');
+                if (!svg) return;
+                function hide() { wrap.classList.remove('is-hovering'); tip.style.display = 'none'; }
+                svg.addEventListener('pointermove', function (e) {
+                    var c = svg._live, d = live.data; if (!c || !d) return;
+                    var rect = svg.getBoundingClientRect(), mx = e.clientX - rect.left;
+                    var i = Math.max(0, Math.min(c.n - 1, Math.floor((mx - c.L) / c.step))), p = c.pts[i];
+                    var cross = document.getElementById('liveCross'), dot = document.getElementById('liveHoverDot');
+                    cross.setAttribute('x1', p[0]); cross.setAttribute('x2', p[0]); dot.setAttribute('cx', p[0]); dot.setAttribute('cy', p[1]);
+                    wrap.classList.add('is-hovering');
+                    var orders = d.orders[i], revenue = d.revenue[i];
+                    tip.innerHTML = '<div class="tt-title">' + escapeHtml(d.labels[i]) + '</div>'
+                        + '<div class="tt-row"><span><i style="background:#6366f1"></i>' + T.revenue + '</span><b>' + fmtMoney(revenue) + '</b></div>'
+                        + '<div class="tt-row"><span><i style="background:#22d3ee"></i>' + T.orders + '</span><b>' + orders + '</b></div>'
+                        + '<div class="tt-foot tt-row"><span>' + T.avg + '</span><b>' + fmtMoney(orders ? revenue / orders : 0) + '</b></div>';
+                    tip.style.display = 'block';
+                    var wr = wrap.getBoundingClientRect(), tw = tip.offsetWidth, left = p[0] + 14;
+                    if (left + tw > wr.width) left = p[0] - tw - 14;
+                    tip.style.left = Math.max(0, left) + 'px';
+                    tip.style.top = Math.max(0, p[1] - tip.offsetHeight / 2) + 'px';
+                });
+                svg.addEventListener('pointerleave', hide);
+            })();
+
+            function setLiveStatus() {
+                var pill = document.getElementById('liveStatus'), text = document.getElementById('liveText');
+                pill.classList.toggle('is-paused', document.hidden);
+                pill.classList.toggle('is-offline', live.failed && !document.hidden);
+                if (document.hidden) { text.textContent = T.paused; return; }
+                if (live.failed) { text.textContent = T.offline; return; }
+                if (!live.updatedAt) return;
+                var s = Math.round((Date.now() - live.updatedAt) / 1000);
+                text.textContent = T.live + ' · ' + T.updated + ' ' + (s < 5 ? T.justNow : s + 's ' + T.ago);
+            }
+            setInterval(setLiveStatus, 1000);
+
+            function showNewOrders(count) {
+                var el = document.getElementById('liveNew'); if (!el || count <= 0) return;
+                el.textContent = '+' + count + ' ' + (count === 1 ? T.newOrder : T.newOrders);
+                el.classList.remove('d-none'); el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
+                clearTimeout(live.newTimer); live.newTimer = setTimeout(function () { el.classList.add('d-none'); }, 8000);
+            }
+
+            function loadLive(animate) {
+                clearTimeout(live.timer);
+                var range = live.range;
+                fetch(LIVE_URL + '?range=' + range, { headers: { 'Accept': 'application/json' } })
+                    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+                    .then(function (d) {
+                        if (range !== live.range) return; // user switched range mid-request
+                        var previous = live.data;
+                        if (previous && previous.range === d.range && live.latest && d.latestOrderAt && d.latestOrderAt !== live.latest) {
+                            showNewOrders(d.totals.orders - previous.totals.orders);
+                            animate = false;
+                        }
+                        live.data = d; live.latest = d.latestOrderAt; live.failed = false; live.updatedAt = Date.now();
+                        setText('liveRevenueTotal', fmtMoney(d.totals.revenue));
+                        setText('liveOrdersTotal', d.totals.orders.toLocaleString());
+                        setChangeChip('liveRevenueChip', d.totals.revenue, d.previous.revenue);
+                        setChangeChip('liveOrdersChip', d.totals.orders, d.previous.orders);
+                        drawLiveChart(animate);
+                    })
+                    .catch(function (err) { live.failed = true; console.error('Live chart update failed', err); })
+                    .then(function () { setLiveStatus(); if (!document.hidden) live.timer = setTimeout(function () { loadLive(false); }, LIVE_EVERY); });
+            }
+
+            document.querySelectorAll('.live-range [data-range]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    if (btn.dataset.range === live.range) return;
+                    document.querySelectorAll('.live-range [data-range]').forEach(function (b) { b.classList.toggle('active', b === btn); });
+                    live.range = btn.dataset.range; live.data = null; live.latest = null;
+                    loadLive(true);
+                });
+            });
+            document.addEventListener('visibilitychange', function () {
+                if (document.hidden) { clearTimeout(live.timer); setLiveStatus(); } else { loadLive(false); }
+            });
+            var liveResize;
+            window.addEventListener('resize', function () { clearTimeout(liveResize); liveResize = setTimeout(function () { drawLiveChart(false); }, 150); });
+            loadLive(true);
 
             // ─── Date navigation ───────────────────────────────────────────
             var months = [

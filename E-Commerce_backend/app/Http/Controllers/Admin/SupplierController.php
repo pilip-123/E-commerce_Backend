@@ -45,11 +45,34 @@ class SupplierController extends Controller
 
         $suppliers = $query->latest()->paginate(10)->withQueryString();
 
+        // Spend per month for the last 6 months (grouped in PHP so it works on any database).
+        $since = now()->subMonths(5)->startOfMonth();
+        $monthlySpend = collect(range(5, 0))->mapWithKeys(fn ($i) => [now()->subMonths($i)->format('Y-m') => 0.0])->all();
+        PurchaseOrder::where('status', '!=', PurchaseOrder::STATUS_CANCELLED)
+            ->where('order_date', '>=', $since)
+            ->get(['order_date', 'grand_total'])
+            ->each(function ($po) use (&$monthlySpend) {
+                $key = $po->order_date->format('Y-m');
+                if (array_key_exists($key, $monthlySpend)) {
+                    $monthlySpend[$key] += (float) $po->grand_total;
+                }
+            });
+
+        $topSupplier = Supplier::withSum(['purchaseOrders as spend' => fn ($q) => $q->where('status', '!=', PurchaseOrder::STATUS_CANCELLED)], 'grand_total')
+            ->orderByDesc('spend')
+            ->first();
+
         return view('admin.suppliers.index', [
             'suppliers' => $suppliers,
+            'supplierCount' => Supplier::count(),
             'activeCount' => Supplier::where('status', true)->count(),
             'totalOrders' => PurchaseOrder::count(),
+            'openOrders' => PurchaseOrder::whereIn('status', [
+                PurchaseOrder::STATUS_PENDING, PurchaseOrder::STATUS_APPROVED, PurchaseOrder::STATUS_ORDERED, PurchaseOrder::STATUS_PARTIALLY_RECEIVED,
+            ])->count(),
             'totalSpend' => PurchaseOrder::where('status', '!=', PurchaseOrder::STATUS_CANCELLED)->sum('grand_total'),
+            'monthlySpend' => array_values($monthlySpend),
+            'topSupplier' => $topSupplier && $topSupplier->spend > 0 ? $topSupplier : null,
         ]);
     }
 

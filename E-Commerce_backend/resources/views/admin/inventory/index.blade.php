@@ -4,166 +4,110 @@
 
 @section('content')
 <div class="container-fluid p-0">
+    @include('admin.partials.kpi-styles')
+    @php
+        $inStockCount = max(0, $totalProducts - $lowStockCount - $outOfStockCount);
+        $share = fn ($n) => $totalProducts > 0 ? round($n / $totalProducts * 100, 1) : 0;
+        $healthy = $share($inStockCount);
+    @endphp
     {{-- Stats --}}
     <div class="row g-3 mb-4">
-        <div class="col-sm-6 col-lg-3">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                    <div class="d-flex align-items-center justify-content-center rounded-3 bg-success-subtle flex-shrink-0" style="width: 48px; height: 48px;">
-                        <i class="bi bi-box-seam text-success fs-5"></i>
+        <div class="col-6 col-lg-3">
+            <div class="app-kpi kpi-green">
+                <div class="app-kpi-head"><span class="app-kpi-icon"><i class="bi bi-box-seam"></i></span><span class="app-kpi-label">{{ __('Total Products') }}</span><span class="app-kpi-chip {{ $healthy >= 80 ? 'good' : ($healthy >= 50 ? 'warn' : 'bad') }}" title="{{ __('Products with healthy stock') }}"><i class="bi bi-heart-pulse"></i>{{ round($healthy) }}%</span></div>
+                <div class="app-kpi-value">{{ number_format($totalProducts) }}</div>
+                <div class="app-kpi-foot"><div class="app-kpi-caption">
+                    <div class="app-kpi-meter" role="img" aria-label="{{ __('In stock') }} {{ $inStockCount }}, {{ __('Low stock') }} {{ $lowStockCount }}, {{ __('Out of stock') }} {{ $outOfStockCount }}">
+                        @if ($inStockCount)<span style="width:{{ $share($inStockCount) }}%;background:#10b981"></span>@endif
+                        @if ($lowStockCount)<span style="width:{{ $share($lowStockCount) }}%;background:#f59e0b"></span>@endif
+                        @if ($outOfStockCount)<span style="width:{{ $share($outOfStockCount) }}%;background:#ef4444"></span>@endif
                     </div>
-                    <div>
-                        <p class="text-muted small mb-0">{{ __('Total Products') }}</p>
-                        <h5 class="fw-bold mb-0">{{ $totalProducts }}</h5>
-                    </div>
-                </div>
+                    <div class="app-kpi-legend"><span><i style="background:#10b981"></i>{{ $inStockCount }} {{ __('in stock') }}</span><span><i style="background:#f59e0b"></i>{{ $lowStockCount }} {{ __('low') }}</span><span><i style="background:#ef4444"></i>{{ $outOfStockCount }} {{ __('out') }}</span></div>
+                </div></div>
             </div>
         </div>
-        <div class="col-sm-6 col-lg-3">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                    <div class="d-flex align-items-center justify-content-center rounded-3 bg-warning-subtle flex-shrink-0" style="width: 48px; height: 48px;">
-                        <i class="bi bi-exclamation-triangle text-warning fs-5"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted small mb-0">{{ __('Low Stock') }}</p>
-                        <h5 class="fw-bold mb-0">{{ $lowStockCount }}</h5>
-                    </div>
-                </div>
-            </div>
+        <div class="col-6 col-lg-3">
+            <a href="{{ route('admin.inventory.index', ['stock_status' => 'low']) }}" class="app-kpi kpi-amber text-decoration-none">
+                <div class="app-kpi-head"><span class="app-kpi-icon"><i class="bi bi-exclamation-triangle"></i></span><span class="app-kpi-label">{{ __('Low Stock') }}</span><span class="app-kpi-chip {{ $lowStockCount ? 'warn' : 'good' }}">{{ round($share($lowStockCount)) }}%</span></div>
+                <div class="app-kpi-value">{{ number_format($lowStockCount) }}</div>
+                <div class="app-kpi-foot"><div class="app-kpi-caption">{{ $lowStockCount ? __('10 units or fewer — reorder soon') : __('No products running low') }}<div class="app-kpi-meter"><span style="width:{{ $share($lowStockCount) }}%"></span></div></div><i class="bi bi-arrow-right text-muted" aria-hidden="true"></i></div>
+            </a>
         </div>
-        <div class="col-sm-6 col-lg-3">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                    <div class="d-flex align-items-center justify-content-center rounded-3 bg-danger-subtle flex-shrink-0" style="width: 48px; height: 48px;">
-                        <i class="bi bi-x-circle text-danger fs-5"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted small mb-0">{{ __('Out of Stock') }}</p>
-                        <h5 class="fw-bold mb-0">{{ $outOfStockCount }}</h5>
-                    </div>
-                </div>
-            </div>
+        <div class="col-6 col-lg-3">
+            <a href="{{ route('admin.inventory.index', ['stock_status' => 'out']) }}" class="app-kpi kpi-red text-decoration-none">
+                <div class="app-kpi-head"><span class="app-kpi-icon"><i class="bi bi-x-octagon"></i></span><span class="app-kpi-label">{{ __('Out of Stock') }}</span><span class="app-kpi-chip {{ $outOfStockCount ? 'bad' : 'good' }}">{{ $outOfStockCount ? round($share($outOfStockCount)) . '%' : __('All stocked') }}</span></div>
+                <div class="app-kpi-value">{{ number_format($outOfStockCount) }}</div>
+                <div class="app-kpi-foot"><div class="app-kpi-caption">{{ $outOfStockCount ? __('Customers cannot buy these now') : __('Every product is available') }}<div class="app-kpi-meter"><span style="width:{{ $share($outOfStockCount) }}%"></span></div></div><i class="bi bi-arrow-right text-muted" aria-hidden="true"></i></div>
+            </a>
         </div>
-        <div class="col-sm-6 col-lg-3">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
-                    <div class="d-flex align-items-center justify-content-center rounded-3 bg-info-subtle flex-shrink-0" style="width: 48px; height: 48px;">
-                        <i class="bi bi-currency-dollar text-info fs-5"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted small mb-0">{{ __('Inventory Value') }}</p>
-                        <h5 class="fw-bold mb-0">${{ number_format($totalValue, 2) }}</h5>
-                    </div>
-                </div>
-            </div>
+        <div class="col-6 col-lg-3">
+            <a href="{{ route('admin.inventory.valuation') }}" class="app-kpi kpi-blue text-decoration-none">
+                <div class="app-kpi-head"><span class="app-kpi-icon"><i class="bi bi-currency-dollar"></i></span><span class="app-kpi-label">{{ __('Inventory Value') }}</span><span class="app-kpi-chip" title="{{ __('Units in stock') }}"><i class="bi bi-boxes"></i>{{ number_format($totalUnits) }}</span></div>
+                <div class="app-kpi-value">${{ number_format($totalValue, 2) }}</div>
+                <div class="app-kpi-foot"><div class="app-kpi-caption">{{ __('Avg') }} ${{ number_format($totalUnits ? $totalValue / $totalUnits : 0, 2) }} {{ __('per unit') }} · {{ number_format($totalUnits) }} {{ __('units') }}</div><i class="bi bi-arrow-right text-muted" aria-hidden="true"></i></div>
+            </a>
         </div>
     </div>
 
     {{-- Action Cards --}}
+    <div class="d-flex align-items-end justify-content-between mb-2">
+        <div><h2 class="h6 fw-bold mb-0">{{ __('Inventory tools') }}</h2><small class="text-muted">{{ __('Move, count and review your stock') }}</small></div>
+    </div>
     <div class="row g-3 mb-4">
-        <div class="col-sm-6 col-lg-3">
-            <a href="{{ route('admin.inventory.stock-in') }}" class="text-decoration-none">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-body text-center py-4">
-                        <div class="d-inline-flex align-items-center justify-content-center rounded-3 bg-success-subtle mb-3" style="width: 56px; height: 56px;">
-                            <i class="bi bi-plus-circle text-success fs-3"></i>
-                        </div>
-                        <h6 class="fw-bold mb-1">{{ __('Stock In') }}</h6>
-                        <p class="text-muted small mb-0">{{ __('Add inventory to products') }}</p>
-                    </div>
-                </div>
+        <div class="col-6 col-lg-3">
+            <a href="{{ route('admin.inventory.stock-in') }}" class="feature-tile" style="--tile:#10b981">
+                <span class="feature-tile-top"><span class="feature-tile-icon"><i class="bi bi-plus-circle"></i></span><i class="bi bi-arrow-right feature-tile-arrow" aria-hidden="true"></i></span>
+                <span class="feature-tile-title">{{ __('Stock In') }}</span>
+                <span class="feature-tile-sub">{{ __('Add inventory to products') }}</span>
             </a>
         </div>
-        <div class="col-sm-6 col-lg-3">
-            <a href="{{ route('admin.inventory.stock-out') }}" class="text-decoration-none">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-body text-center py-4">
-                        <div class="d-inline-flex align-items-center justify-content-center rounded-3 bg-danger-subtle mb-3" style="width: 56px; height: 56px;">
-                            <i class="bi bi-dash-circle text-danger fs-3"></i>
-                        </div>
-                        <h6 class="fw-bold mb-1">{{ __('Stock Out') }}</h6>
-                        <p class="text-muted small mb-0">{{ __('Remove inventory from products') }}</p>
-                    </div>
-                </div>
+        <div class="col-6 col-lg-3">
+            <a href="{{ route('admin.inventory.stock-out') }}" class="feature-tile" style="--tile:#ef4444">
+                <span class="feature-tile-top"><span class="feature-tile-icon"><i class="bi bi-dash-circle"></i></span><i class="bi bi-arrow-right feature-tile-arrow" aria-hidden="true"></i></span>
+                <span class="feature-tile-title">{{ __('Stock Out') }}</span>
+                <span class="feature-tile-sub">{{ __('Remove inventory from products') }}</span>
             </a>
         </div>
-        <div class="col-sm-6 col-lg-3">
-            <a href="{{ route('admin.inventory.transfer') }}" class="text-decoration-none">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-body text-center py-4">
-                        <div class="d-inline-flex align-items-center justify-content-center rounded-3 bg-info-subtle mb-3" style="width: 56px; height: 56px;">
-                            <i class="bi bi-arrow-left-right text-info fs-3"></i>
-                        </div>
-                        <h6 class="fw-bold mb-1">{{ __('Transfer') }}</h6>
-                        <p class="text-muted small mb-0">{{ __('Move stock between products') }}</p>
-                    </div>
-                </div>
+        <div class="col-6 col-lg-3">
+            <a href="{{ route('admin.inventory.transfer') }}" class="feature-tile" style="--tile:#0ea5e9">
+                <span class="feature-tile-top"><span class="feature-tile-icon"><i class="bi bi-arrow-left-right"></i></span><i class="bi bi-arrow-right feature-tile-arrow" aria-hidden="true"></i></span>
+                <span class="feature-tile-title">{{ __('Transfer') }}</span>
+                <span class="feature-tile-sub">{{ __('Move stock between products') }}</span>
             </a>
         </div>
-        <div class="col-sm-6 col-lg-3">
-            <a href="{{ route('admin.inventory.adjustment') }}" class="text-decoration-none">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-body text-center py-4">
-                        <div class="d-inline-flex align-items-center justify-content-center rounded-3 bg-warning-subtle mb-3" style="width: 56px; height: 56px;">
-                            <i class="bi bi-sliders text-warning fs-3"></i>
-                        </div>
-                        <h6 class="fw-bold mb-1">{{ __('Adjustment') }}</h6>
-                        <p class="text-muted small mb-0">{{ __('Correct stock quantities') }}</p>
-                    </div>
-                </div>
+        <div class="col-6 col-lg-3">
+            <a href="{{ route('admin.inventory.adjustment') }}" class="feature-tile" style="--tile:#f59e0b">
+                <span class="feature-tile-top"><span class="feature-tile-icon"><i class="bi bi-sliders"></i></span><i class="bi bi-arrow-right feature-tile-arrow" aria-hidden="true"></i></span>
+                <span class="feature-tile-title">{{ __('Adjustment') }}</span>
+                <span class="feature-tile-sub">{{ __('Correct stock quantities') }}</span>
             </a>
         </div>
-        <div class="col-sm-6 col-lg-3">
-            <a href="{{ route('admin.inventory.stock-count') }}" class="text-decoration-none">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-body text-center py-4">
-                        <div class="d-inline-flex align-items-center justify-content-center rounded-3 bg-primary-subtle mb-3" style="width: 56px; height: 56px;">
-                            <i class="bi bi-clipboard-data text-primary fs-3"></i>
-                        </div>
-                        <h6 class="fw-bold mb-1">{{ __('Stock Count') }}</h6>
-                        <p class="text-muted small mb-0">{{ __('Physical inventory count') }}</p>
-                    </div>
-                </div>
+        <div class="col-6 col-lg-3">
+            <a href="{{ route('admin.inventory.stock-count') }}" class="feature-tile" style="--tile:#6366f1">
+                <span class="feature-tile-top"><span class="feature-tile-icon"><i class="bi bi-clipboard-data"></i></span><i class="bi bi-arrow-right feature-tile-arrow" aria-hidden="true"></i></span>
+                <span class="feature-tile-title">{{ __('Stock Count') }}</span>
+                <span class="feature-tile-sub">{{ __('Physical inventory count') }}</span>
             </a>
         </div>
-        <div class="col-sm-6 col-lg-3">
-            <a href="{{ route('admin.inventory.history') }}" class="text-decoration-none">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-body text-center py-4">
-                        <div class="d-inline-flex align-items-center justify-content-center rounded-3 bg-secondary-subtle mb-3" style="width: 56px; height: 56px;">
-                            <i class="bi bi-clock-history text-secondary fs-3"></i>
-                        </div>
-                        <h6 class="fw-bold mb-1">{{ __('History') }}</h6>
-                        <p class="text-muted small mb-0">{{ __('View all inventory transactions') }}</p>
-                    </div>
-                </div>
+        <div class="col-6 col-lg-3">
+            <a href="{{ route('admin.inventory.history') }}" class="feature-tile" style="--tile:#64748b">
+                <span class="feature-tile-top"><span class="feature-tile-icon"><i class="bi bi-clock-history"></i></span><i class="bi bi-arrow-right feature-tile-arrow" aria-hidden="true"></i></span>
+                <span class="feature-tile-title">{{ __('History') }}</span>
+                <span class="feature-tile-sub">{{ __('View all inventory transactions') }}</span>
             </a>
         </div>
-        <div class="col-sm-6 col-lg-3">
-            <a href="{{ route('admin.inventory.valuation') }}" class="text-decoration-none">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-body text-center py-4">
-                        <div class="d-inline-flex align-items-center justify-content-center rounded-3 bg-success-subtle mb-3" style="width: 56px; height: 56px;">
-                            <i class="bi bi-cash-stack text-success fs-3"></i>
-                        </div>
-                        <h6 class="fw-bold mb-1">{{ __('Valuation') }}</h6>
-                        <p class="text-muted small mb-0">{{ __('Inventory worth & cost analysis') }}</p>
-                    </div>
-                </div>
+        <div class="col-6 col-lg-3">
+            <a href="{{ route('admin.inventory.valuation') }}" class="feature-tile" style="--tile:#14b8a6">
+                <span class="feature-tile-top"><span class="feature-tile-icon"><i class="bi bi-cash-stack"></i></span><i class="bi bi-arrow-right feature-tile-arrow" aria-hidden="true"></i></span>
+                <span class="feature-tile-title">{{ __('Valuation') }}</span>
+                <span class="feature-tile-sub">{{ __('Inventory worth & cost analysis') }}</span><span class="feature-tile-badge">${{ number_format($totalValue, 0) }}</span>
             </a>
         </div>
-        <div class="col-sm-6 col-lg-3">
-            <a href="{{ route('admin.inventory.index') }}?low=1" class="text-decoration-none">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-body text-center py-4">
-                        <div class="d-inline-flex align-items-center justify-content-center rounded-3 bg-danger-subtle mb-3" style="width: 56px; height: 56px;">
-                            <i class="bi bi-bell text-danger fs-3"></i>
-                        </div>
-                        <h6 class="fw-bold mb-1">{{ __('Low Stock Warning') }}</h6>
-                        <p class="text-muted small mb-0">{{ __('Products needing attention') }}</p>
-                    </div>
-                </div>
+        <div class="col-6 col-lg-3">
+            <a href="{{ route('admin.inventory.index') }}?low=1" class="feature-tile" style="--tile:#e11d48">
+                <span class="feature-tile-top"><span class="feature-tile-icon"><i class="bi bi-bell"></i></span><i class="bi bi-arrow-right feature-tile-arrow" aria-hidden="true"></i></span>
+                <span class="feature-tile-title">{{ __('Low Stock Warning') }}</span>
+                <span class="feature-tile-sub">{{ __('Products needing attention') }}</span><span class="feature-tile-badge">@if($lowStockCount + $outOfStockCount){{ $lowStockCount + $outOfStockCount }} {{ __('need attention') }}@else{{ __('All good') }}@endif</span>
             </a>
         </div>
     </div>
