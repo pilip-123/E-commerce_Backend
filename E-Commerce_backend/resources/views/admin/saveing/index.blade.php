@@ -184,6 +184,24 @@
     .saving-app .save-card { box-shadow:0 5px 20px rgba(15,23,42,.035); }
     .saving-app .entry-form .form-control, .saving-app .entry-form .form-select { min-height:44px; border-radius:11px; }
     .saving-app .entry-form textarea.form-control { min-height:84px; }
+    .saving-app .entry-form__head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:18px; }
+    .saving-app .entry-form__head h2 { min-width:0; font-size:clamp(1rem,1.4vw,1.15rem); line-height:1.25; }
+    /* Sliding $ / ៛ switch */
+    .saving-app .cur-switch { flex:none; position:relative; display:inline-grid; grid-template-columns:1fr 1fr; padding:3px; border-radius:999px; background:var(--card-muted-bg); border:1px solid var(--admin-border); isolation:isolate; }
+    .saving-app .cur-switch input { position:absolute; opacity:0; pointer-events:none; }
+    .saving-app .cur-switch label { position:relative; z-index:1; display:inline-flex; align-items:center; justify-content:center; gap:4px; min-width:50px; padding:4px 8px; border-radius:999px; font-size:.68rem; font-weight:700; color:var(--admin-text-muted); cursor:pointer; user-select:none; transition:color .2s ease; }
+    .saving-app .cur-switch label b { font-size:1rem; line-height:1; font-family:'Kantumruy Pro',system-ui,sans-serif; }
+    .saving-app .cur-switch__thumb { position:absolute; z-index:0; top:3px; bottom:3px; left:3px; width:calc(50% - 3px); border-radius:999px; background:linear-gradient(135deg,#10b981,#047857); box-shadow:0 4px 10px -4px rgba(4,120,87,.6); transition:transform .25s cubic-bezier(.2,.8,.2,1); }
+    .saving-app .cur-switch input:nth-of-type(2):checked ~ .cur-switch__thumb { transform:translateX(100%); }
+    .saving-app .cur-switch input:checked + label { color:#fff; }
+    .saving-app .cur-switch input:focus-visible + label { outline:2px solid #10b981; outline-offset:2px; }
+    .saving-app #planForm .entry-form__head h3 { font-size:clamp(1rem,1.4vw,1.15rem); }
+    .saving-app #planForm .cur-switch__thumb { background:linear-gradient(135deg,#f472b6,#db2777); box-shadow:0 4px 10px -4px rgba(219,39,119,.6); }
+    .saving-app .entry-form[data-kind="spent"] .cur-switch__thumb { background:linear-gradient(135deg,#fbbf24,#d97706); box-shadow:0 4px 10px -4px rgba(217,119,6,.6); }
+    .saving-app .amount-field { position:relative; }
+    .saving-app .amount-field__sym { position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:1.05rem; font-weight:800; font-family:'Kantumruy Pro',system-ui,sans-serif; color:var(--admin-text-muted); pointer-events:none; transition:transform .2s ease; }
+    .saving-app .amount-field .form-control { padding-left:34px; font-weight:700; }
+    .saving-app .amount-field.is-bump .amount-field__sym { transform:translateY(-50%) scale(1.3); color:#10b981; }
     .saving-app .note-preview { display:block; max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .saving-app .note-icon { color:var(--admin-primary); }
     .saving-app #journalEditor:empty:before { content:attr(data-placeholder); color:var(--admin-text-muted); }
@@ -242,8 +260,15 @@
     </section>
 
     <section class="section-panel" id="panel-daily-saving"><div class="row g-3">
-        <div class="col-lg-4"><div class="save-card p-3 p-md-4"><h2 class="h5 fw-bold mb-3">Add daily saving</h2><form class="entry-form" data-kind="saved">
-            <label class="form-label small">Amount <span class="muted cur-code"></span></label><input name="amount" class="form-control mb-3" type="number" min="0.01" step="0.01" required placeholder="0.00">
+        <div class="col-lg-4"><div class="save-card p-3 p-md-4"><form class="entry-form" data-kind="saved">
+            <div class="entry-form__head"><h2 class="h5 fw-bold mb-0">Add daily saving</h2>
+                <div class="cur-switch" role="radiogroup" aria-label="Currency for this entry">
+                    <input type="radio" id="saved-cur-usd" name="currency" value="USD"><label for="saved-cur-usd" title="US Dollar"><b>$</b> USD</label>
+                    <input type="radio" id="saved-cur-khr" name="currency" value="KHR"><label for="saved-cur-khr" title="Cambodian Riel"><b>៛</b> KHR</label>
+                    <span class="cur-switch__thumb" aria-hidden="true"></span>
+                </div>
+            </div>
+            <label class="form-label small" for="saved-amount">Amount</label><div class="amount-field mb-3"><span class="amount-field__sym" aria-hidden="true">$</span><input id="saved-amount" name="amount" class="form-control" type="number" min="0.01" step="0.01" required placeholder="0.00"></div>
             <label class="form-label small">Category</label><select name="category" class="form-select mb-3">@foreach($categories as $category)<option>{{ $category }}</option>@endforeach</select>
             <label class="form-label small">Date</label><input name="date" class="form-control mb-3" type="date" required>
             <label class="form-label small"><i class="bi bi-sticky note-icon me-1"></i>Note <span class="muted">(optional)</span></label><textarea name="note" class="form-control mb-3" rows="2" maxlength="180" placeholder="Add a reminder or what this saving is for..."></textarea>
@@ -254,8 +279,15 @@
     </div></section>
 
     <section class="section-panel" id="panel-daily-spending"><div class="row g-3">
-        <div class="col-lg-4"><div class="save-card p-3 p-md-4"><h2 class="h5 fw-bold mb-3">Add daily spending</h2><form class="entry-form" data-kind="spent">
-            <label class="form-label small">Amount <span class="muted cur-code"></span></label><input name="amount" class="form-control mb-3" type="number" min="0.01" step="0.01" required placeholder="0.00">
+        <div class="col-lg-4"><div class="save-card p-3 p-md-4"><form class="entry-form" data-kind="spent">
+            <div class="entry-form__head"><h2 class="h5 fw-bold mb-0">Add daily spending</h2>
+                <div class="cur-switch" role="radiogroup" aria-label="Currency for this entry">
+                    <input type="radio" id="spent-cur-usd" name="currency" value="USD"><label for="spent-cur-usd" title="US Dollar"><b>$</b> USD</label>
+                    <input type="radio" id="spent-cur-khr" name="currency" value="KHR"><label for="spent-cur-khr" title="Cambodian Riel"><b>៛</b> KHR</label>
+                    <span class="cur-switch__thumb" aria-hidden="true"></span>
+                </div>
+            </div>
+            <label class="form-label small" for="spent-amount">Amount</label><div class="amount-field mb-3"><span class="amount-field__sym" aria-hidden="true">$</span><input id="spent-amount" name="amount" class="form-control" type="number" min="0.01" step="0.01" required placeholder="0.00"></div>
             <label class="form-label small">Category</label><select name="category" class="form-select mb-3">@foreach($categories as $category)<option>{{ $category }}</option>@endforeach</select>
             <label class="form-label small">Date</label><input name="date" class="form-control mb-3" type="date" required>
             <label class="form-label small"><i class="bi bi-sticky note-icon me-1"></i>Note <span class="muted">(optional)</span></label><textarea name="note" class="form-control mb-3" rows="2" maxlength="180" placeholder="Add a detail, reminder, or reason for this expense..."></textarea>
@@ -311,10 +343,18 @@
             <div class="col-6 col-xl-3"><div class="kpi-card kpi-net h-100"><div class="kpi-head"><span class="kpi-icon"><i class="bi bi-collection"></i></span><span class="kpi-label">Active plans</span><span class="kpi-delta" id="planNextChip">—</span></div><div class="kpi-value" id="planActiveCount">—</div><div class="kpi-foot"><div class="kpi-caption" id="planActiveCaption">—</div></div></div></div>
         </div>
         <div class="row g-4">
-            <div class="col-lg-4"><div class="save-card plan-form-card"><div class="d-flex align-items-center gap-2 mb-1"><span class="tile-icon mb-0"><i class="bi bi-plus-lg"></i></span><h3 class="h5 fw-bold mb-0">Create a plan</h3></div><p class="small muted mb-4 mt-2">Set a price and deadline to get a monthly saving pace.</p><form id="planForm">
+            <div class="col-lg-4"><div class="save-card plan-form-card"><form id="planForm" data-kind="plan">
+                <div class="entry-form__head mb-1"><div class="d-flex align-items-center gap-2" style="min-width:0"><span class="tile-icon mb-0"><i class="bi bi-plus-lg"></i></span><h3 class="h5 fw-bold mb-0">Create a plan</h3></div>
+                    <div class="cur-switch" role="radiogroup" aria-label="Currency for this plan">
+                        <input type="radio" id="plan-cur-usd" name="currency" value="USD"><label for="plan-cur-usd" title="US Dollar"><b>$</b> USD</label>
+                        <input type="radio" id="plan-cur-khr" name="currency" value="KHR"><label for="plan-cur-khr" title="Cambodian Riel"><b>៛</b> KHR</label>
+                        <span class="cur-switch__thumb" aria-hidden="true"></span>
+                    </div>
+                </div>
+                <p class="small muted mb-4 mt-2">Set a price and deadline to get a monthly saving pace.</p>
                 <label class="form-label small fw-semibold">What are you saving for?</label><input name="name" class="form-control mb-3" required maxlength="70" placeholder="e.g. New bicycle">
                 <label class="form-label small fw-semibold">Plan type</label><select name="type" class="form-select mb-3">@foreach($planTypes as $type)<option>{{ $type }}</option>@endforeach</select>
-                <div class="row g-2"><div class="col-6"><label class="form-label small fw-semibold">Price <span class="muted cur-code"></span></label><input name="price" class="form-control mb-3" type="number" min="0.01" step="0.01" required placeholder="0.00"></div><div class="col-6"><label class="form-label small fw-semibold">Saved so far <span class="muted cur-code"></span></label><input name="saved" class="form-control mb-3" type="number" min="0" step="0.01" value="0" required></div></div>
+                <div class="row g-2"><div class="col-6"><label class="form-label small fw-semibold" for="plan-price">Price</label><div class="amount-field mb-3"><span class="amount-field__sym" aria-hidden="true">$</span><input id="plan-price" name="price" class="form-control" type="number" min="0.01" step="0.01" required placeholder="0.00"></div></div><div class="col-6"><label class="form-label small fw-semibold" for="plan-saved">Saved so far</label><div class="amount-field mb-3"><span class="amount-field__sym" aria-hidden="true">$</span><input id="plan-saved" name="saved" class="form-control" type="number" min="0" step="0.01" value="0" required></div></div></div>
                 <label class="form-label small fw-semibold">Target date</label><input name="deadline" class="form-control mb-3" type="date" required>
                 <button class="btn btn-success w-100 py-2"><i class="bi bi-plus-circle me-1"></i>Create buying plan</button>
             </form></div></div>
@@ -631,13 +671,29 @@
         closeDeleteNoteDialog(); renderNoteHistory(); persist();
     });
     $('closeJournalViewer').addEventListener('click', () => $('journalViewer').classList.add('d-none'));
+    // Each entry form has its own $ / ៛ switch; it starts on the page currency.
+    function setFormCurrency(form, code, animate = false) {
+        const radio = form.querySelector(`input[name="currency"][value="${code}"]`); if (radio) radio.checked = true;
+        const khr = code === 'KHR';
+        form.querySelectorAll('.amount-field').forEach(field => {
+            const input = field.querySelector('input'), optional = input.name === 'saved';
+            field.querySelector('.amount-field__sym').textContent = khr ? '៛' : '$';
+            input.step = khr ? '100' : '0.01';
+            input.min = optional ? '0' : (khr ? '100' : '0.01');
+            if (input.placeholder) input.placeholder = khr ? '0' : '0.00';
+            if (animate) { field.classList.remove('is-bump'); void field.offsetWidth; field.classList.add('is-bump'); setTimeout(() => field.classList.remove('is-bump'), 250); }
+        });
+    }
     document.querySelectorAll('.entry-form').forEach(form => {
         form.elements.date.value = today;
+        setFormCurrency(form, state.currency || 'USD');
+        form.querySelectorAll('input[name="currency"]').forEach(radio => radio.addEventListener('change', () => setFormCurrency(form, radio.value, true)));
         form.addEventListener('submit', event => {
             event.preventDefault(); const data = new FormData(form); const amount = Number(data.get('amount'));
             if (!Number.isFinite(amount) || amount <= 0) return;
-            state.entries.push({ id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()), kind:form.dataset.kind, amount, currency:state.currency, category:data.get('category'), date:data.get('date'), note:data.get('note').trim(), source:'manual' });
-            form.reset(); form.elements.date.value = today; persist();
+            const currency = data.get('currency') === 'KHR' ? 'KHR' : 'USD';
+            state.entries.push({ id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()), kind:form.dataset.kind, amount, currency, category:data.get('category'), date:data.get('date'), note:data.get('note').trim(), source:'manual' });
+            form.reset(); form.elements.date.value = today; setFormCurrency(form, currency); persist();
         });
     });
     document.querySelectorAll('[data-period]').forEach(button => button.addEventListener('click', () => {
@@ -648,8 +704,12 @@
         $('chartTableToggle').setAttribute('aria-pressed', shown); $('chartTableToggle').textContent = shown ? 'Hide table' : 'Show table';
     });
     $('currencySelect').value = state.currency || 'USD';
-    $('currencySelect').addEventListener('change', event => { state.currency = event.target.value; persist(); });
-    function renderCurrencyLabels() { document.querySelectorAll('.cur-code').forEach(el => { el.textContent = state.currency === 'KHR' ? '(៛ KHR)' : '($ USD)'; }); document.querySelectorAll('input[name="amount"], input[name="price"], input[name="saved"], #monthTarget, #yearTarget').forEach(input => { input.step = state.currency === 'KHR' ? '1' : '0.01'; if (input.name === 'amount' || input.name === 'price') input.min = state.currency === 'KHR' ? '1' : '0.01'; if (input.name !== 'saved' && input.placeholder.match(/^0/)) input.placeholder = state.currency === 'KHR' ? '0' : '0.00'; }); }
+    $('currencySelect').addEventListener('change', event => {
+        state.currency = event.target.value;
+        document.querySelectorAll('.entry-form, #planForm').forEach(form => setFormCurrency(form, state.currency));
+        persist();
+    });
+    function renderCurrencyLabels() { document.querySelectorAll('.cur-code').forEach(el => { el.textContent = state.currency === 'KHR' ? '(៛ KHR)' : '($ USD)'; }); document.querySelectorAll('#monthTarget, #yearTarget').forEach(input => { input.step = state.currency === 'KHR' ? '1' : '0.01'; if (input.name === 'amount' || input.name === 'price') input.min = state.currency === 'KHR' ? '1' : '0.01'; if (input.name !== 'saved' && input.placeholder.match(/^0/)) input.placeholder = state.currency === 'KHR' ? '0' : '0.00'; }); }
 
     const CATEGORY_STYLE = {
         'general':['bi-wallet2','#10b981'], 'emergency fund':['bi-shield-check','#ef4444'], 'food':['bi-cup-hot','#f97316'],
@@ -938,7 +998,15 @@
     $('yearPicker').addEventListener('change',renderYearly);
     $('saveYearTarget').addEventListener('click',()=>{const year=String($('yearPicker').value),target=Number($('yearTarget').value);if(!year||target<0)return;state.yearlyTargets[year]=toUsd(target);persist();});
 
-    $('planForm').addEventListener('submit',event=>{event.preventDefault();const data=new FormData(event.currentTarget);state.plans.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),name:data.get('name').trim(),type:data.get('type'),price:toUsd(data.get('price')),saved:toUsd(data.get('saved')),deadline:data.get('deadline')});event.currentTarget.reset();persist();});
+    // Buying plan form: price / saved are typed in the currency picked on its own $ / ៛ switch.
+    setFormCurrency($('planForm'), state.currency || 'USD');
+    $('planForm').querySelectorAll('input[name="currency"]').forEach(radio => radio.addEventListener('change', () => setFormCurrency($('planForm'), radio.value, true)));
+    $('planForm').addEventListener('submit',event=>{
+        event.preventDefault();
+        const form=event.currentTarget, data=new FormData(form), currency=data.get('currency')==='KHR'?'KHR':'USD';
+        state.plans.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),name:data.get('name').trim(),type:data.get('type'),price:toUsd(data.get('price'),currency),saved:toUsd(data.get('saved'),currency),deadline:data.get('deadline')});
+        form.reset(); setFormCurrency(form, currency); persist();
+    });
     function renderPlans() {
         const host=$('plansList');
         const total=state.plans.reduce((sum,plan)=>sum+(Number(plan.price)||0),0),saved=state.plans.reduce((sum,plan)=>sum+(Number(plan.saved)||0),0),left=state.plans.reduce((sum,plan)=>sum+Math.max(0,(Number(plan.price)||0)-(Number(plan.saved)||0)),0);

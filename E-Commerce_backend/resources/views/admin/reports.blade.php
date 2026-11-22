@@ -76,6 +76,12 @@
                 style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:2px solid var(--admin-border);border-radius:10px;background:var(--admin-surface);color:var(--admin-text-muted);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;">
                 <i class="bi bi-truck"></i> {{ __('Purchasing') }}
             </button>
+            @if ($savingReport)
+                <button class="rpt-tab" data-target="saving-pane" role="tab"
+                    style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:2px solid var(--admin-border);border-radius:10px;background:var(--admin-surface);color:var(--admin-text-muted);font-weight:600;font-size:.85rem;cursor:pointer;transition:all .2s;">
+                    <i class="bi bi-piggy-bank"></i> {{ __('Saving Tracker') }}
+                </button>
+            @endif
         </div>
 
         <div class="tab-content">
@@ -765,6 +771,211 @@
             </div>
 
             {{-- ════════════ PURCHASING ════════════ --}}
+            {{-- ════════════ SAVING TRACKER ════════════ --}}
+            @if ($savingReport)
+            @php
+                $sr = $savingReport;
+                $isKhr = $sr['currency'] === 'KHR';
+                $money = fn ($usd) => $isKhr ? '៛' . number_format($usd * $sr['rate']) : ($usd < 0 ? '−$' : '$') . number_format(abs($usd), 2);
+                $pct = fn ($cur, $prev) => $prev > 0 ? ($cur - $prev) / $prev * 100 : null;
+                $catColors = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#64748b'];
+                $mixTotal = max(0.01, $sr['currencyMix']['USD']['usd'] + $sr['currencyMix']['KHR']['usd']);
+            @endphp
+            <div class="tab-pane" id="saving-pane" role="tabpanel" style="display:none;">
+                <div class="saving-filter mb-4">
+                    <form method="GET" class="d-flex flex-wrap align-items-end gap-2">
+                        <input type="hidden" name="tab" value="saving">
+                        <div>
+                            <label class="form-label small fw-semibold mb-1">{{ __('From') }}</label>
+                            <input type="date" name="saving_from" class="form-control form-control-sm" value="{{ $sr['from']->format('Y-m-d') }}">
+                        </div>
+                        <div>
+                            <label class="form-label small fw-semibold mb-1">{{ __('To') }}</label>
+                            <input type="date" name="saving_to" class="form-control form-control-sm" value="{{ $sr['to']->format('Y-m-d') }}">
+                        </div>
+                        <div class="saving-cur" role="radiogroup" aria-label="{{ __('Show amounts in') }}">
+                            <input type="radio" id="sr-usd" name="saving_currency" value="USD" @checked(! $isKhr) onchange="this.form.submit()"><label for="sr-usd"><b>$</b> USD</label>
+                            <input type="radio" id="sr-khr" name="saving_currency" value="KHR" @checked($isKhr) onchange="this.form.submit()"><label for="sr-khr"><b>៛</b> KHR</label>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-success"><i class="bi bi-funnel me-1"></i>{{ __('Apply') }}</button>
+                        <a href="{{ route('admin.reports', ['tab' => 'saving']) }}" class="btn btn-sm btn-outline-secondary" title="{{ __('Reset') }}"><i class="bi bi-arrow-counterclockwise"></i></a>
+                        <a href="{{ route('admin.saving.index') }}" class="btn btn-sm btn-outline-success ms-auto"><i class="bi bi-box-arrow-up-right me-1"></i>{{ __('Open tracker') }}</a>
+                    </form>
+                    <small class="text-muted d-block mt-2">
+                        {{ $sr['from']->format('M j, Y') }} – {{ $sr['to']->format('M j, Y') }} · {{ $sr['days'] }} {{ __('days') }} · {{ __('Your personal tracker') }} · 1 USD = {{ number_format($sr['rate']) }} KHR
+                    </small>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-xl-3">
+                        <x-admin.kpi color="green" icon="bi-piggy-bank" :label="__('Total saved')" :value="$money($sr['totals']['saved'])"
+                            :trend="$pct($sr['totals']['saved'], $sr['previous']['saved'])" :trend-title="__('vs the previous :days days', ['days' => $sr['days']])"
+                            :spark="$sr['series']['saved']" :caption="__('Avg') . ' ' . $money($sr['totals']['avgSavedPerDay']) . ' / ' . __('day')" />
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <x-admin.kpi color="amber" icon="bi-credit-card" :label="__('Total spent')" :value="$money($sr['totals']['spent'])"
+                            :trend="$pct($sr['totals']['spent'], $sr['previous']['spent'])" :higher-is-good="false" :trend-title="__('vs the previous :days days', ['days' => $sr['days']])"
+                            :spark="$sr['series']['spent']" :caption="$sr['totals']['entries'] . ' ' . __('entries in this period')" />
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <x-admin.kpi color="violet" icon="bi-wallet2" :label="__('Net balance')" :value="$money($sr['totals']['net'])"
+                            :value-class="$sr['totals']['net'] < 0 ? 'text-danger' : ''"
+                            :chip="$sr['totals']['net'] >= 0 ? __('Surplus') : __('Deficit')" :chip-tone="$sr['totals']['net'] >= 0 ? 'good' : 'bad'"
+                            :chip-icon="$sr['totals']['net'] >= 0 ? 'bi-check2-circle' : 'bi-exclamation-circle'"
+                            :spark="$sr['series']['balance']" :caption="__('Saved minus spent')" />
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <x-admin.kpi color="blue" icon="bi-percent" :label="__('Savings rate')" :value="$sr['totals']['savingsRate'] . '%'"
+                            :chip="$sr['totals']['savingsRate'] >= 50 ? __('Great') : ($sr['totals']['savingsRate'] >= 20 ? __('Good') : __('Low'))"
+                            :chip-tone="$sr['totals']['savingsRate'] >= 50 ? 'good' : ($sr['totals']['savingsRate'] >= 20 ? 'warn' : 'bad')"
+                            :meter="$sr['totals']['savingsRate']" :caption="__('Saved on') . ' ' . $sr['totals']['activeDays'] . ' ' . \Illuminate\Support\Str::plural(__('day'), $sr['totals']['activeDays'])" />
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-lg-8">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-body">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                                    <div>
+                                        <h5 class="card-title fw-bold mb-0" style="font-size:15px;">{{ __('Saved vs spent') }}</h5>
+                                        <small class="text-muted">{{ $sr['series']['daily'] ? __('Per day') : __('Per month') }} · {{ __('the purple line is the net') }}</small>
+                                    </div>
+                                    <div class="ac-legend">
+                                        <span><i style="background:#10b981"></i>{{ __('Saved') }}</span>
+                                        <span><i style="background:#f59e0b"></i>{{ __('Spent') }}</span>
+                                        <span><i style="background:#7c3aed"></i>{{ __('Net') }}</span>
+                                    </div>
+                                </div>
+                                <div id="savingFlowChart" style="height: 280px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold mb-0" style="font-size:15px;">{{ __('Running balance') }}</h5>
+                                <small class="text-muted">{{ __('How your net savings grew over the period') }}</small>
+                                <div id="savingBalanceChart" style="height: 200px;" class="mt-2"></div>
+                                <div class="saving-mini mt-3">
+                                    <div><small>{{ __('Best saving day') }}</small><strong>{{ $sr['bestDay'] ? \Illuminate\Support\Carbon::parse($sr['bestDay']['date'])->format('M j') : '—' }}</strong><span>{{ $sr['bestDay'] ? $money($sr['bestDay']['usd']) : '' }}</span></div>
+                                    <div><small>{{ __('Active saving days') }}</small><strong>{{ $sr['totals']['activeDays'] }} / {{ $sr['days'] }}</strong><span>{{ $sr['days'] ? round($sr['totals']['activeDays'] / $sr['days'] * 100) : 0 }}%</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    @foreach ([['title' => __('Where you saved'), 'rows' => $sr['savedByCategory'], 'empty' => __('No savings in this period.')], ['title' => __('Where you spent'), 'rows' => $sr['spentByCategory'], 'empty' => __('No spending in this period.')]] as $block)
+                        <div class="col-lg-4">
+                            <div class="card border-0 shadow-sm rounded-4 h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title fw-bold mb-3" style="font-size:15px;">{{ $block['title'] }}</h5>
+                                    @forelse ($block['rows'] as $i => $row)
+                                        <div class="saving-cat">
+                                            <div class="d-flex justify-content-between align-items-center gap-2 mb-1">
+                                                <span class="fw-semibold small text-truncate"><i class="saving-dot" style="background:{{ $catColors[$i % 8] }}"></i>{{ $row['name'] }} <span class="text-muted">· {{ $row['count'] }}</span></span>
+                                                <span class="fw-bold small flex-shrink-0">{{ $money($row['usd']) }}</span>
+                                            </div>
+                                            <div class="saving-track"><span style="width:{{ $row['share'] }}%;background:{{ $catColors[$i % 8] }}"></span></div>
+                                        </div>
+                                    @empty
+                                        <p class="text-muted text-center small py-4 mb-0">{{ $block['empty'] }}</p>
+                                    @endforelse
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                    <div class="col-lg-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold mb-3" style="font-size:15px;">{{ __('Goals') }}</h5>
+                                @foreach ([['label' => __('This month') . ' · ' . $sr['goals']['month']['label'], 'g' => $sr['goals']['month']], ['label' => __('This year') . ' · ' . $sr['goals']['year']['label'], 'g' => $sr['goals']['year']]] as $goal)
+                                    <div class="saving-goal">
+                                        <div class="d-flex justify-content-between small mb-1">
+                                            <span class="fw-semibold">{{ $goal['label'] }}</span>
+                                            <strong>{{ $goal['g']['pct'] !== null ? $goal['g']['pct'] . '%' : __('No goal') }}</strong>
+                                        </div>
+                                        <div class="saving-track saving-track--lg"><span style="width:{{ $goal['g']['pct'] ?? 0 }}%;"></span></div>
+                                        <small class="text-muted">{{ $money($goal['g']['saved']) }} @if ($goal['g']['target']) {{ __('of') }} {{ $money($goal['g']['target']) }} @endif</small>
+                                    </div>
+                                @endforeach
+                                <h6 class="fw-bold mt-3 mb-2" style="font-size:13px;">{{ __('Currency mix') }}</h6>
+                                <div class="saving-mix" role="img" aria-label="{{ __('Entries by currency') }}">
+                                    <span style="width:{{ $sr['currencyMix']['USD']['usd'] / $mixTotal * 100 }}%;background:#3b82f6"></span>
+                                    <span style="width:{{ $sr['currencyMix']['KHR']['usd'] / $mixTotal * 100 }}%;background:#f59e0b"></span>
+                                </div>
+                                <div class="d-flex justify-content-between small text-muted mt-1">
+                                    <span><i class="saving-dot" style="background:#3b82f6"></i>$ · {{ $sr['currencyMix']['USD']['count'] }} {{ __('entries') }}</span>
+                                    <span><i class="saving-dot" style="background:#f59e0b"></i>៛ · {{ $sr['currencyMix']['KHR']['count'] }} {{ __('entries') }} ({{ '៛' . number_format($sr['currencyMix']['KHR']['riel']) }})</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-lg-5">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold mb-3" style="font-size:15px;">{{ __('Buying plans') }}</h5>
+                                @forelse ($sr['plans'] as $plan)
+                                    <div class="saving-plan">
+                                        <div class="d-flex justify-content-between align-items-start gap-2">
+                                            <div class="min-w-0">
+                                                <strong class="d-block text-truncate">{{ $plan['name'] }}</strong>
+                                                <small class="text-muted">{{ $plan['type'] }} · @if ($plan['daysLeft'] === null) {{ __('No deadline') }} @elseif ($plan['daysLeft'] < 0) <span class="text-danger">{{ __('Overdue') }}</span> @else {{ $plan['daysLeft'] }} {{ __('days left') }} @endif</small>
+                                            </div>
+                                            <span class="saving-pill {{ $plan['pct'] >= 100 ? 'is-done' : '' }}">{{ $plan['pct'] }}%</span>
+                                        </div>
+                                        <div class="saving-track saving-track--lg mt-2"><span style="width:{{ $plan['pct'] }}%;background:linear-gradient(90deg,#f472b6,#db2777)"></span></div>
+                                        <small class="text-muted">{{ $money($plan['saved']) }} {{ __('of') }} {{ $money($plan['price']) }}</small>
+                                    </div>
+                                @empty
+                                    <p class="text-muted text-center small py-4 mb-0">{{ __('No buying plans yet.') }}</p>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-7">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold mb-3" style="font-size:15px;">{{ __('Recent entries') }}</h5>
+                                <div class="table-responsive">
+                                    <table class="table align-middle mb-0 saving-table">
+                                        <thead>
+                                            <tr>
+                                                <th>{{ __('Date') }}</th>
+                                                <th>{{ __('Category') }}</th>
+                                                <th class="text-end">{{ __('Entered') }}</th>
+                                                <th class="text-end">{{ __('Amount') }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse ($sr['recent'] as $e)
+                                                <tr>
+                                                    <td class="text-nowrap small">{{ \Illuminate\Support\Carbon::parse($e->date)->format('M j, Y') }}</td>
+                                                    <td>
+                                                        <span class="fw-semibold small">{{ $e->category }}</span>
+                                                        @if ($e->note)<small class="d-block text-muted text-truncate" style="max-width:220px;">{{ $e->note }}</small>@endif
+                                                    </td>
+                                                    <td class="text-end text-muted small text-nowrap">{{ $e->currency === 'KHR' ? '៛' . number_format($e->amount) : '$' . number_format($e->amount, 2) }}</td>
+                                                    <td class="text-end text-nowrap"><span class="saving-amt {{ $e->kind }}">{{ $e->kind === 'saved' ? '+' : '−' }}{{ ltrim($money($e->usd), '−') }}</span></td>
+                                                </tr>
+                                            @empty
+                                                <tr><td colspan="4" class="text-center text-muted small py-4">{{ __('No entries in this period.') }}</td></tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <div class="tab-pane" id="purchases-pane" role="tabpanel" style="display:none;">
                 <div class="d-flex flex-wrap align-items-center gap-2 bg-white border rounded-3 p-3 mb-4 shadow-sm">
                     <form method="GET" class="row g-2 align-items-end w-100">
@@ -1004,8 +1215,65 @@
     </div>
 @endsection
 
+
+@push('styles')
+<style>
+    .saving-filter { padding: 14px 16px; border-radius: 16px; background: var(--admin-surface); border: 1px solid var(--admin-border); }
+    .saving-cur { position: relative; display: inline-grid; grid-template-columns: 1fr 1fr; padding: 3px; border-radius: 999px; background: var(--card-muted-bg); border: 1px solid var(--admin-border); }
+    .saving-cur input { position: absolute; opacity: 0; pointer-events: none; }
+    .saving-cur label { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-width: 62px; padding: 5px 10px; border-radius: 999px; font-size: .75rem; font-weight: 700; color: var(--admin-text-muted); cursor: pointer; transition: all .2s ease; }
+    .saving-cur label b { font-size: .95rem; line-height: 1; }
+    .saving-cur input:checked + label { color: #fff; background: linear-gradient(135deg, #10b981, #047857); box-shadow: 0 4px 10px -4px rgba(4, 120, 87, .6); }
+    .saving-cur input:focus-visible + label { outline: 2px solid #10b981; outline-offset: 2px; }
+    .saving-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .saving-mini > div { display: grid; padding: 10px 12px; border-radius: 12px; background: var(--card-muted-bg); border: 1px solid var(--admin-border); }
+    .saving-mini small { color: var(--admin-text-muted); font-size: .7rem; font-weight: 700; }
+    .saving-mini strong { font-size: 1.05rem; }
+    .saving-mini span { color: #059669; font-size: .78rem; font-weight: 700; }
+    .saving-cat, .saving-goal, .saving-plan { margin-bottom: 14px; }
+    .saving-plan { padding-bottom: 12px; border-bottom: 1px dashed var(--admin-border); }
+    .saving-plan:last-child { border-bottom: 0; padding-bottom: 0; }
+    .saving-dot { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 3px; }
+    .saving-track { height: 7px; border-radius: 99px; background: var(--card-muted-bg); overflow: hidden; }
+    .saving-track--lg { height: 9px; }
+    .saving-track > span { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #34d399, #059669); transition: width .6s ease; }
+    .saving-mix { display: flex; gap: 2px; height: 9px; border-radius: 99px; overflow: hidden; background: var(--card-muted-bg); }
+    .saving-pill { flex: none; padding: 3px 9px; border-radius: 999px; background: #fce7f3; color: #be185d; font-size: .75rem; font-weight: 800; }
+    .saving-pill.is-done { background: #d1fae5; color: #047857; }
+    .saving-table th { font-size: .7rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--admin-text-muted); }
+    .saving-amt { display: inline-block; padding: 4px 9px; border-radius: 9px; font-weight: 800; font-size: .85rem; }
+    .saving-amt.saved { background: #d1fae5; color: #047857; }
+    .saving-amt.spent { background: #fef3c7; color: #b45309; }
+</style>
+@endpush
+
 @push('scripts')
     <script>
+        @if ($savingReport)
+        document.addEventListener('DOMContentLoaded', function () {
+            var srKhr = @json($savingReport['currency'] === 'KHR'), srRate = {{ (int) $savingReport['rate'] }};
+            var srConv = function (arr) { return arr.map(function (v) { return srKhr ? Math.round(v * srRate) : v; }); };
+            // USD uses the chart library's money format ($ on axis + labels); riel gets its own ៛ formatter.
+            var srFmt = srKhr ? function (v) { return '៛' + Math.round(v).toLocaleString(); } : 'money';
+            var s = @json($savingReport['series']);
+            AppCharts.bars('savingFlowChart', {
+                labels: s.labels,
+                emptyText: @json(__('No saving or spending in this period')),
+                series: [
+                    { name: @json(__('Saved')), values: srConv(s.saved), color: '#10b981', format: srFmt },
+                    { name: @json(__('Spent')), values: srConv(s.spent), color: '#f59e0b', format: srFmt }
+                ],
+                line: { name: @json(__('Net')), values: srConv(s.net), color: '#7c3aed', format: srFmt },
+                valueLabels: s.labels.length <= 14
+            });
+            AppCharts.line('savingBalanceChart', {
+                labels: s.labels,
+                emptyText: @json(__('No data yet')),
+                average: false,
+                series: [{ name: @json(__('Balance')), values: srConv(s.balance), color: '#7c3aed', format: srFmt }]
+            });
+        });
+        @endif
         document.addEventListener('DOMContentLoaded', function () {
             AppCharts.bars('reportPurchaseChart', {
                 labels: @json($purchaseChartMonths),

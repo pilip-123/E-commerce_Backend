@@ -194,6 +194,23 @@ class ReportController extends Controller
 
         $purchaseSuppliers = Supplier::orderBy('name')->get();
 
+        // ── Saving tracker report (the signed-in user's own tracker) ──
+        $savingReport = null;
+        if ($request->user()?->hasPermission('saving.view')) {
+            $savingFrom = $request->filled('saving_from') ? Carbon::parse($request->input('saving_from'))->startOfDay() : Carbon::now()->subMonths(2)->startOfMonth();
+            $savingTo = $request->filled('saving_to') ? Carbon::parse($request->input('saving_to'))->startOfDay() : Carbon::today();
+            if ($savingFrom->gt($savingTo)) {
+                [$savingFrom, $savingTo] = [$savingTo, $savingFrom];
+            }
+            $storedCurrency = json_decode((string) \Illuminate\Support\Facades\DB::table('saving_tracker_states')->where('user_id', $request->user()->id)->value('data'), true)['currency'] ?? 'USD';
+            $savingReport = app(\App\Services\SavingReportService::class)->build(
+                $request->user(),
+                $savingFrom,
+                $savingTo,
+                $request->input('saving_currency', $storedCurrency)
+            );
+        }
+
         return view('admin.reports', compact(
             'today', 'currentMonth', 'threeMonthsAgo', 'now',
             'dailyTotalSales', 'dailyTotalRevenue',
@@ -205,6 +222,7 @@ class ReportController extends Controller
             'purchaseFrom', 'purchaseTo',
             'purchaseStats', 'purchaseOrders', 'purchaseReturns', 'purchaseReturnStats',
             'purchaseChartMonths', 'purchaseChartTotals', 'supplierSpending', 'purchaseSuppliers',
+            'savingReport',
         ));
     }
 
