@@ -215,6 +215,72 @@
     @keyframes note-dialog-in { from { opacity:0; transform:translateY(8px) scale(.98); } to { opacity:1; transform:translateY(0) scale(1); } }
     .saving-app .table > :not(caption) > * > * { padding-top:.85rem; padding-bottom:.85rem; }
     .saving-app .table-toggle[aria-pressed="true"] { background:var(--admin-primary); color:#fff; }
+    /* ---- Add money to a buying plan: "savings jar" dialog ---- */
+    .saving-app .plan-add-overlay { position:fixed; inset:0; z-index:2000; display:grid; place-items:center; padding:16px; background:radial-gradient(circle at 50% 30%,rgba(16,185,129,.22),rgba(15,23,42,.66) 60%); backdrop-filter:blur(6px); animation:plan-fade .2s ease-out; }
+    .saving-app .plan-add-overlay.d-none { display:none; }
+    .saving-app .plan-add-card { position:relative; width:min(100%,430px); max-height:calc(100vh - 32px); overflow:auto; padding:22px 22px 18px; border:1px solid var(--admin-border); border-radius:26px; background:linear-gradient(170deg,color-mix(in srgb,#10b981 9%,var(--admin-surface)),var(--admin-surface) 42%); color:var(--admin-text); box-shadow:0 30px 80px rgba(0,0,0,.3); animation:plan-pop .32s cubic-bezier(.2,1.3,.4,1); }
+    .saving-app .plan-add-close { position:absolute; top:14px; right:14px; width:32px; height:32px; display:grid; place-items:center; border:0; border-radius:50%; background:var(--card-muted-bg); color:var(--admin-text-muted); transition:transform .2s ease,color .2s ease; }
+    .saving-app .plan-add-close:hover { transform:rotate(90deg); color:var(--admin-text); }
+    .saving-app .plan-add-top { display:flex; align-items:center; gap:18px; margin-bottom:18px; padding-right:30px; }
+    .saving-app .plan-add-eyebrow { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:99px; background:color-mix(in srgb,#10b981 14%,transparent); color:#059669; font-size:.68rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; }
+    .saving-app .plan-add-top h2 { margin:6px 0 3px; font-size:1.18rem; font-weight:800; overflow-wrap:anywhere; }
+    .saving-app .plan-add-meta { margin:0; color:var(--admin-text-muted); font-size:.8rem; }
+    .saving-app .plan-add-meta b { color:var(--admin-text); }
+    /* The jar */
+    .saving-app .plan-jar { flex:none; position:relative; width:76px; height:96px; }
+    .saving-app .plan-jar__lid { position:absolute; left:14px; right:14px; top:0; height:11px; border-radius:5px 5px 2px 2px; background:linear-gradient(180deg,#fbbf24,#d97706); box-shadow:inset 0 -2px 0 rgba(0,0,0,.15); z-index:2; }
+    .saving-app .plan-jar__lid::after { content:''; position:absolute; left:50%; top:3px; width:20px; height:3px; margin-left:-10px; border-radius:3px; background:rgba(0,0,0,.35); }
+    .saving-app .plan-jar__body { position:absolute; inset:9px 0 0; overflow:hidden; border:2.5px solid color-mix(in srgb,#10b981 45%,var(--admin-border)); border-radius:16px 16px 22px 22px; background:color-mix(in srgb,#10b981 5%,var(--admin-surface)); }
+    .saving-app .plan-jar__body::after { content:''; position:absolute; left:9px; top:10px; width:7px; height:44%; border-radius:6px; background:rgba(255,255,255,.55); z-index:3; }
+    .saving-app .plan-jar__fill { position:absolute; left:0; right:0; bottom:0; height:0; background:linear-gradient(180deg,#34d399,#059669); transition:height .7s cubic-bezier(.3,1.4,.5,1); z-index:1; }
+    .saving-app .plan-jar__fill::before { content:''; position:absolute; left:-10%; right:-10%; top:-5px; height:10px; border-radius:50%; background:#6ee7b7; animation:plan-wave 2.4s ease-in-out infinite; }
+    .saving-app .plan-jar__fill--preview { z-index:0; background:repeating-linear-gradient(-45deg,rgba(16,185,129,.35) 0 6px,rgba(16,185,129,.18) 6px 12px); transition:height .35s ease; }
+    .saving-app .plan-jar__fill--preview::before { display:none; }
+    .saving-app .plan-jar__icon { position:absolute; inset:0; display:grid; place-items:center; z-index:4; color:var(--admin-text); font-size:24px; text-shadow:0 1px 0 rgba(255,255,255,.6); }
+    .saving-app .plan-jar__pct { position:absolute; left:50%; bottom:-10px; z-index:5; transform:translateX(-50%); padding:1px 8px; border-radius:99px; background:#059669; color:#fff; font-size:.66rem; font-weight:800; white-space:nowrap; box-shadow:0 4px 10px -3px rgba(5,150,105,.6); }
+    .saving-app .plan-coin { position:absolute; left:50%; top:-26px; z-index:6; width:18px; height:18px; margin-left:-9px; display:grid; place-items:center; border-radius:50%; background:radial-gradient(circle at 35% 30%,#fde68a,#f59e0b 65%,#b45309); color:#78350f; font-size:10px; font-weight:900; box-shadow:0 2px 4px rgba(0,0,0,.25); animation:plan-coin-drop .7s cubic-bezier(.5,0,.8,.6) forwards; }
+    /* Amount input */
+    .saving-app .plan-add-label { display:block; margin-bottom:6px; color:var(--admin-text-muted); font-size:.76rem; font-weight:700; }
+    .saving-app .plan-add-amount { position:relative; display:flex; align-items:center; gap:6px; padding:8px 16px; border:2px solid var(--admin-border); border-radius:18px; background:var(--admin-surface); transition:border-color .2s ease,box-shadow .2s ease; }
+    .saving-app .plan-add-amount:focus-within { border-color:#10b981; box-shadow:0 0 0 4px color-mix(in srgb,#10b981 18%,transparent); }
+    .saving-app .plan-add-amount.is-invalid { border-color:#ef4444; animation:plan-shake .35s ease; }
+    .saving-app .plan-add-amount span { color:#10b981; font-size:1.6rem; font-weight:800; font-family:'Kantumruy Pro',system-ui,sans-serif; }
+    .saving-app .plan-add-amount input { flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--admin-text); font-size:2rem; font-weight:800; font-variant-numeric:tabular-nums; -moz-appearance:textfield; }
+    .saving-app .plan-add-amount input::-webkit-outer-spin-button, .saving-app .plan-add-amount input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+    .saving-app .plan-add-amount input::placeholder { color:color-mix(in srgb,var(--admin-text-muted) 50%,transparent); }
+    .saving-app .plan-add-chips { display:flex; flex-wrap:wrap; gap:7px; margin:12px 0 16px; }
+    .saving-app .plan-chip { display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border:1px solid var(--admin-border); border-radius:99px; background:var(--card-muted-bg); color:var(--admin-text); font-size:.76rem; font-weight:700; transition:transform .15s ease,border-color .15s ease,background .15s ease; }
+    .saving-app .plan-chip:hover { transform:translateY(-2px); border-color:#10b981; }
+    .saving-app .plan-chip.is-active { border-color:#10b981; background:color-mix(in srgb,#10b981 15%,var(--admin-surface)); color:#047857; }
+    .saving-app .plan-chip--finish { border-style:dashed; border-color:#f59e0b; }
+    /* Before / after bar */
+    .saving-app .plan-add-track { position:relative; height:12px; border-radius:99px; background:var(--admin-border); overflow:hidden; }
+    .saving-app .plan-add-track i { position:absolute; top:0; bottom:0; left:0; border-radius:99px; }
+    .saving-app .plan-add-track .now { background:#059669; z-index:1; transition:width .6s ease; }
+    .saving-app .plan-add-track .next { background:repeating-linear-gradient(-45deg,#34d399 0 6px,#6ee7b7 6px 12px); background-size:17px 17px; animation:plan-stripes .8s linear infinite; transition:width .35s ease; }
+    .saving-app .plan-add-scale { display:flex; justify-content:space-between; margin-top:6px; color:var(--admin-text-muted); font-size:.7rem; font-weight:650; }
+    .saving-app .plan-add-msg { display:flex; align-items:flex-start; gap:9px; min-height:48px; margin:14px 0 4px; padding:10px 12px; border-radius:14px; background:var(--card-muted-bg); font-size:.82rem; line-height:1.4; }
+    .saving-app .plan-add-msg .emoji { font-size:1.2rem; line-height:1.1; }
+    .saving-app .plan-add-msg.is-win { background:linear-gradient(120deg,#fef3c7,#d1fae5); color:#065f46; }
+    .saving-app .plan-add-error { min-height:18px; color:#ef4444; font-size:.74rem; font-weight:650; }
+    .saving-app .plan-add-actions { display:flex; gap:8px; margin-top:6px; }
+    .saving-app .plan-add-actions .btn { border-radius:14px; padding:.62rem 1rem; font-weight:700; }
+    .saving-app .plan-add-actions .btn-success { flex:1; background:linear-gradient(135deg,#10b981,#059669); border:0; box-shadow:0 10px 22px -10px rgba(5,150,105,.8); }
+    .saving-app .plan-add-actions .btn-success:disabled { opacity:.55; box-shadow:none; }
+    /* Success state */
+    .saving-app .plan-add-card.is-done .plan-add-form-part { display:none; }
+    .saving-app .plan-add-done { display:none; text-align:center; padding:6px 0 4px; }
+    .saving-app .plan-add-card.is-done .plan-add-done { display:block; animation:plan-pop .4s cubic-bezier(.2,1.3,.4,1); }
+    .saving-app .plan-add-done strong { display:block; color:#059669; font-size:2rem; font-weight:900; }
+    .saving-app .plan-confetti { position:fixed; z-index:2100; width:8px; height:12px; border-radius:2px; pointer-events:none; animation:plan-confetti 1.3s ease-out forwards; }
+    @keyframes plan-fade { from { opacity:0; } to { opacity:1; } }
+    @keyframes plan-pop { from { opacity:0; transform:translateY(14px) scale(.94); } to { opacity:1; transform:none; } }
+    @keyframes plan-wave { 0%,100% { transform:translateX(-6%); } 50% { transform:translateX(6%); } }
+    @keyframes plan-stripes { to { background-position:17px 0; } }
+    @keyframes plan-shake { 25% { transform:translateX(-6px); } 50% { transform:translateX(5px); } 75% { transform:translateX(-3px); } }
+    @keyframes plan-coin-drop { 0% { transform:translateY(0) rotate(0); opacity:1; } 85% { opacity:1; } 100% { transform:translateY(86px) rotate(540deg); opacity:0; } }
+    @keyframes plan-confetti { to { transform:translate(var(--dx),var(--dy)) rotate(var(--rot)); opacity:0; } }
+    @media (prefers-reduced-motion:reduce) { .saving-app .plan-add-card, .saving-app .plan-add-overlay, .saving-app .plan-jar__fill::before, .saving-app .plan-add-track .next, .saving-app .plan-coin, .saving-app .plan-confetti { animation:none !important; } .saving-app .plan-jar__fill, .saving-app .plan-add-track i { transition:none; } }
     @media(max-width:575px) { .saving-app .chart-wrap svg { height:220px; } }
 </style>
 @endpush
@@ -391,6 +457,46 @@
             <h2 class="h6 fw-bold mb-1" id="deleteNoteTitle"></h2>
             <div class="d-flex justify-content-center gap-2"><button type="button" class="btn btn-light btn-sm rounded-3 px-3" id="cancelDeleteNote">Keep note</button><button type="button" class="btn btn-danger btn-sm rounded-3 px-3 fw-semibold" id="confirmDeleteNote"><i class="bi bi-trash3 me-1"></i>Delete</button></div>
         </div>
+    </div>
+    <div class="note-delete-overlay d-none" id="confirmDeleteDialog" role="alertdialog" aria-modal="true" aria-labelledby="confirmDeleteTitle" aria-describedby="confirmDeleteText">
+        <div class="note-delete-card">
+            <div class="mx-auto mb-2 d-grid rounded-circle" style="place-items:center;width:46px;height:46px;background:var(--badge-red-bg);color:var(--badge-red-text);font-size:19px"><i class="bi bi-trash3"></i></div>
+            <h2 class="h6 fw-bold mb-1 text-break" id="confirmDeleteTitle"></h2>
+            <p class="small muted mb-3" id="confirmDeleteText"></p>
+            <div class="d-flex justify-content-center gap-2"><button type="button" class="btn btn-light btn-sm rounded-3 px-3" id="confirmDeleteCancel">Keep it</button><button type="button" class="btn btn-danger btn-sm rounded-3 px-3 fw-semibold" id="confirmDeleteOk"><i class="bi bi-trash3 me-1"></i>Delete</button></div>
+        </div>
+    </div>
+    <div class="plan-add-overlay d-none" id="planAddDialog" role="dialog" aria-modal="true" aria-labelledby="planAddTitle">
+        <form class="plan-add-card" id="planAddForm" novalidate>
+            <button type="button" class="plan-add-close" data-plan-add-close aria-label="Close"><i class="bi bi-x-lg"></i></button>
+            <div class="plan-add-top">
+                <div class="plan-jar" id="planJar" aria-hidden="true">
+                    <div class="plan-jar__lid"></div>
+                    <div class="plan-jar__body">
+                        <div class="plan-jar__fill plan-jar__fill--preview" id="planJarPreview"></div>
+                        <div class="plan-jar__fill" id="planJarFill"></div>
+                        <span class="plan-jar__icon"><i class="bi bi-stars" id="planAddIcon"></i></span>
+                    </div>
+                    <span class="plan-jar__pct" id="planJarPct">0%</span>
+                </div>
+                <div class="min-w-0">
+                    <span class="plan-add-eyebrow"><i class="bi bi-piggy-bank-fill"></i>Feed your goal</span>
+                    <h2 id="planAddTitle"></h2>
+                    <p class="plan-add-meta" id="planAddMeta"></p>
+                </div>
+            </div>
+            <div class="plan-add-form-part">
+                <label for="planAddAmount" class="plan-add-label">How much are you dropping in?</label>
+                <div class="plan-add-amount" id="planAddAmountWrap"><span id="planAddSym">$</span><input id="planAddAmount" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0" autocomplete="off"></div>
+                <div class="plan-add-chips" id="planAddChips"></div>
+                <div class="plan-add-track" aria-hidden="true"><i class="next" id="planTrackNext"></i><i class="now" id="planTrackNow"></i></div>
+                <div class="plan-add-scale"><span id="planScaleFrom"></span><span id="planScaleTo"></span></div>
+                <p class="plan-add-msg" id="planAddMsg" aria-live="polite"></p>
+                <div class="plan-add-error" id="planAddError" role="alert"></div>
+                <div class="plan-add-actions"><button type="button" class="btn btn-light" data-plan-add-close>Not now</button><button type="submit" class="btn btn-success" id="planAddSubmit"><i class="bi bi-coin me-1"></i>Drop it in</button></div>
+            </div>
+            <div class="plan-add-done" aria-live="polite"><strong id="planDoneAmount"></strong><p class="mb-0 muted" id="planDoneText"></p></div>
+        </form>
     </div>
 </div>
 @endsection
@@ -772,17 +878,140 @@
             bootstrap.Modal.getOrCreateInstance($('noteEditor')).show(); return;
         }
         const button = event.target.closest('[data-delete-entry]');
-        if (button) { state.entries = state.entries.filter(item => item.id !== button.dataset.deleteEntry); persist(); return; }
+        if (button) {
+            const item = state.entries.find(entry => entry.id === button.dataset.deleteEntry); if (!item) return;
+            const label = item.kind === 'spent' ? 'spending' : 'saving';
+            askDelete(button, `Delete this ${label}?`, `${money(entryUsd(item))} · ${item.category || 'No category'} · ${item.date}. This can't be undone.`, () => { state.entries = state.entries.filter(entry => entry.id !== item.id); persist(); });
+            return;
+        }
         const add = event.target.closest('[data-add-to-plan]');
         if (add) {
             const plan = state.plans.find(item => item.id === add.dataset.addToPlan); if (!plan) return;
-            const amount = Number(prompt(`How much (${state.currency}) would you like to add to “${plan.name}”?`));
-            if (!Number.isFinite(amount) || amount <= 0) return;
-            plan.saved = Number(plan.saved) + toUsd(amount);
-            state.entries.push({ id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()), kind:'saved', amount, currency:state.currency, category:'Buying plan', date:today, note:plan.name, source:'plan', planId:plan.id }); persist();
+            openPlanAddDialog(plan); return;
         }
         const remove = event.target.closest('[data-delete-plan]');
-        if (remove) { state.plans = state.plans.filter(item => item.id !== remove.dataset.deletePlan); persist(); }
+        if (remove) {
+            const plan = state.plans.find(item => item.id === remove.dataset.deletePlan); if (!plan) return;
+            askDelete(remove, `Delete "${plan.name}"?`, `This buying plan and its progress (${money(Number(plan.saved) || 0)} saved) will be removed. Savings already recorded stay in your history.`, () => { state.plans = state.plans.filter(item => item.id !== plan.id); persist(); });
+        }
+    });
+    // ---- Shared "are you sure?" popup for deleting entries and plans ----
+    let pendingDelete = null, pendingDeleteTrigger = null;
+    function askDelete(trigger, title, text, onConfirm) {
+        pendingDelete = onConfirm; pendingDeleteTrigger = trigger;
+        $('confirmDeleteTitle').textContent = title; $('confirmDeleteText').textContent = text;
+        $('confirmDeleteDialog').classList.remove('d-none'); $('confirmDeleteCancel').focus();
+    }
+    function closeAskDelete() {
+        $('confirmDeleteDialog').classList.add('d-none'); pendingDelete = null;
+        if (pendingDeleteTrigger && document.contains(pendingDeleteTrigger)) pendingDeleteTrigger.focus();
+        pendingDeleteTrigger = null;
+    }
+    $('confirmDeleteCancel').addEventListener('click', closeAskDelete);
+    $('confirmDeleteOk').addEventListener('click', () => { const run = pendingDelete; closeAskDelete(); if (run) run(); });
+    $('confirmDeleteDialog').addEventListener('click', event => { if (event.target === $('confirmDeleteDialog')) closeAskDelete(); });
+    document.addEventListener('keydown', event => { if (event.key === 'Escape' && !$('confirmDeleteDialog').classList.contains('d-none')) closeAskDelete(); });
+    // ---- Add money to a buying plan ("savings jar" dialog) ----
+    const planIcons = { car:'bi-car-front', motorcycle:'bi-bicycle', bike:'bi-bicycle', clothes:'bi-bag', trip:'bi-airplane', other:'bi-stars' };
+    let planAddTarget = null, planAddBusy = false, planAddReturnFocus = null;
+    const planNumbers = plan => { const price = Math.max(0, Number(plan.price) || 0), saved = Math.max(0, Number(plan.saved) || 0); return { price, saved, remaining:Math.max(0, price - saved) }; };
+    const pct = (part, whole) => whole ? Math.min(100, part / whole * 100) : 0;
+    const roundInput = value => state.currency === 'KHR' ? Math.round(value / 100) * 100 || Math.round(value) : Math.round(value * 100) / 100;
+    function planMonthly(plan, remaining) {
+        const days = Math.max(0, Math.ceil((new Date(`${plan.deadline}T12:00:00`) - new Date(`${today}T12:00:00`)) / 86400000));
+        return remaining / Math.max(1, Math.ceil(days / 30.4375));
+    }
+    function openPlanAddDialog(plan) {
+        planAddTarget = plan; planAddBusy = false; planAddReturnFocus = document.activeElement;
+        const { price, saved, remaining } = planNumbers(plan), now = pct(saved, price);
+        $('planAddForm').classList.remove('is-done');
+        $('planAddTitle').textContent = plan.name;
+        $('planAddMeta').innerHTML = `<b>${safe(money(saved))}</b> of ${safe(money(price))} saved · <b>${safe(money(remaining))}</b> to go`;
+        $('planAddIcon').className = `bi ${planIcons[String(plan.type).toLowerCase()] || planIcons.other}`;
+        $('planAddSym').textContent = state.currency === 'KHR' ? '៛' : '$';
+        const input = $('planAddAmount'); input.value = ''; input.step = state.currency === 'KHR' ? '100' : '0.01';
+        $('planAddAmountWrap').classList.remove('is-invalid'); $('planAddError').textContent = '';
+        $('planJarFill').style.height = `${now}%`; $('planTrackNow').style.width = `${now}%`;
+        $('planScaleFrom').textContent = `Now ${now.toFixed(0)}%`;
+        const monthly = planMonthly(plan, remaining), fixed = state.currency === 'KHR' ? [10000, 20000, 50000] : [5, 10, 25];
+        const chips = [];
+        if (monthly > 0 && monthly < remaining) chips.push({ label:'<i class="bi bi-speedometer2"></i>Monthly pace', value:roundInput(fromUsd(monthly)) });
+        fixed.filter(v => toUsd(v) < remaining).forEach(v => chips.push({ label:safe(money(toUsd(v))), value:v }));
+        if (remaining > 0) chips.push({ label:'<i class="bi bi-trophy"></i>Finish it!', value:inputValue(remaining), finish:true });
+        $('planAddChips').innerHTML = chips.map(c => `<button type="button" class="plan-chip${c.finish ? ' plan-chip--finish' : ''}" data-plan-chip="${c.value}">${c.label}</button>`).join('');
+        updatePlanAddPreview();
+        $('planAddDialog').classList.remove('d-none');
+        setTimeout(() => input.focus(), 60);
+    }
+    function closePlanAddDialog() {
+        if (planAddBusy) return;
+        $('planAddDialog').classList.add('d-none'); planAddTarget = null;
+        if (planAddReturnFocus && document.contains(planAddReturnFocus)) planAddReturnFocus.focus();
+    }
+    function updatePlanAddPreview() {
+        if (!planAddTarget) return;
+        const { price, saved, remaining } = planNumbers(planAddTarget), now = pct(saved, price);
+        const typed = Number($('planAddAmount').value), addUsd = Number.isFinite(typed) && typed > 0 ? toUsd(typed) : 0;
+        const next = pct(saved + addUsd, price), left = Math.max(0, remaining - addUsd);
+        $('planJarPreview').style.height = `${next}%`; $('planTrackNext').style.width = `${next}%`;
+        $('planJarPct').textContent = `${(addUsd ? next : now).toFixed(0)}%`;
+        $('planScaleTo').textContent = addUsd ? `After ${next.toFixed(0)}%` : 'Goal 100%';
+        $('planAddSubmit').disabled = !addUsd;
+        document.querySelectorAll('[data-plan-chip]').forEach(chip => chip.classList.toggle('is-active', Number(chip.dataset.planChip) === typed));
+        const msg = $('planAddMsg'); msg.classList.toggle('is-win', addUsd > 0 && left <= 0);
+        let emoji = '🫙', text = 'Type an amount or tap a chip. Watch the jar fill up!';
+        if (addUsd) {
+            const jump = next - now;
+            if (left <= 0) { emoji = '🏆'; text = addUsd - remaining > 0.004 ? `This completes your goal, with ${safe(money(addUsd - remaining))} extra. Treat yourself!` : 'This completes your goal. Treat yourself!'; }
+            else if (next >= 75) { emoji = '🔥'; text = `So close! Only <b>${safe(money(left))}</b> left after this.`; }
+            else if (next >= 50) { emoji = '🚀'; text = `Past halfway! +${jump.toFixed(1)}% closer. <b>${safe(money(left))}</b> to go.`; }
+            else if (next >= 25) { emoji = '🌱'; text = `Growing nicely: +${jump.toFixed(1)}% today. <b>${safe(money(left))}</b> to go.`; }
+            else { emoji = '🪙'; text = `Every coin counts: +${jump.toFixed(1)}% closer to ${safe(planAddTarget.name)}.`; }
+        }
+        msg.innerHTML = `<span class="emoji" aria-hidden="true">${emoji}</span><span>${text}</span>`;
+    }
+    function planConfetti(card) {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const box = card.getBoundingClientRect(), colors = ['#10b981', '#f59e0b', '#3978f6', '#f472b6', '#facc15'];
+        for (let n = 0; n < 42; n++) {
+            const bit = document.createElement('span'); bit.className = 'plan-confetti';
+            bit.style.left = `${box.left + box.width / 2}px`; bit.style.top = `${box.top + box.height / 3}px`;
+            bit.style.background = colors[n % colors.length];
+            bit.style.setProperty('--dx', `${(Math.random() - .5) * 520}px`); bit.style.setProperty('--dy', `${Math.random() * 380 - 220}px`); bit.style.setProperty('--rot', `${Math.random() * 720}deg`);
+            $('savingApp').appendChild(bit); setTimeout(() => bit.remove(), 1400);
+        }
+    }
+    $('planAddAmount').addEventListener('input', () => { $('planAddAmountWrap').classList.remove('is-invalid'); $('planAddError').textContent = ''; updatePlanAddPreview(); });
+    $('planAddChips').addEventListener('click', event => {
+        const chip = event.target.closest('[data-plan-chip]'); if (!chip) return;
+        $('planAddAmount').value = chip.dataset.planChip; updatePlanAddPreview(); $('planAddAmount').focus();
+    });
+    $('planAddDialog').addEventListener('click', event => { if (event.target === $('planAddDialog') || event.target.closest('[data-plan-add-close]')) closePlanAddDialog(); });
+    document.addEventListener('keydown', event => { if (event.key === 'Escape' && !$('planAddDialog').classList.contains('d-none')) closePlanAddDialog(); });
+    $('planAddForm').addEventListener('submit', event => {
+        event.preventDefault();
+        const plan = planAddTarget; if (!plan || planAddBusy) return;
+        const amount = Number($('planAddAmount').value);
+        if (!Number.isFinite(amount) || amount <= 0) {
+            const wrap = $('planAddAmountWrap'); wrap.classList.remove('is-invalid'); void wrap.offsetWidth; wrap.classList.add('is-invalid');
+            $('planAddError').textContent = 'Enter an amount greater than zero.'; return;
+        }
+        planAddBusy = true;
+        const before = planNumbers(plan);
+        plan.saved = Number(plan.saved) + toUsd(amount);
+        state.entries.push({ id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()), kind:'saved', amount, currency:state.currency, category:'Buying plan', date:today, note:plan.name, source:'plan', planId:plan.id });
+        const after = planNumbers(plan), done = after.remaining <= 0, nextPct = pct(after.saved, after.price);
+        // Drop a few coins into the jar, then fill it up.
+        const jar = $('planJar');
+        for (let n = 0; n < 3; n++) setTimeout(() => { const coin = document.createElement('span'); coin.className = 'plan-coin'; coin.textContent = state.currency === 'KHR' ? '៛' : '$'; coin.style.marginLeft = `${-9 + (n - 1) * 12}px`; jar.appendChild(coin); setTimeout(() => coin.remove(), 750); }, n * 140);
+        setTimeout(() => { $('planJarFill').style.height = `${nextPct}%`; $('planJarPct').textContent = `${nextPct.toFixed(0)}%`; }, 420);
+        $('planAddMeta').innerHTML = `<b>${safe(money(after.saved))}</b> of ${safe(money(after.price))} saved`;
+        $('planDoneAmount').textContent = `+${money(toUsd(amount))}`;
+        $('planDoneText').textContent = done ? `Goal reached! “${plan.name}” is fully funded 🎉` : `Into the jar! ${(nextPct - pct(before.saved, before.price)).toFixed(1)}% closer, ${money(after.remaining)} to go.`;
+        $('planAddForm').classList.add('is-done');
+        if (done) planConfetti($('planAddForm'));
+        persist();
+        setTimeout(() => { planAddBusy = false; closePlanAddDialog(); }, done ? 2200 : 1500);
     });
     $('saveEditedNote').addEventListener('click', () => {
         const item = state.entries.find(entry => entry.id === editingNoteId); if (!item) return;
