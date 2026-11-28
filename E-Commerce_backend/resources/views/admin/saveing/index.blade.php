@@ -455,7 +455,7 @@
         <div class="note-delete-card">
             <div class="mx-auto mb-2 d-grid rounded-circle" style="place-items:center;width:46px;height:46px;background:var(--badge-red-bg);color:var(--badge-red-text);font-size:19px"><i class="bi bi-trash3"></i></div>
             <h2 class="h6 fw-bold mb-1" id="deleteNoteTitle"></h2>
-            <div class="d-flex justify-content-center gap-2"><button type="button" class="btn btn-light btn-sm rounded-3 px-3" id="cancelDeleteNote">Keep note</button><button type="button" class="btn btn-danger btn-sm rounded-3 px-3 fw-semibold" id="confirmDeleteNote"><i class="bi bi-trash3 me-1"></i>Delete</button></div>
+            <div class="d-flex justify-content-center gap-2"><button type="button" class="btn btn-light btn-sm rounded-3 px-3" id="cancelDeleteNote">Cancel note</button><button type="button" class="btn btn-danger btn-sm rounded-3 px-3 fw-semibold" id="confirmDeleteNote"><i class="bi bi-trash3 me-1"></i>Delete</button></div>
         </div>
     </div>
     <div class="note-delete-overlay d-none" id="confirmDeleteDialog" role="alertdialog" aria-modal="true" aria-labelledby="confirmDeleteTitle" aria-describedby="confirmDeleteText">
@@ -463,7 +463,7 @@
             <div class="mx-auto mb-2 d-grid rounded-circle" style="place-items:center;width:46px;height:46px;background:var(--badge-red-bg);color:var(--badge-red-text);font-size:19px"><i class="bi bi-trash3"></i></div>
             <h2 class="h6 fw-bold mb-1 text-break" id="confirmDeleteTitle"></h2>
             <p class="small muted mb-3" id="confirmDeleteText"></p>
-            <div class="d-flex justify-content-center gap-2"><button type="button" class="btn btn-light btn-sm rounded-3 px-3" id="confirmDeleteCancel">Keep it</button><button type="button" class="btn btn-danger btn-sm rounded-3 px-3 fw-semibold" id="confirmDeleteOk"><i class="bi bi-trash3 me-1"></i>Delete</button></div>
+            <div class="d-flex justify-content-center gap-2"><button type="button" class="btn btn-light btn-sm rounded-3 px-3" id="confirmDeleteCancel">Cancel</button><button type="button" class="btn btn-danger btn-sm rounded-3 px-3 fw-semibold" id="confirmDeleteOk"><i class="bi bi-trash3 me-1"></i>Delete</button></div>
         </div>
     </div>
     <div class="plan-add-overlay d-none" id="planAddDialog" role="dialog" aria-modal="true" aria-labelledby="planAddTitle">
